@@ -17,6 +17,7 @@ final class ViewController: UIViewController {
         super.viewDidLoad()
         title = "骰子"
         view.backgroundColor = .systemBackground
+        setupNavigationItems()
         setupDiceView()
     }
 
@@ -42,5 +43,18 @@ final class ViewController: UIViewController {
         diceView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+    }
+
+    private func setupNavigationItems() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(addDice)
+        )
+    }
+
+    @objc
+    private func addDice() {
+        diceView.addDice()
     }
 }

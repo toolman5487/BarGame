@@ -86,7 +86,7 @@ final class DiceNode: SCNNode {
         body.allowsResting = true
         body.categoryBitMask = DicePhysicsCategory.dice
         body.contactTestBitMask = DicePhysicsCategory.boundary
-        body.collisionBitMask = DicePhysicsCategory.boundary
+        body.collisionBitMask = DicePhysicsCategory.dice | DicePhysicsCategory.boundary
         physicsBody = body
     }
 

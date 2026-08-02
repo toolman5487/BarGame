@@ -45,8 +45,8 @@ final class DiceArena {
 
     // MARK: - Public
 
-    func attach(dice: SCNNode) {
-        dice.position = SCNVector3(0, 1.5, 0)
+    func attach(dice: SCNNode, at position: SCNVector3) {
+        dice.position = position
         scene.rootNode.addChildNode(dice)
     }
 

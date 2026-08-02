@@ -51,7 +51,7 @@ final class GameDiceView: UIView {
     private let hintLabel = UILabel()
     private let motionManager = CMMotionManager()
     private let arena = DiceArena()
-    private let diceNode = DiceNode()
+    private var diceNodes: [DiceNode] = []
 
     private var hapticEngine: CHHapticEngine?
     private var lastImpulseTime: CFTimeInterval = 0
@@ -91,7 +91,12 @@ final class GameDiceView: UIView {
     // MARK: - Public
 
     func shake(intensity: Double = 1.2) {
-        diceNode.applyShake(intensity: intensity)
+        diceNodes.forEach { $0.applyShake(intensity: intensity) }
+    }
+
+    func addDice() {
+        let diceNode = makeDiceNode()
+        diceNode.applyShake(intensity: 0.7)
     }
 
     // MARK: - Setup
@@ -129,10 +134,26 @@ final class GameDiceView: UIView {
 
     private func setupScene() {
         arena.scene.physicsWorld.contactDelegate = self
-        arena.attach(dice: diceNode)
+        makeDiceNode()
         sceneView.scene = arena.scene
         sceneView.pointOfView = arena.cameraNode
         sceneView.autoenablesDefaultLighting = false
+    }
+
+    @discardableResult
+    private func makeDiceNode() -> DiceNode {
+        let diceNode = DiceNode()
+        let position = spawnPosition(for: diceNodes.count)
+        diceNodes.append(diceNode)
+        arena.attach(dice: diceNode, at: position)
+        return diceNode
+    }
+
+    private func spawnPosition(for index: Int) -> SCNVector3 {
+        let horizontalPositions: [Float] = [0, -0.8, 0.8, -0.4, 0.4]
+        let horizontalPosition = horizontalPositions[index % horizontalPositions.count]
+        let verticalLayer = Float((index / horizontalPositions.count) % 2)
+        return SCNVector3(horizontalPosition, 1.4 + verticalLayer * 0.8, 0)
     }
 
     // MARK: - Motion
@@ -157,7 +178,7 @@ final class GameDiceView: UIView {
             let now = CACurrentMediaTime()
             guard now - self.lastImpulseTime > 0.08 else { return }
             self.lastImpulseTime = now
-            self.diceNode.applyShake(intensity: shakeIntensity)
+            self.shake(intensity: shakeIntensity)
         }
     }
 
