@@ -76,7 +76,7 @@ final class ViewController: UIViewController {
     }
 
     private func updateActionButtonConfiguration() {
-        var configuration = UIButton.Configuration.filled()
+        var configuration = UIButton.Configuration.glass()
         configuration.imagePadding = 8
         configuration.cornerStyle = .large
         configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
@@ -89,14 +89,10 @@ final class ViewController: UIViewController {
         case .perspective:
             configuration.title = "確定"
             configuration.image = UIImage(systemName: "checkmark")
-            configuration.baseForegroundColor = .white
-            configuration.baseBackgroundColor = .systemBlue
 
         case .topDown:
             configuration.title = "返回"
             configuration.image = UIImage(systemName: "arrow.backward")
-            configuration.baseForegroundColor = .label
-            configuration.baseBackgroundColor = .secondarySystemBackground
         }
 
         actionButton.configuration = configuration
