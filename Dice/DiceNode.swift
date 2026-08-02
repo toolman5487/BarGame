@@ -1,0 +1,184 @@
+//
+//  DiceNode.swift
+//  BarGame
+//
+//  Created by Willy Hsu on 2026/8/2.
+//
+
+import UIKit
+import SceneKit
+
+final class DiceNode: SCNNode {
+
+    // MARK: - Lifecycle
+
+    override init() {
+        super.init()
+        setupDice()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Public
+
+    func applyShake(intensity: Double) {
+        guard let body = physicsBody else { return }
+
+        let clamped = min(max(intensity, 0.3), 2.5)
+        let forceScale = Float(clamped) * 4.0
+        let force = SCNVector3(
+            Float.random(in: -1...1) * forceScale,
+            Float.random(in: 0.4...1.2) * forceScale,
+            Float.random(in: -1...1) * forceScale
+        )
+        let torque = SCNVector4(
+            Float.random(in: -1...1),
+            Float.random(in: -1...1),
+            Float.random(in: -1...1),
+            Float(clamped) * 2.5
+        )
+
+        if body.isResting {
+            body.velocity = SCNVector3(0, 0.1, 0)
+        }
+        body.applyForce(force, asImpulse: true)
+        body.applyTorque(torque, asImpulse: true)
+    }
+
+    static func impactSpeed(for contact: SCNPhysicsContact) -> Float {
+        let diceBody: SCNPhysicsBody?
+        if contact.nodeA.physicsBody?.categoryBitMask == DicePhysicsCategory.dice {
+            diceBody = contact.nodeA.physicsBody
+        } else {
+            diceBody = contact.nodeB.physicsBody
+        }
+
+        guard let velocity = diceBody?.velocity else { return 0 }
+        return sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z)
+    }
+
+    // MARK: - Setup
+
+    private func setupDice() {
+        let size: CGFloat = 1.0
+        let box = SCNBox(width: size, height: size, length: size, chamferRadius: 0.08)
+        box.materials = [
+            makePipMaterial(pips: 1),
+            makePipMaterial(pips: 2),
+            makePipMaterial(pips: 6),
+            makePipMaterial(pips: 5),
+            makePipMaterial(pips: 3),
+            makePipMaterial(pips: 4),
+        ]
+        geometry = box
+
+        let shape = SCNPhysicsShape(geometry: box, options: [
+            SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.convexHull,
+        ])
+        let body = SCNPhysicsBody(type: .dynamic, shape: shape)
+        body.mass = 0.8
+        body.friction = 0.45
+        body.restitution = 0.85
+        body.angularDamping = 0.3
+        body.damping = 0.08
+        body.allowsResting = true
+        body.categoryBitMask = DicePhysicsCategory.dice
+        body.contactTestBitMask = DicePhysicsCategory.boundary
+        body.collisionBitMask = DicePhysicsCategory.boundary
+        physicsBody = body
+    }
+
+    // MARK: - Materials
+
+    private func makePipMaterial(pips: Int) -> SCNMaterial {
+        let material = SCNMaterial()
+        material.diffuse.contents = makeDiceFaceImage(pips: pips)
+        material.roughness.contents = 0.45
+        material.metalness.contents = 0.05
+        material.lightingModel = .physicallyBased
+        return material
+    }
+
+    private func makeDiceFaceImage(pips: Int) -> UIImage {
+        let size = CGSize(width: 256, height: 256)
+        return UIGraphicsImageRenderer(size: size).image { context in
+            let rect = CGRect(origin: .zero, size: size)
+            UIColor(red: 0.95, green: 0.94, blue: 0.9, alpha: 1).setFill()
+            context.fill(rect)
+
+            let inset: CGFloat = 16
+            let faceRect = rect.insetBy(dx: inset, dy: inset)
+            let path = UIBezierPath(roundedRect: faceRect, cornerRadius: 24)
+            UIColor(white: 0.88, alpha: 1).setStroke()
+            path.lineWidth = 4
+            path.stroke()
+
+            let pipColor = UIColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1)
+            let positions = pipPositions(for: pips, in: faceRect)
+            let pipRadius: CGFloat = 18
+            for point in positions {
+                let pipRect = CGRect(
+                    x: point.x - pipRadius,
+                    y: point.y - pipRadius,
+                    width: pipRadius * 2,
+                    height: pipRadius * 2
+                )
+                pipColor.setFill()
+                UIBezierPath(ovalIn: pipRect).fill()
+            }
+        }
+    }
+
+    private func pipPositions(for pips: Int, in rect: CGRect) -> [CGPoint] {
+        let left = rect.minX + rect.width * 0.25
+        let centerX = rect.midX
+        let right = rect.minX + rect.width * 0.75
+        let top = rect.minY + rect.height * 0.25
+        let centerY = rect.midY
+        let bottom = rect.minY + rect.height * 0.75
+
+        switch pips {
+        case 1:
+            return [CGPoint(x: centerX, y: centerY)]
+        case 2:
+            return [
+                CGPoint(x: left, y: top),
+                CGPoint(x: right, y: bottom),
+            ]
+        case 3:
+            return [
+                CGPoint(x: left, y: top),
+                CGPoint(x: centerX, y: centerY),
+                CGPoint(x: right, y: bottom),
+            ]
+        case 4:
+            return [
+                CGPoint(x: left, y: top),
+                CGPoint(x: right, y: top),
+                CGPoint(x: left, y: bottom),
+                CGPoint(x: right, y: bottom),
+            ]
+        case 5:
+            return [
+                CGPoint(x: left, y: top),
+                CGPoint(x: right, y: top),
+                CGPoint(x: centerX, y: centerY),
+                CGPoint(x: left, y: bottom),
+                CGPoint(x: right, y: bottom),
+            ]
+        case 6:
+            return [
+                CGPoint(x: left, y: top),
+                CGPoint(x: right, y: top),
+                CGPoint(x: left, y: centerY),
+                CGPoint(x: right, y: centerY),
+                CGPoint(x: left, y: bottom),
+                CGPoint(x: right, y: bottom),
+            ]
+        default:
+            return [CGPoint(x: centerX, y: centerY)]
+        }
+    }
+}

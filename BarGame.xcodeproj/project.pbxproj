@@ -6,8 +6,24 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1562853C301F3A2500702D1E /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 1562853B301F3A2500702D1E /* SDWebImage */; };
+		1562853F301F3A3100702D1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1562853E301F3A3100702D1E /* SnapKit */; };
+		15628542301F3A5400702D1E /* SkeletonView in Frameworks */ = {isa = PBXBuildFile; productRef = 15628541301F3A5400702D1E /* SkeletonView */; };
+		1562854B301F3EBE00702D1E /* GameDiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1562854A301F3EBE00702D1E /* GameDiceView.swift */; };
+		1562854F301F425400702D1E /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1562854E301F425400702D1E /* AppLogger.swift */; };
+		15628551301F45A000702D1E /* DicePhysicsCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15628550301F45A000702D1E /* DicePhysicsCategory.swift */; };
+		15628553301F45A100702D1E /* DiceNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15628552301F45A100702D1E /* DiceNode.swift */; };
+		15628555301F45A200702D1E /* DiceArena.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15628554301F45A200702D1E /* DiceArena.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		150B9259301F31AC00BA35E2 /* BarGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1562854A301F3EBE00702D1E /* GameDiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDiceView.swift; sourceTree = "<group>"; };
+		1562854E301F425400702D1E /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
+		15628550301F45A000702D1E /* DicePhysicsCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DicePhysicsCategory.swift; sourceTree = "<group>"; };
+		15628552301F45A100702D1E /* DiceNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceNode.swift; sourceTree = "<group>"; };
+		15628554301F45A200702D1E /* DiceArena.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceArena.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,6 +52,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1562853C301F3A2500702D1E /* SDWebImage in Frameworks */,
+				15628542301F3A5400702D1E /* SkeletonView in Frameworks */,
+				1562853F301F3A3100702D1E /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +64,8 @@
 		150B9250301F31AC00BA35E2 = {
 			isa = PBXGroup;
 			children = (
+				1562854C301F423800702D1E /* Looger */,
+				15628546301F3DB900702D1E /* Dice */,
 				150B925B301F31AC00BA35E2 /* BarGame */,
 				150B925A301F31AC00BA35E2 /* Products */,
 			);
@@ -56,6 +77,25 @@
 				150B9259301F31AC00BA35E2 /* BarGame.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		15628546301F3DB900702D1E /* Dice */ = {
+			isa = PBXGroup;
+			children = (
+				15628554301F45A200702D1E /* DiceArena.swift */,
+				15628552301F45A100702D1E /* DiceNode.swift */,
+				15628550301F45A000702D1E /* DicePhysicsCategory.swift */,
+				1562854A301F3EBE00702D1E /* GameDiceView.swift */,
+			);
+			path = Dice;
+			sourceTree = "<group>";
+		};
+		1562854C301F423800702D1E /* Looger */ = {
+			isa = PBXGroup;
+			children = (
+				1562854E301F425400702D1E /* AppLogger.swift */,
+			);
+			path = Looger;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -78,6 +118,9 @@
 			);
 			name = BarGame;
 			packageProductDependencies = (
+				1562853B301F3A2500702D1E /* SDWebImage */,
+				1562853E301F3A3100702D1E /* SnapKit */,
+				15628541301F3A5400702D1E /* SkeletonView */,
 			);
 			productName = BarGame;
 			productReference = 150B9259301F31AC00BA35E2 /* BarGame.app */;
@@ -107,6 +150,11 @@
 			);
 			mainGroup = 150B9250301F31AC00BA35E2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1562853A301F3A2500702D1E /* XCRemoteSwiftPackageReference "SDWebImage" */,
+				1562853D301F3A3100702D1E /* XCRemoteSwiftPackageReference "SnapKit" */,
+				15628540301F3A5400702D1E /* XCRemoteSwiftPackageReference "SkeletonView" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 150B925A301F31AC00BA35E2 /* Products */;
 			projectDirPath = "";
@@ -132,6 +180,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1562854F301F425400702D1E /* AppLogger.swift in Sources */,
+				15628551301F45A000702D1E /* DicePhysicsCategory.swift in Sources */,
+				15628553301F45A100702D1E /* DiceNode.swift in Sources */,
+				15628555301F45A200702D1E /* DiceArena.swift in Sources */,
+				1562854B301F3EBE00702D1E /* GameDiceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,7 +306,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -261,6 +314,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -311,12 +365,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -343,6 +398,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1562853A301F3A2500702D1E /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.21.7;
+			};
+		};
+		1562853D301F3A3100702D1E /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
+		15628540301F3A5400702D1E /* XCRemoteSwiftPackageReference "SkeletonView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Juanpe/SkeletonView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.31.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1562853B301F3A2500702D1E /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1562853A301F3A2500702D1E /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
+		1562853E301F3A3100702D1E /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1562853D301F3A3100702D1E /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		15628541301F3A5400702D1E /* SkeletonView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 15628540301F3A5400702D1E /* XCRemoteSwiftPackageReference "SkeletonView" */;
+			productName = SkeletonView;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 150B9251301F31AC00BA35E2 /* Project object */;
 }
