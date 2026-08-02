@@ -99,6 +99,14 @@ final class GameDiceView: UIView {
         diceNode.applyShake(intensity: 0.7)
     }
 
+    func showTopDownView() {
+        arena.showTopDownView()
+    }
+
+    func showPerspectiveView() {
+        arena.showPerspectiveView()
+    }
+
     // MARK: - Setup
 
     private func setup() {
@@ -128,7 +136,7 @@ final class GameDiceView: UIView {
         addSubview(hintLabel)
         hintLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(safeAreaLayoutGuide).inset(16)
-            make.bottom.equalTo(safeAreaLayoutGuide).inset(24)
+            make.bottom.equalTo(safeAreaLayoutGuide).inset(96)
         }
     }
 

@@ -10,6 +10,15 @@ import SceneKit
 
 final class DiceArena {
 
+    // MARK: - Types
+
+    private enum CameraTransition {
+        static let perspectiveHeight: Float = 1.2
+        static let perspectiveDistance: Float = 5.5
+        static let topDownHeight: Float = 7
+        static let duration: TimeInterval = 0.8
+    }
+
     // MARK: - Properties
 
     let scene = SCNScene()
@@ -48,6 +57,28 @@ final class DiceArena {
     func attach(dice: SCNNode, at position: SCNVector3) {
         dice.position = position
         scene.rootNode.addChildNode(dice)
+    }
+
+    func showTopDownView() {
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = CameraTransition.duration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        cameraNode.position = SCNVector3(0, CameraTransition.topDownHeight, 0)
+        cameraNode.eulerAngles = SCNVector3(-Float.pi / 2, 0, 0)
+        SCNTransaction.commit()
+    }
+
+    func showPerspectiveView() {
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = CameraTransition.duration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        cameraNode.position = SCNVector3(
+            0,
+            CameraTransition.perspectiveHeight,
+            CameraTransition.perspectiveDistance
+        )
+        cameraNode.look(at: SCNVector3(0, 0, 0))
+        SCNTransaction.commit()
     }
 
     func updateSideWalls(for viewBounds: CGSize) {
@@ -96,7 +127,11 @@ final class DiceArena {
 
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 45
-        cameraNode.position = SCNVector3(0, 1.2, 5.5)
+        cameraNode.position = SCNVector3(
+            0,
+            CameraTransition.perspectiveHeight,
+            CameraTransition.perspectiveDistance
+        )
         cameraNode.look(at: SCNVector3(0, 0, 0))
         scene.rootNode.addChildNode(cameraNode)
 

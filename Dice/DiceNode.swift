@@ -10,6 +10,13 @@ import SceneKit
 
 final class DiceNode: SCNNode {
 
+    // MARK: - Types
+
+    private enum Metrics {
+        static let size: CGFloat = 0.72
+        static let chamferRadius = size * 0.08
+    }
+
     // MARK: - Lifecycle
 
     override init() {
@@ -62,8 +69,12 @@ final class DiceNode: SCNNode {
     // MARK: - Setup
 
     private func setupDice() {
-        let size: CGFloat = 1.0
-        let box = SCNBox(width: size, height: size, length: size, chamferRadius: 0.08)
+        let box = SCNBox(
+            width: Metrics.size,
+            height: Metrics.size,
+            length: Metrics.size,
+            chamferRadius: Metrics.chamferRadius
+        )
         box.materials = [
             makePipMaterial(pips: 1),
             makePipMaterial(pips: 2),
