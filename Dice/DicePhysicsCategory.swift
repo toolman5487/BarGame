@@ -8,6 +8,6 @@
 import Foundation
 
 enum DicePhysicsCategory {
-    static let dice: Int = 1 << 0
-    static let boundary: Int = 1 << 1
+    nonisolated static let dice: Int = 1 << 0
+    nonisolated static let boundary: Int = 1 << 1
 }
