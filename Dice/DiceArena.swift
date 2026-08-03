@@ -19,6 +19,15 @@ final class DiceArena {
         static let duration: TimeInterval = 0.8
     }
 
+    private enum Physics {
+        static let gravity: Float = 9.8
+        static let lateralGravityScale: Float = 3
+        static let floorRestitution: CGFloat = 0.28
+        static let floorFriction: CGFloat = 0.78
+        static let wallRestitution: CGFloat = 0.48
+        static let wallFriction: CGFloat = 0.35
+    }
+
     // MARK: - Properties
 
     let scene = SCNScene()
@@ -35,19 +44,19 @@ final class DiceArena {
             width: 0.25,
             height: 4,
             length: 5.0,
-            restitution: 0.95
+            restitution: Physics.wallRestitution
         )
         rightWallNode = Self.makeBoundaryWall(
             width: 0.25,
             height: 4,
             length: 5.0,
-            restitution: 0.95
+            restitution: Physics.wallRestitution
         )
         ceilingNode = Self.makeBoundaryWall(
             width: 8,
             height: 0.25,
             length: 5.0,
-            restitution: 0.95
+            restitution: Physics.wallRestitution
         )
         setupScene()
     }
@@ -79,6 +88,14 @@ final class DiceArena {
         )
         cameraNode.look(at: SCNVector3(0, 0, 0))
         SCNTransaction.commit()
+    }
+
+    func updateGravity(deviceTiltX: Double, deviceTiltY: Double) {
+        scene.physicsWorld.gravity = SCNVector3(
+            Float(deviceTiltX) * Physics.lateralGravityScale,
+            -Physics.gravity,
+            -Float(deviceTiltY) * Physics.lateralGravityScale
+        )
     }
 
     func updateSideWalls(for viewBounds: CGSize) {
@@ -127,6 +144,10 @@ final class DiceArena {
 
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 45
+        cameraNode.camera?.wantsHDR = true
+        cameraNode.camera?.wantsExposureAdaptation = true
+        cameraNode.camera?.exposureOffset = -0.15
+        cameraNode.camera?.motionBlurIntensity = 0.08
         cameraNode.position = SCNVector3(
             0,
             CameraTransition.perspectiveHeight,
@@ -138,25 +159,30 @@ final class DiceArena {
         let ambient = SCNNode()
         ambient.light = SCNLight()
         ambient.light?.type = .ambient
-        ambient.light?.intensity = 400
+        ambient.light?.intensity = 260
         ambient.light?.color = UIColor.white
         scene.rootNode.addChildNode(ambient)
 
         let keyLight = SCNNode()
         keyLight.light = SCNLight()
         keyLight.light?.type = .directional
-        keyLight.light?.intensity = 800
+        keyLight.light?.intensity = 900
         keyLight.light?.castsShadow = true
+        keyLight.light?.shadowSampleCount = 16
+        keyLight.light?.shadowRadius = 6
+        keyLight.light?.shadowBias = 0.015
         keyLight.eulerAngles = SCNVector3(-Float.pi / 3, Float.pi / 4, 0)
         scene.rootNode.addChildNode(keyLight)
 
         let floor = SCNNode(geometry: SCNFloor())
         floor.geometry?.firstMaterial?.diffuse.contents = UIColor(white: 0.12, alpha: 1)
-        floor.geometry?.firstMaterial?.roughness.contents = 0.8
+        floor.geometry?.firstMaterial?.roughness.contents = 0.72
         floor.physicsBody = SCNPhysicsBody(type: .static, shape: nil)
-        floor.physicsBody?.friction = 0.85
-        floor.physicsBody?.restitution = 0.45
-        Self.configureBoundaryPhysics(floor.physicsBody)
+        Self.configureBoundaryPhysics(
+            floor.physicsBody,
+            restitution: Physics.floorRestitution,
+            friction: Physics.floorFriction
+        )
         scene.rootNode.addChildNode(floor)
 
         addBoundaryWalls()
@@ -172,7 +198,7 @@ final class DiceArena {
             width: 8,
             height: wallHeight,
             length: wallThickness,
-            restitution: 0.9
+            restitution: Physics.wallRestitution
         )
         frontWall.position = SCNVector3(0, Float(wallHeight / 2), -halfDepth)
         scene.rootNode.addChildNode(frontWall)
@@ -181,7 +207,7 @@ final class DiceArena {
             width: 8,
             height: wallHeight,
             length: wallThickness,
-            restitution: 0.9
+            restitution: Physics.wallRestitution
         )
         backWall.position = SCNVector3(0, Float(wallHeight / 2), halfDepth)
         scene.rootNode.addChildNode(backWall)
@@ -198,12 +224,16 @@ final class DiceArena {
 
     // MARK: - Boundaries
 
-    private static func configureBoundaryPhysics(_ body: SCNPhysicsBody?) {
+    private static func configureBoundaryPhysics(
+        _ body: SCNPhysicsBody?,
+        restitution: CGFloat,
+        friction: CGFloat
+    ) {
         body?.categoryBitMask = DicePhysicsCategory.boundary
         body?.contactTestBitMask = DicePhysicsCategory.dice
         body?.collisionBitMask = DicePhysicsCategory.dice
-        body?.restitution = max(body?.restitution ?? 0, 0.85)
-        body?.friction = body?.friction ?? 0.2
+        body?.restitution = restitution
+        body?.friction = friction
     }
 
     private static func makeBoundaryWall(
@@ -220,9 +250,11 @@ final class DiceArena {
         ))
         wall.geometry?.firstMaterial?.diffuse.contents = UIColor.clear
         wall.physicsBody = SCNPhysicsBody(type: .static, shape: nil)
-        wall.physicsBody?.restitution = restitution
-        wall.physicsBody?.friction = 0.15
-        configureBoundaryPhysics(wall.physicsBody)
+        configureBoundaryPhysics(
+            wall.physicsBody,
+            restitution: restitution,
+            friction: Physics.wallFriction
+        )
         return wall
     }
 }

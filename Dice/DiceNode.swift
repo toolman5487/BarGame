@@ -17,6 +17,15 @@ final class DiceNode: SCNNode {
         static let chamferRadius = size * 0.08
     }
 
+    private enum Physics {
+        static let mass: CGFloat = 0.8
+        static let friction: CGFloat = 0.62
+        static let rollingFriction: CGFloat = 0.32
+        static let restitution: CGFloat = 0.42
+        static let angularDamping: CGFloat = 0.42
+        static let damping: CGFloat = 0.16
+    }
+
     // MARK: - Lifecycle
 
     override init() {
@@ -54,6 +63,16 @@ final class DiceNode: SCNNode {
         body.applyTorque(torque, asImpulse: true)
     }
 
+    func applyMotionImpulse(force: SCNVector3, torque: SCNVector4) {
+        guard let body = physicsBody else { return }
+
+        if body.isResting {
+            body.velocity = SCNVector3(0, 0.1, 0)
+        }
+        body.applyForce(force, asImpulse: true)
+        body.applyTorque(torque, asImpulse: true)
+    }
+
     static func impactSpeed(for contact: SCNPhysicsContact) -> Float {
         let diceBody: SCNPhysicsBody?
         if contact.nodeA.physicsBody?.categoryBitMask == DicePhysicsCategory.dice {
@@ -63,7 +82,11 @@ final class DiceNode: SCNNode {
         }
 
         guard let velocity = diceBody?.velocity else { return 0 }
-        return sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z)
+        return sqrt(
+            velocity.x * velocity.x +
+            velocity.y * velocity.y +
+            velocity.z * velocity.z
+        )
     }
 
     // MARK: - Setup
@@ -89,14 +112,16 @@ final class DiceNode: SCNNode {
             SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.convexHull,
         ])
         let body = SCNPhysicsBody(type: .dynamic, shape: shape)
-        body.mass = 0.8
-        body.friction = 0.45
-        body.restitution = 0.85
-        body.angularDamping = 0.3
-        body.damping = 0.08
+        body.mass = Physics.mass
+        body.friction = Physics.friction
+        body.rollingFriction = Physics.rollingFriction
+        body.restitution = Physics.restitution
+        body.angularDamping = Physics.angularDamping
+        body.damping = Physics.damping
         body.allowsResting = true
+        body.continuousCollisionDetectionThreshold = Metrics.size / 2
         body.categoryBitMask = DicePhysicsCategory.dice
-        body.contactTestBitMask = DicePhysicsCategory.boundary
+        body.contactTestBitMask = DicePhysicsCategory.dice | DicePhysicsCategory.boundary
         body.collisionBitMask = DicePhysicsCategory.dice | DicePhysicsCategory.boundary
         physicsBody = body
     }
@@ -106,8 +131,10 @@ final class DiceNode: SCNNode {
     private func makePipMaterial(pips: Int) -> SCNMaterial {
         let material = SCNMaterial()
         material.diffuse.contents = makeDiceFaceImage(pips: pips)
-        material.roughness.contents = 0.45
-        material.metalness.contents = 0.05
+        material.roughness.contents = 0.32
+        material.metalness.contents = 0.02
+        material.clearCoat.contents = 0.18
+        material.clearCoatRoughness.contents = 0.28
         material.lightingModel = .physicallyBased
         return material
     }

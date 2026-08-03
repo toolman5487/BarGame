@@ -16,6 +16,24 @@ final class GameDiceView: UIView {
 
     // MARK: - Types
 
+    private enum MotionTuning {
+        static let updateInterval: TimeInterval = 1.0 / 60.0
+        static let minimumImpulseMagnitude = 0.28
+        static let impulseCooldown: CFTimeInterval = 0.12
+        static let horizontalForceScale: Float = 3.6
+        static let verticalForceScale: Float = 2.8
+        static let rotationScale: Float = 0.35
+        static let forceJitterRatio: Float = 0.12
+    }
+
+    private enum ImpactFeedback {
+        static let minimumImpulse: Float = 0.03
+        static let fullIntensityImpulse: Float = 2.2
+        static let minimumSpeed: Float = 0.8
+        static let fullIntensitySpeed: Float = 6
+        static let cooldown: CFTimeInterval = 0.06
+    }
+
     private enum HapticError: Error {
         case unsupportedHardware
         case engineUnavailable
@@ -51,6 +69,7 @@ final class GameDiceView: UIView {
     private let hintLabel = UILabel()
     private let motionManager = CMMotionManager()
     private let arena = DiceArena()
+    private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
     private var diceNodes: [DiceNode] = []
 
     private var hapticEngine: CHHapticEngine?
@@ -70,7 +89,9 @@ final class GameDiceView: UIView {
     }
 
     deinit {
-        stopMotionUpdates()
+        NotificationCenter.default.removeObserver(self)
+        motionManager.stopDeviceMotionUpdates()
+        motionManager.stopAccelerometerUpdates()
     }
 
     override func layoutSubviews() {
@@ -115,6 +136,7 @@ final class GameDiceView: UIView {
         setupHintLabel()
         setupScene()
         setupHaptics()
+        observeApplicationLifecycle()
     }
 
     private func setupSceneView() {
@@ -167,10 +189,21 @@ final class GameDiceView: UIView {
     // MARK: - Motion
 
     private func startMotionUpdates() {
+        if motionManager.isDeviceMotionAvailable {
+            guard !motionManager.isDeviceMotionActive else { return }
+
+            motionManager.deviceMotionUpdateInterval = MotionTuning.updateInterval
+            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main) { [weak self] motion, _ in
+                guard let self, let motion else { return }
+                self.handleDeviceMotion(motion)
+            }
+            return
+        }
+
         guard motionManager.isAccelerometerAvailable else { return }
         guard !motionManager.isAccelerometerActive else { return }
 
-        motionManager.accelerometerUpdateInterval = 1.0 / 60.0
+        motionManager.accelerometerUpdateInterval = MotionTuning.updateInterval
         motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
             guard let self, let data else { return }
 
@@ -184,21 +217,80 @@ final class GameDiceView: UIView {
             guard shakeIntensity > 0.35 else { return }
 
             let now = CACurrentMediaTime()
-            guard now - self.lastImpulseTime > 0.08 else { return }
+            guard now - self.lastImpulseTime > MotionTuning.impulseCooldown else { return }
             self.lastImpulseTime = now
             self.shake(intensity: shakeIntensity)
         }
     }
 
     private func stopMotionUpdates() {
+        motionManager.stopDeviceMotionUpdates()
         motionManager.stopAccelerometerUpdates()
+    }
+
+    private func handleDeviceMotion(_ motion: CMDeviceMotion) {
+        arena.updateGravity(
+            deviceTiltX: motion.gravity.x,
+            deviceTiltY: motion.gravity.y
+        )
+
+        let acceleration = motion.userAcceleration
+        let magnitude = sqrt(
+            acceleration.x * acceleration.x +
+            acceleration.y * acceleration.y +
+            acceleration.z * acceleration.z
+        )
+        guard magnitude > MotionTuning.minimumImpulseMagnitude else { return }
+
+        let now = CACurrentMediaTime()
+        guard now - lastImpulseTime > MotionTuning.impulseCooldown else { return }
+        lastImpulseTime = now
+
+        let force = SCNVector3(
+            Float(acceleration.x) * MotionTuning.horizontalForceScale,
+            Float(magnitude) * MotionTuning.verticalForceScale,
+            -Float(acceleration.y) * MotionTuning.horizontalForceScale
+        )
+        let torque = makeTorque(
+            rotationRate: motion.rotationRate,
+            fallbackIntensity: Float(magnitude)
+        )
+
+        diceNodes.forEach { diceNode in
+            diceNode.applyMotionImpulse(
+                force: force.addingRandomJitter(
+                    ratio: MotionTuning.forceJitterRatio,
+                    intensity: Float(magnitude)
+                ),
+                torque: torque
+            )
+        }
+    }
+
+    private func makeTorque(
+        rotationRate: CMRotationRate,
+        fallbackIntensity: Float
+    ) -> SCNVector4 {
+        let x = Float(rotationRate.x)
+        let y = Float(rotationRate.z)
+        let z = -Float(rotationRate.y)
+        let magnitude = sqrt(x * x + y * y + z * z)
+
+        guard magnitude > 0.01 else {
+            return SCNVector4(1, 0, 0, fallbackIntensity)
+        }
+
+        let angle = max(magnitude * MotionTuning.rotationScale, fallbackIntensity)
+        return SCNVector4(x / magnitude, y / magnitude, z / magnitude, angle)
     }
 
     // MARK: - Haptics
 
     private func setupHaptics() {
+        fallbackImpactFeedbackGenerator.prepare()
+
         do {
-            try prepareHapticEngine()
+            try prepareHapticEngineIfNeeded()
         } catch HapticError.unsupportedHardware {
             hapticEngine = nil
             AppLogger.ui.notice("\(HapticError.unsupportedHardware.logDescription, privacy: .public)")
@@ -209,6 +301,40 @@ final class GameDiceView: UIView {
             hapticEngine = nil
             AppLogger.ui.error("Unknown haptic setup error: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    private func observeApplicationLifecycle() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(prepareHapticsAfterBecomingActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc
+    private func prepareHapticsAfterBecomingActive() {
+        setupHaptics()
+    }
+
+    private func prepareHapticEngineIfNeeded() throws {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
+            throw HapticError.unsupportedHardware
+        }
+
+        if let engine = hapticEngine {
+            do {
+                try engine.start()
+                return
+            } catch {
+                hapticEngine = nil
+                AppLogger.ui.warning(
+                    "Existing haptic engine failed to restart: \(error.localizedDescription, privacy: .public)"
+                )
+            }
+        }
+
+        try prepareHapticEngine()
     }
 
     private func prepareHapticEngine() throws {
@@ -224,10 +350,14 @@ final class GameDiceView: UIView {
         }
 
         engine.resetHandler = { [weak self] in
-            self?.handleHapticEngineReset()
+            DispatchQueue.main.async {
+                self?.handleHapticEngineReset()
+            }
         }
         engine.stoppedHandler = { [weak self] reason in
-            self?.handleHapticEngineStopped(reason: reason)
+            DispatchQueue.main.async {
+                self?.handleHapticEngineStopped(reason: reason)
+            }
         }
 
         do {
@@ -270,20 +400,21 @@ final class GameDiceView: UIView {
         } catch let error as HapticError {
             switch error {
             case .unsupportedHardware, .engineUnavailable:
-                return
+                AppLogger.ui.notice("\(error.logDescription, privacy: .public)")
             case .engineCreationFailed, .engineStartFailed,
                  .patternCreationFailed, .playerCreationFailed, .playbackFailed:
                 AppLogger.ui.error("\(error.logDescription, privacy: .public)")
             }
+            playFallbackImpact(intensity: intensity)
         } catch {
             AppLogger.ui.error("Unknown haptic playback error: \(error.localizedDescription, privacy: .public)")
+            playFallbackImpact(intensity: intensity)
         }
     }
 
     private func performImpactHaptic(intensity: Float) throws {
-        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
-            throw HapticError.unsupportedHardware
-        }
+        try prepareHapticEngineIfNeeded()
+
         guard let engine = hapticEngine else {
             throw HapticError.engineUnavailable
         }
@@ -324,29 +455,72 @@ final class GameDiceView: UIView {
             throw HapticError.playbackFailed(underlying: error)
         }
     }
+
+    private func playFallbackImpact(intensity: Float) {
+        let clamped = min(max(intensity, 0.25), 1.0)
+        fallbackImpactFeedbackGenerator.impactOccurred(intensity: CGFloat(clamped))
+        fallbackImpactFeedbackGenerator.prepare()
+    }
+
+    private func handleImpactFeedback(
+        collisionImpulse: Float,
+        impactSpeed: Float
+    ) {
+        guard collisionImpulse > ImpactFeedback.minimumImpulse ||
+                impactSpeed > ImpactFeedback.minimumSpeed else { return }
+
+        let now = CACurrentMediaTime()
+        guard now - lastImpactHapticTime > ImpactFeedback.cooldown else { return }
+        lastImpactHapticTime = now
+
+        let impulseIntensity = min(
+            collisionImpulse / ImpactFeedback.fullIntensityImpulse,
+            1.0
+        )
+        let speedIntensity = min(
+            impactSpeed / ImpactFeedback.fullIntensitySpeed,
+            1.0
+        )
+        playImpactHaptic(intensity: max(impulseIntensity, speedIntensity))
+    }
 }
 
 // MARK: - SCNPhysicsContactDelegate
 
 extension GameDiceView: SCNPhysicsContactDelegate {
 
-    func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+    nonisolated func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
         guard let bodyA = contact.nodeA.physicsBody,
               let bodyB = contact.nodeB.physicsBody else { return }
 
         let categories = bodyA.categoryBitMask | bodyB.categoryBitMask
-        guard categories == (DicePhysicsCategory.dice | DicePhysicsCategory.boundary) else { return }
+        let isBoundaryImpact = categories == (
+            DicePhysicsCategory.dice | DicePhysicsCategory.boundary
+        )
+        let isDiceImpact = bodyA.categoryBitMask == DicePhysicsCategory.dice &&
+            bodyB.categoryBitMask == DicePhysicsCategory.dice
+        guard isBoundaryImpact || isDiceImpact else { return }
 
-        let speed = DiceNode.impactSpeed(for: contact)
-        guard speed > 0.8 else { return }
+        let collisionImpulse = Float(contact.collisionImpulse)
+        let impactSpeed = DiceNode.impactSpeed(for: contact)
 
-        let now = CACurrentMediaTime()
-        guard now - lastImpactHapticTime > 0.06 else { return }
-        lastImpactHapticTime = now
-
-        let intensity = min(speed / 6.0, 1.0)
-        DispatchQueue.main.async { [weak self] in
-            self?.playImpactHaptic(intensity: intensity)
+        Task { @MainActor [weak self] in
+            self?.handleImpactFeedback(
+                collisionImpulse: collisionImpulse,
+                impactSpeed: impactSpeed
+            )
         }
+    }
+}
+
+private extension SCNVector3 {
+
+    func addingRandomJitter(ratio: Float, intensity: Float) -> SCNVector3 {
+        let jitter = ratio * intensity
+        return SCNVector3(
+            x + Float.random(in: -jitter...jitter),
+            y + Float.random(in: -jitter...jitter),
+            z + Float.random(in: -jitter...jitter)
+        )
     }
 }
