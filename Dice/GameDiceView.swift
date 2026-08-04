@@ -71,6 +71,7 @@ final class GameDiceView: UIView {
     private let arena = DiceArena()
     private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
     private var diceNodes: [DiceNode] = []
+    private var isInteractionLocked = false
 
     private var hapticEngine: CHHapticEngine?
     private var lastImpulseTime: CFTimeInterval = 0
@@ -112,12 +113,20 @@ final class GameDiceView: UIView {
     // MARK: - Public
 
     func shake(intensity: Double = 1.2) {
+        guard !isInteractionLocked else { return }
         diceNodes.forEach { $0.applyShake(intensity: intensity) }
     }
 
     func addDice() {
+        guard !isInteractionLocked else { return }
         let diceNode = makeDiceNode()
         diceNode.applyShake(intensity: 0.7)
+    }
+
+    func setInteractionLocked(_ isLocked: Bool) {
+        isInteractionLocked = isLocked
+        diceNodes.forEach { $0.setLocked(isLocked) }
+        hintLabel.text = isLocked ? "骰子已鎖定" : "搖晃手機讓骰子晃動"
     }
 
     func showTopDownView() {
@@ -229,6 +238,8 @@ final class GameDiceView: UIView {
     }
 
     private func handleDeviceMotion(_ motion: CMDeviceMotion) {
+        guard !isInteractionLocked else { return }
+
         arena.updateGravity(
             deviceTiltX: motion.gravity.x,
             deviceTiltY: motion.gravity.y

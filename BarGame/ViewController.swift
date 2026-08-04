@@ -20,7 +20,9 @@ final class ViewController: UIViewController {
 
     private let diceView = GameDiceView()
     private let actionButton = UIButton(type: .system)
+    private let lockButton = UIButton(type: .system)
     private var diceViewMode: DiceViewMode = .perspective
+    private var isDiceLocked = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,7 +30,7 @@ final class ViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setupNavigationItems()
         setupDiceView()
-        setupActionButton()
+        setupControlButtons()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -44,7 +46,7 @@ final class ViewController: UIViewController {
     override var canBecomeFirstResponder: Bool { true }
 
     override func motionBegan(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
-        guard motion == .motionShake else { return }
+        guard motion == .motionShake, !isDiceLocked else { return }
         diceView.shake()
     }
 
@@ -63,39 +65,64 @@ final class ViewController: UIViewController {
         )
     }
 
-    private func setupActionButton() {
+    private func setupControlButtons() {
         updateActionButtonConfiguration()
         actionButton.addTarget(self, action: #selector(handleActionButtonTap), for: .touchUpInside)
+        updateLockButtonConfiguration()
+        lockButton.addTarget(self, action: #selector(handleLockButtonTap), for: .touchUpInside)
 
         view.addSubview(actionButton)
+        view.addSubview(lockButton)
+
         actionButton.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
+            make.leading.equalTo(view.safeAreaLayoutGuide).inset(24)
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
-            make.height.equalTo(56)
+            make.size.equalTo(56)
+        }
+
+        lockButton.snp.makeConstraints { make in
+            make.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
+            make.size.equalTo(56)
         }
     }
 
     private func updateActionButtonConfiguration() {
         var configuration = UIButton.Configuration.glass()
-        configuration.imagePadding = 8
-        configuration.cornerStyle = .large
-        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
-            var updatedAttributes = attributes
-            updatedAttributes.font = .preferredFont(forTextStyle: .headline)
-            return updatedAttributes
-        }
+        configuration.cornerStyle = .capsule
 
         switch diceViewMode {
         case .perspective:
-            configuration.title = "確定"
             configuration.image = UIImage(systemName: "checkmark")
+            actionButton.accessibilityLabel = "確認結果"
 
         case .topDown:
-            configuration.title = "返回"
             configuration.image = UIImage(systemName: "arrow.backward")
+            actionButton.accessibilityLabel = "返回擲骰"
         }
 
         actionButton.configuration = configuration
+    }
+
+    private func updateLockButtonConfiguration() {
+        var configuration = UIButton.Configuration.glass()
+        configuration.cornerStyle = .capsule
+        configuration.image = UIImage(systemName: isDiceLocked ? "lock.fill" : "lock.open")
+        configuration.baseForegroundColor = isDiceLocked ? .systemOrange : .label
+
+        lockButton.configuration = configuration
+        lockButton.isEnabled = diceViewMode == .perspective
+        lockButton.accessibilityLabel = lockButton.isEnabled
+            ? (isDiceLocked ? "解鎖骰子" : "鎖定骰子")
+            : "骰子已鎖定"
+        lockButton.accessibilityValue = isDiceLocked ? "已鎖定" : "未鎖定"
+    }
+
+    private func setDiceLocked(_ isLocked: Bool) {
+        isDiceLocked = isLocked
+        diceView.setInteractionLocked(isLocked)
+        navigationItem.rightBarButtonItem?.isEnabled = !isLocked
+        updateLockButtonConfiguration()
     }
 
     @objc
@@ -109,12 +136,20 @@ final class ViewController: UIViewController {
         case .perspective:
             diceView.showTopDownView()
             diceViewMode = .topDown
+            setDiceLocked(true)
 
         case .topDown:
             diceView.showPerspectiveView()
             diceViewMode = .perspective
+            setDiceLocked(false)
         }
 
         updateActionButtonConfiguration()
+    }
+
+    @objc
+    private func handleLockButtonTap() {
+        guard diceViewMode == .perspective else { return }
+        setDiceLocked(!isDiceLocked)
     }
 }

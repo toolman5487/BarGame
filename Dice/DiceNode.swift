@@ -73,6 +73,17 @@ final class DiceNode: SCNNode {
         body.applyTorque(torque, asImpulse: true)
     }
 
+    func setLocked(_ isLocked: Bool) {
+        guard let body = physicsBody else { return }
+
+        body.isAffectedByGravity = !isLocked
+        guard isLocked else { return }
+
+        body.clearAllForces()
+        body.velocity = SCNVector3Zero
+        body.angularVelocity = SCNVector4Zero
+    }
+
     nonisolated static func impactSpeed(for contact: SCNPhysicsContact) -> Float {
         let diceBody: SCNPhysicsBody?
         if contact.nodeA.physicsBody?.categoryBitMask == DicePhysicsCategory.dice {
