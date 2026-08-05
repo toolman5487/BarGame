@@ -97,14 +97,14 @@ final class GameDiceView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        arena.updateSideWalls(for: bounds.size)
+        arena.updateViewportBoundaries(for: bounds.size)
     }
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if window != nil {
             startMotionUpdates()
-            arena.updateSideWalls(for: bounds.size)
+            arena.updateViewportBoundaries(for: bounds.size)
         } else {
             stopMotionUpdates()
         }
