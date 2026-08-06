@@ -15,15 +15,19 @@ final class DiceNode: SCNNode {
     private enum Metrics {
         static let size: CGFloat = 0.72
         static let chamferRadius = size * 0.08
+        static let collisionInset = size * 0.003
+        static let collisionSize = size - collisionInset * 2
+        static let collisionChamferRadius = chamferRadius - collisionInset
+        static let collisionMargin: CGFloat = 0
     }
 
     private enum Physics {
         static let mass: CGFloat = 0.8
         static let friction: CGFloat = 0.62
-        static let rollingFriction: CGFloat = 0.32
-        static let restitution: CGFloat = 0.42
-        static let angularDamping: CGFloat = 0.42
-        static let damping: CGFloat = 0.16
+        static let rollingFriction: CGFloat = 0.24
+        static let restitution: CGFloat = 0.32
+        static let angularDamping: CGFloat = 0.36
+        static let damping: CGFloat = 0.14
     }
 
     // MARK: - Lifecycle
@@ -103,13 +107,13 @@ final class DiceNode: SCNNode {
     // MARK: - Setup
 
     private func setupDice() {
-        let box = SCNBox(
+        let visibleBox = SCNBox(
             width: Metrics.size,
             height: Metrics.size,
             length: Metrics.size,
             chamferRadius: Metrics.chamferRadius
         )
-        box.materials = [
+        visibleBox.materials = [
             makePipMaterial(pips: 1),
             makePipMaterial(pips: 2),
             makePipMaterial(pips: 6),
@@ -117,10 +121,17 @@ final class DiceNode: SCNNode {
             makePipMaterial(pips: 3),
             makePipMaterial(pips: 4),
         ]
-        geometry = box
+        geometry = visibleBox
 
-        let shape = SCNPhysicsShape(geometry: box, options: [
+        let collisionBox = SCNBox(
+            width: Metrics.collisionSize,
+            height: Metrics.collisionSize,
+            length: Metrics.collisionSize,
+            chamferRadius: Metrics.collisionChamferRadius
+        )
+        let shape = SCNPhysicsShape(geometry: collisionBox, options: [
             SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.convexHull,
+            SCNPhysicsShape.Option.collisionMargin: Metrics.collisionMargin,
         ])
         let body = SCNPhysicsBody(type: .dynamic, shape: shape)
         body.mass = Physics.mass
@@ -142,10 +153,10 @@ final class DiceNode: SCNNode {
     private func makePipMaterial(pips: Int) -> SCNMaterial {
         let material = SCNMaterial()
         material.diffuse.contents = makeDiceFaceImage(pips: pips)
-        material.roughness.contents = 0.32
-        material.metalness.contents = 0.02
-        material.clearCoat.contents = 0.18
-        material.clearCoatRoughness.contents = 0.28
+        material.roughness.contents = 0.3
+        material.metalness.contents = 0.0
+        material.clearCoat.contents = 0.14
+        material.clearCoatRoughness.contents = 0.34
         material.lightingModel = .physicallyBased
         return material
     }
