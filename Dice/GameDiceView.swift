@@ -26,6 +26,11 @@ final class GameDiceView: UIView {
         static let forceJitterRatio: Float = 0.12
     }
 
+    private enum DiceCount {
+        static let initial = 2
+        static let maximum = 8
+    }
+
     private enum ImpactFeedback {
         static let minimumImpulse: Float = 0.03
         static let fullIntensityImpulse: Float = 2.2
@@ -65,8 +70,22 @@ final class GameDiceView: UIView {
 
     // MARK: - Properties
 
-    private let sceneView = SCNView()
-    private let hintLabel = UILabel()
+    private let sceneView: SCNView = {
+        let sceneView = SCNView()
+        sceneView.backgroundColor = .black
+        sceneView.antialiasingMode = .multisampling4X
+        sceneView.allowsCameraControl = false
+        sceneView.isPlaying = true
+        return sceneView
+    }()
+    private let hintLabel: UILabel = {
+        let label = UILabel()
+        label.text = "搖晃手機讓骰子晃動"
+        label.textColor = UIColor.white.withAlphaComponent(0.7)
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textAlignment = .center
+        return label
+    }()
     private let motionManager = CMMotionManager()
     private let arena = DiceArena()
     private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
@@ -112,15 +131,22 @@ final class GameDiceView: UIView {
 
     // MARK: - Public
 
+    var canAddDice: Bool {
+        !isInteractionLocked && diceNodes.count < DiceCount.maximum
+    }
+
     func shake(intensity: Double = 1.2) {
         guard !isInteractionLocked else { return }
         diceNodes.forEach { $0.applyShake(intensity: intensity) }
     }
 
-    func addDice() {
-        guard !isInteractionLocked else { return }
+    @discardableResult
+    func addDice() -> Bool {
+        guard canAddDice else { return false }
+
         let diceNode = makeDiceNode()
         diceNode.applyShake(intensity: 0.7)
+        return true
     }
 
     func setInteractionLocked(_ isLocked: Bool) {
@@ -140,40 +166,35 @@ final class GameDiceView: UIView {
     // MARK: - Setup
 
     private func setup() {
-        backgroundColor = .black
-        setupSceneView()
-        setupHintLabel()
+        backgroundColor = .systemBackground
+        setupViewHierarchy()
+        setupViewLayout()
         setupScene()
         setupHaptics()
         observeApplicationLifecycle()
     }
 
-    private func setupSceneView() {
-        sceneView.backgroundColor = .black
-        sceneView.antialiasingMode = .multisampling4X
-        sceneView.allowsCameraControl = false
-        sceneView.isPlaying = true
+    private func setupViewHierarchy() {
         addSubview(sceneView)
+        addSubview(hintLabel)
+    }
+
+    private func setupViewLayout() {
         sceneView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-    }
 
-    private func setupHintLabel() {
-        hintLabel.text = "搖晃手機讓骰子晃動"
-        hintLabel.textColor = UIColor.white.withAlphaComponent(0.7)
-        hintLabel.font = .preferredFont(forTextStyle: .subheadline)
-        hintLabel.textAlignment = .center
-        addSubview(hintLabel)
         hintLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(safeAreaLayoutGuide).inset(16)
-            make.bottom.equalTo(safeAreaLayoutGuide).inset(96)
+            make.bottom.equalTo(safeAreaLayoutGuide.snp.top)
         }
     }
 
     private func setupScene() {
         arena.scene.physicsWorld.contactDelegate = self
-        makeDiceNode()
+        for _ in 0..<DiceCount.initial {
+            makeDiceNode()
+        }
         sceneView.scene = arena.scene
         sceneView.pointOfView = arena.cameraNode
         sceneView.autoenablesDefaultLighting = false
@@ -189,7 +210,7 @@ final class GameDiceView: UIView {
     }
 
     private func spawnPosition(for index: Int) -> SCNVector3 {
-        let horizontalPositions: [Float] = [0, -0.8, 0.8, -0.4, 0.4]
+        let horizontalPositions: [Float] = [-0.4, 0.4, -0.8, 0.8, 0]
         let horizontalPosition = horizontalPositions[index % horizontalPositions.count]
         let verticalLayer = Float((index / horizontalPositions.count) % 2)
         return SCNVector3(horizontalPosition, 1.4 + verticalLayer * 0.8, 0)

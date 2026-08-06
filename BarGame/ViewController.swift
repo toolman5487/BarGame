@@ -18,19 +18,61 @@ final class ViewController: UIViewController {
         case topDown
     }
 
+    private enum DiceControl: Int, CaseIterable {
+        case lock
+        case add
+        case action
+    }
+
+    private enum ControlLayout {
+        static let itemSize: CGFloat = 56
+        static let itemSpacing: CGFloat = 12
+        static let edgeInset: CGFloat = 16
+        static let collectionHeight = itemSize * 3 + itemSpacing * 2
+    }
+
+    // MARK: - UI
+
     private let diceView = GameDiceView()
-    private let actionButton = UIButton(type: .system)
-    private let lockButton = UIButton(type: .system)
+    private lazy var controlCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        layout.itemSize = CGSize(
+            width: ControlLayout.itemSize,
+            height: ControlLayout.itemSize
+        )
+        layout.minimumLineSpacing = ControlLayout.itemSpacing
+
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: layout
+        )
+        collectionView.backgroundColor = .clear
+        collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.isScrollEnabled = false
+        collectionView.showsVerticalScrollIndicator = false
+        collectionView.register(
+            DiceControlCollectionViewCell.self,
+            forCellWithReuseIdentifier: DiceControlCollectionViewCell.reuseIdentifier
+        )
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        return collectionView
+    }()
+
+    // MARK: - State
+
     private var diceViewMode: DiceViewMode = .perspective
     private var isDiceLocked = false
+
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "骰子"
         view.backgroundColor = .systemBackground
-        setupNavigationItems()
-        setupDiceView()
-        setupControlButtons()
+        setupViewHierarchy()
+        setupViewLayout()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -43,6 +85,8 @@ final class ViewController: UIViewController {
         resignFirstResponder()
     }
 
+    // MARK: - UIResponder
+
     override var canBecomeFirstResponder: Bool { true }
 
     override func motionBegan(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
@@ -50,87 +94,41 @@ final class ViewController: UIViewController {
         diceView.shake()
     }
 
-    private func setupDiceView() {
+    // MARK: - Setup
+
+    private func setupViewHierarchy() {
         view.addSubview(diceView)
+        view.addSubview(controlCollectionView)
+    }
+
+    private func setupViewLayout() {
         diceView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-    }
 
-    private func setupNavigationItems() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .add,
-            target: self,
-            action: #selector(addDice)
-        )
-    }
-
-    private func setupControlButtons() {
-        updateActionButtonConfiguration()
-        actionButton.addTarget(self, action: #selector(handleActionButtonTap), for: .touchUpInside)
-        updateLockButtonConfiguration()
-        lockButton.addTarget(self, action: #selector(handleLockButtonTap), for: .touchUpInside)
-
-        view.addSubview(actionButton)
-        view.addSubview(lockButton)
-
-        actionButton.snp.makeConstraints { make in
-            make.leading.equalTo(view.safeAreaLayoutGuide).inset(24)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
-            make.size.equalTo(56)
-        }
-
-        lockButton.snp.makeConstraints { make in
-            make.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
-            make.size.equalTo(56)
+        controlCollectionView.snp.makeConstraints { make in
+            make.trailing.equalTo(view.safeAreaLayoutGuide).inset(ControlLayout.edgeInset)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(ControlLayout.itemSize)
+            make.height.equalTo(ControlLayout.collectionHeight)
         }
     }
 
-    private func updateActionButtonConfiguration() {
-        var configuration = UIButton.Configuration.glass()
-        configuration.cornerStyle = .capsule
-
-        switch diceViewMode {
-        case .perspective:
-            configuration.image = UIImage(systemName: "checkmark")
-            actionButton.accessibilityLabel = "確認結果"
-
-        case .topDown:
-            configuration.image = UIImage(systemName: "arrow.backward")
-            actionButton.accessibilityLabel = "返回擲骰"
-        }
-
-        actionButton.configuration = configuration
-    }
-
-    private func updateLockButtonConfiguration() {
-        var configuration = UIButton.Configuration.glass()
-        configuration.cornerStyle = .capsule
-        configuration.image = UIImage(systemName: isDiceLocked ? "lock.fill" : "lock.open")
-        configuration.baseForegroundColor = isDiceLocked ? .systemOrange : .label
-
-        lockButton.configuration = configuration
-        lockButton.isEnabled = diceViewMode == .perspective
-        lockButton.accessibilityLabel = lockButton.isEnabled
-            ? (isDiceLocked ? "解鎖骰子" : "鎖定骰子")
-            : "骰子已鎖定"
-        lockButton.accessibilityValue = isDiceLocked ? "已鎖定" : "未鎖定"
-    }
+    // MARK: - State Updates
 
     private func setDiceLocked(_ isLocked: Bool) {
         isDiceLocked = isLocked
         diceView.setInteractionLocked(isLocked)
-        navigationItem.rightBarButtonItem?.isEnabled = !isLocked
-        updateLockButtonConfiguration()
+        controlCollectionView.reloadData()
     }
 
-    @objc
-    private func addDice() {
+    // MARK: - Actions
+
+    private func handleAddDiceTap() {
         diceView.addDice()
+        controlCollectionView.reloadData()
     }
 
-    @objc
     private func handleActionButtonTap() {
         switch diceViewMode {
         case .perspective:
@@ -143,13 +141,163 @@ final class ViewController: UIViewController {
             diceViewMode = .perspective
             setDiceLocked(false)
         }
-
-        updateActionButtonConfiguration()
     }
 
-    @objc
     private func handleLockButtonTap() {
         guard diceViewMode == .perspective else { return }
         setDiceLocked(!isDiceLocked)
+    }
+}
+
+// MARK: - UICollectionViewDataSource
+
+extension ViewController: UICollectionViewDataSource {
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
+        DiceControl.allCases.count
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
+        guard let control = DiceControl(rawValue: indexPath.item),
+              let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: DiceControlCollectionViewCell.reuseIdentifier,
+                for: indexPath
+              ) as? DiceControlCollectionViewCell else {
+            return UICollectionViewCell()
+        }
+
+        configure(cell, for: control)
+        return cell
+    }
+
+    private func configure(
+        _ cell: DiceControlCollectionViewCell,
+        for control: DiceControl
+    ) {
+        switch control {
+        case .lock:
+            configureLockControl(cell)
+        case .add:
+            configureAddControl(cell)
+        case .action:
+            configureActionControl(cell)
+        }
+    }
+
+    private func configureLockControl(_ cell: DiceControlCollectionViewCell) {
+        let isEnabled = diceViewMode == .perspective
+        cell.configure(
+            image: UIImage(systemName: isDiceLocked ? "lock.fill" : "lock.open"),
+            foregroundColor: isDiceLocked ? .systemOrange : .label,
+            isEnabled: isEnabled
+        )
+    }
+
+    private func configureActionControl(_ cell: DiceControlCollectionViewCell) {
+        let imageName: String
+
+        switch diceViewMode {
+        case .perspective:
+            imageName = "checkmark"
+        case .topDown:
+            imageName = "arrow.backward"
+        }
+
+        cell.configure(
+            image: UIImage(systemName: imageName),
+            foregroundColor: .label,
+            isEnabled: true
+        )
+    }
+
+    private func configureAddControl(_ cell: DiceControlCollectionViewCell) {
+        let canAddDice = diceView.canAddDice
+
+        cell.configure(
+            image: UIImage(systemName: "plus"),
+            foregroundColor: .label,
+            isEnabled: canAddDice
+        )
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+
+extension ViewController: UICollectionViewDelegate {
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        guard let control = DiceControl(rawValue: indexPath.item) else { return }
+
+        switch control {
+        case .lock:
+            handleLockButtonTap()
+        case .add:
+            handleAddDiceTap()
+        case .action:
+            handleActionButtonTap()
+        }
+    }
+}
+
+// MARK: - DiceControlCollectionViewCell
+
+private final class DiceControlCollectionViewCell: UICollectionViewCell {
+
+    static let reuseIdentifier = String(describing: DiceControlCollectionViewCell.self)
+
+    private let button = UIButton(type: .system)
+
+    override var isHighlighted: Bool {
+        didSet {
+            button.isHighlighted = isHighlighted
+        }
+    }
+
+    override var isSelected: Bool {
+        didSet {
+            button.isSelected = isSelected
+        }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupButton()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(
+        image: UIImage?,
+        foregroundColor: UIColor,
+        isEnabled: Bool
+    ) {
+        var configuration = UIButton.Configuration.glass()
+        configuration.cornerStyle = .capsule
+        configuration.image = image
+        configuration.baseForegroundColor = foregroundColor
+        button.configuration = configuration
+        button.isEnabled = isEnabled
+
+        isUserInteractionEnabled = isEnabled
+    }
+
+    private func setupButton() {
+        button.isUserInteractionEnabled = false
+        contentView.addSubview(button)
+        button.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
 }
