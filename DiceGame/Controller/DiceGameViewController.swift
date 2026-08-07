@@ -25,6 +25,7 @@ final class DiceGameViewController: UIViewController {
     private enum Layout {
         static let controlButtonSize: CGFloat = 56
         static let controlButtonSpacing: CGFloat = 16
+        static let controlStackCenterYOffset: CGFloat = 80
         static let edgeInset: CGFloat = 16
     }
 
@@ -134,7 +135,12 @@ final class DiceGameViewController: UIViewController {
         }
 
         controlStackView.snp.makeConstraints { make in
-            make.right.bottom.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.right.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.centerY
+                .equalTo(view.safeAreaLayoutGuide)
+                .offset(Layout.controlStackCenterYOffset)
+                .priority(.high)
+            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
         }
 
         controlButtons.forEach { button in
