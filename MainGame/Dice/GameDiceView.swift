@@ -20,8 +20,6 @@ final class GameDiceView: UIView {
 
         let initialDiceCount: Int
         let maximumDiceCount: Int
-        let unlockedHintText: String
-        let lockedHintText: String
     }
 
     private enum MotionTuning {
@@ -103,13 +101,6 @@ final class GameDiceView: UIView {
         sceneView.isPlaying = true
         return sceneView
     }()
-    private let hintLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = UIColor.white.withAlphaComponent(0.7)
-        label.font = .preferredFont(forTextStyle: .subheadline)
-        label.textAlignment = .center
-        return label
-    }()
     private let configuration: Configuration
     private let motionUpdatesProvider: any MotionUpdatesProviding
     private let arena = DiceArena()
@@ -190,9 +181,6 @@ final class GameDiceView: UIView {
     func setInteractionLocked(_ isLocked: Bool) {
         isInteractionLocked = isLocked
         diceNodes.forEach { $0.setLocked(isLocked) }
-        hintLabel.text = isLocked
-            ? configuration.lockedHintText
-            : configuration.unlockedHintText
     }
 
     func showTopDownView() {
@@ -206,7 +194,6 @@ final class GameDiceView: UIView {
     // MARK: - Setup
 
     private func setup() {
-        hintLabel.text = configuration.unlockedHintText
         setupViewHierarchy()
         setupViewLayout()
         setupScene()
@@ -216,17 +203,11 @@ final class GameDiceView: UIView {
 
     private func setupViewHierarchy() {
         addSubview(sceneView)
-        addSubview(hintLabel)
     }
 
     private func setupViewLayout() {
         sceneView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-        }
-
-        hintLabel.snp.makeConstraints { make in
-            make.left.right.equalTo(safeAreaLayoutGuide).inset(16)
-            make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom)
         }
     }
 

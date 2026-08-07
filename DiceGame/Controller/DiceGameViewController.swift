@@ -17,6 +17,8 @@ final class DiceGameViewController: UIViewController {
     struct Configuration {
 
         let title: String
+        let unlockedHintText: String
+        let lockedHintText: String
         let contentView: DiceGameView.Configuration
     }
 
@@ -35,6 +37,14 @@ final class DiceGameViewController: UIViewController {
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedState: DiceGameState
+
+    private let hintLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.white.withAlphaComponent(0.7)
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textAlignment = .center
+        return label
+    }()
 
     private lazy var controlButtons = DiceGameControl.allCases.map { control in
         DiceControlButton(control: control)
@@ -75,6 +85,7 @@ final class DiceGameViewController: UIViewController {
         setupViewHierarchy()
         setupViewLayout()
         setupControlActions()
+        configureHintLabel()
         configureControlButtons()
         bindViewModel()
     }
@@ -102,6 +113,7 @@ final class DiceGameViewController: UIViewController {
 
     private func setupViewHierarchy() {
         view.addSubview(diceGameView)
+        view.addSubview(hintLabel)
         view.addSubview(controlStackView)
     }
 
@@ -110,9 +122,13 @@ final class DiceGameViewController: UIViewController {
             make.edges.equalToSuperview()
         }
 
+        hintLabel.snp.makeConstraints { make in
+            make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+
         controlStackView.snp.makeConstraints { make in
-            make.right.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.right.bottom.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
         }
 
         controlButtons.forEach { button in
@@ -161,8 +177,15 @@ final class DiceGameViewController: UIViewController {
 
         if renderedState != state {
             renderedState = state
+            configureHintLabel()
             configureControlButtons()
         }
+    }
+
+    private func configureHintLabel() {
+        hintLabel.text = renderedState.isDiceLocked
+            ? configuration.lockedHintText
+            : configuration.unlockedHintText
     }
 
     private func configureControlButtons() {
@@ -230,13 +253,13 @@ extension DiceGameViewController {
         self.init(
             configuration: Configuration(
                 title: configuration.title,
+                unlockedHintText: configuration.unlockedHintText,
+                lockedHintText: configuration.lockedHintText,
                 contentView: DiceGameView.Configuration(
                     initialState: initialState,
                     gameDiceView: GameDiceView.Configuration(
                         initialDiceCount: configuration.initialDiceCount,
-                        maximumDiceCount: configuration.maximumDiceCount,
-                        unlockedHintText: configuration.unlockedHintText,
-                        lockedHintText: configuration.lockedHintText
+                        maximumDiceCount: configuration.maximumDiceCount
                     )
                 )
             ),
