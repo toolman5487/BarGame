@@ -28,15 +28,21 @@ final class DiceGameViewController: UIViewController {
         static let edgeInset: CGFloat = 16
     }
 
-    // MARK: - Properties
+    // MARK: - Dependencies
 
     private let configuration: Configuration
-    private let diceGameView: DiceGameView
     private let viewModel: any DiceGameViewModeling
+
+    // MARK: - State
+
     private let selectedControlSubject = PassthroughSubject<DiceGameControl, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedState: DiceGameState
+
+    // MARK: - UI Elements
+
+    private let diceGameView: DiceGameView
 
     private let hintLabel: UILabel = {
         let label = UILabel()
@@ -68,8 +74,8 @@ final class DiceGameViewController: UIViewController {
         viewModel: any DiceGameViewModeling
     ) {
         self.configuration = configuration
-        diceGameView = DiceGameView(configuration: configuration.contentView)
         self.viewModel = viewModel
+        diceGameView = DiceGameView(configuration: configuration.contentView)
         renderedState = configuration.contentView.initialState
         super.init(nibName: nil, bundle: nil)
     }
@@ -181,6 +187,8 @@ final class DiceGameViewController: UIViewController {
             configureControlButtons()
         }
     }
+
+    // MARK: - UI Configuration
 
     private func configureHintLabel() {
         hintLabel.text = renderedState.isDiceLocked

@@ -19,9 +19,12 @@ final class DiceGameView: UIView {
         let gameDiceView: GameDiceView.Configuration
     }
 
-    // MARK: - Properties
+    // MARK: - UI Elements
 
     private let gameDiceView: GameDiceView
+
+    // MARK: - State
+
     private var renderedState: DiceGameState
 
     // MARK: - Lifecycle

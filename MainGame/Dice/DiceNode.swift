@@ -15,6 +15,7 @@ nonisolated final class DiceNode: SCNNode {
     private enum Metrics {
         static let minimumEdgeLength: CGFloat = 0.1
         static let chamferRatio: CGFloat = 0.08
+        static let collisionChamferRatio: CGFloat = 0.02
         static let collisionInsetRatio: CGFloat = 0.003
         static let collisionMargin: CGFloat = 0
         static let continuousCollisionThresholdRatio: CGFloat = 0.2
@@ -22,9 +23,9 @@ nonisolated final class DiceNode: SCNNode {
 
     private enum Physics {
         static let mass: CGFloat = 0.8
-        static let friction: CGFloat = 0.72
-        static let rollingFriction: CGFloat = 0.18
-        static let restitution: CGFloat = 0.18
+        static let friction: CGFloat = 0.48
+        static let rollingFriction: CGFloat = 0.08
+        static let restitution: CGFloat = 0.28
         static let angularDamping: CGFloat = 0.12
         static let damping: CGFloat = 0.06
     }
@@ -208,7 +209,7 @@ nonisolated final class DiceNode: SCNNode {
     }
 
     private var collisionChamferRadius: CGFloat {
-        chamferRadius - collisionInset
+        max(edgeLength * Metrics.collisionChamferRatio - collisionInset, 0)
     }
 
     private var continuousCollisionThreshold: CGFloat {

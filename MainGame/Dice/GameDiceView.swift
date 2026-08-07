@@ -90,7 +90,7 @@ final class GameDiceView: UIView {
         }
     }
 
-    // MARK: - Properties
+    // MARK: - UI Elements
 
     private let sceneView: SCNView = {
         let sceneView = SCNView()
@@ -101,13 +101,18 @@ final class GameDiceView: UIView {
         sceneView.isPlaying = true
         return sceneView
     }()
+
+    // MARK: - Dependencies
+
     private let configuration: Configuration
     private let motionUpdatesProvider: any MotionUpdatesProviding
     private let arena = DiceArena()
     private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
+
+    // MARK: - State
+
     private var diceNodes: [DiceNode] = []
     private var isInteractionLocked = false
-
     private var hapticEngine: CHHapticEngine?
     private var lastImpulseTime: CFTimeInterval = 0
     private var lastImpactHapticTime: CFTimeInterval = 0
