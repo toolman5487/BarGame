@@ -7,9 +7,8 @@
 
 import Combine
 import Foundation
-import Observation
 
-// MARK: - Input / Output
+// MARK: - Input
 
 struct DiceGameViewModelInput {
 
@@ -17,8 +16,11 @@ struct DiceGameViewModelInput {
     let shakeMotion: AnyPublisher<Void, Never>
 }
 
+// MARK: - Output
+
 struct DiceGameViewModelOutput {
 
+    let state: AnyPublisher<DiceGameState, Never>
     let command: AnyPublisher<DiceGameViewCommand, Never>
 }
 
@@ -35,46 +37,53 @@ enum DiceGameViewCommand {
 @MainActor
 protocol DiceGameViewModeling: AnyObject {
 
-    var state: DiceGameState { get }
-
     func transform(input: DiceGameViewModelInput) -> DiceGameViewModelOutput
 }
 
 // MARK: - ViewModel
 
-@Observable
 @MainActor
 final class DiceGameViewModel: DiceGameViewModeling {
 
     // MARK: - Properties
 
-    private(set) var state: DiceGameState
-    private let combineBinding: DiceGameCombineBinding
+    private let stateSubject: CurrentValueSubject<DiceGameState, Never>
+    private let commandSubject = PassthroughSubject<DiceGameViewCommand, Never>()
+    private var cancellables = Set<AnyCancellable>()
+
+    private var state: DiceGameState {
+        stateSubject.value
+    }
 
     // MARK: - Lifecycle
 
     init(initialState: DiceGameState) {
-        state = initialState
-        combineBinding = DiceGameCombineBinding()
+        stateSubject = CurrentValueSubject(initialState)
     }
 
     // MARK: - Public
 
     func transform(input: DiceGameViewModelInput) -> DiceGameViewModelOutput {
-        let selectedControlCancellable = input.selectedControl
+        cancellables.removeAll()
+
+        input.selectedControl
             .sink { [weak self] control in
                 self?.handleSelectedControl(control)
             }
+            .store(in: &cancellables)
 
-        let shakeMotionCancellable = input.shakeMotion
+        input.shakeMotion
             .sink { [weak self] in
                 self?.handleShakeMotion()
             }
+            .store(in: &cancellables)
 
-        combineBinding.replaceCancellables(
-            with: [selectedControlCancellable, shakeMotionCancellable]
+        return DiceGameViewModelOutput(
+            state: stateSubject
+                .removeDuplicates()
+                .eraseToAnyPublisher(),
+            command: commandSubject.eraseToAnyPublisher()
         )
-        return combineBinding.output
     }
 
     // MARK: - Actions
@@ -102,7 +111,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
                     maximumDiceCount: state.maximumDiceCount
                 )
             )
-            combineBinding.send(command: .addDice)
+            commandSubject.send(.addDice)
 
         case .action:
             updateViewMode()
@@ -111,7 +120,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
 
     private func handleShakeMotion() {
         guard !state.isDiceLocked else { return }
-        combineBinding.send(command: .shakeDice)
+        commandSubject.send(.shakeDice)
     }
 
     // MARK: - State Updates
@@ -142,29 +151,6 @@ final class DiceGameViewModel: DiceGameViewModeling {
 
     private func updateState(_ updatedState: DiceGameState) {
         guard state != updatedState else { return }
-        state = updatedState
-    }
-}
-
-// MARK: - Combine Binding
-
-@MainActor
-private final class DiceGameCombineBinding {
-
-    private let commandSubject = PassthroughSubject<DiceGameViewCommand, Never>()
-    private var cancellables = Set<AnyCancellable>()
-
-    var output: DiceGameViewModelOutput {
-        DiceGameViewModelOutput(
-            command: commandSubject.eraseToAnyPublisher()
-        )
-    }
-
-    func replaceCancellables(with cancellables: [AnyCancellable]) {
-        self.cancellables = Set(cancellables)
-    }
-
-    func send(command: DiceGameViewCommand) {
-        commandSubject.send(command)
+        stateSubject.send(updatedState)
     }
 }

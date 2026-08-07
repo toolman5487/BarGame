@@ -6,7 +6,6 @@
 //
 
 import Combine
-import Observation
 import UIKit
 
 @MainActor
@@ -81,23 +80,18 @@ final class DiceGameViewController: UIViewController {
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
-        observeState()
+
+        output.state
+            .sink { [weak contentView] state in
+                contentView?.configure(with: state)
+            }
+            .store(in: &cancellables)
 
         output.command
             .sink { [weak contentView] command in
                 contentView?.execute(command)
             }
             .store(in: &cancellables)
-    }
-
-    private func observeState() {
-        withObservationTracking {
-            contentView.configure(with: viewModel.state)
-        } onChange: { [weak self] in
-            Task { @MainActor [weak self] in
-                self?.observeState()
-            }
-        }
     }
 }
 
