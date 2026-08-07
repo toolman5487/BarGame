@@ -8,7 +8,7 @@
 import UIKit
 import SceneKit
 
-final class DiceNode: SCNNode {
+nonisolated final class DiceNode: SCNNode {
 
     // MARK: - Types
 

@@ -8,13 +8,21 @@
 import UIKit
 import SceneKit
 import CoreHaptics
-import CoreMotion
 import SnapKit
 import OSLog
 
+@MainActor
 final class GameDiceView: UIView {
 
     // MARK: - Types
+
+    nonisolated struct Configuration: Sendable {
+
+        let initialDiceCount: Int
+        let maximumDiceCount: Int
+        let unlockedHintText: String
+        let lockedHintText: String
+    }
 
     private enum MotionTuning {
         static let updateInterval: TimeInterval = 1.0 / 60.0
@@ -24,11 +32,6 @@ final class GameDiceView: UIView {
         static let verticalForceScale: Float = 2.8
         static let rotationScale: Float = 0.35
         static let forceJitterRatio: Float = 0.12
-    }
-
-    private enum DiceCount {
-        static let initial = 2
-        static let maximum = 8
     }
 
     private enum ImpactFeedback {
@@ -81,13 +84,13 @@ final class GameDiceView: UIView {
     }()
     private let hintLabel: UILabel = {
         let label = UILabel()
-        label.text = "搖晃手機讓骰子晃動"
         label.textColor = UIColor.white.withAlphaComponent(0.7)
         label.font = .preferredFont(forTextStyle: .subheadline)
         label.textAlignment = .center
         return label
     }()
-    private let motionManager = CMMotionManager()
+    private let configuration: Configuration
+    private let motionUpdatesProvider: any MotionUpdatesProviding
     private let arena = DiceArena()
     private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
     private var diceNodes: [DiceNode] = []
@@ -96,25 +99,36 @@ final class GameDiceView: UIView {
     private var hapticEngine: CHHapticEngine?
     private var lastImpulseTime: CFTimeInterval = 0
     private var lastImpactHapticTime: CFTimeInterval = 0
+    private var motionUpdatesTask: Task<Void, Never>?
+    private var applicationLifecycleTask: Task<Void, Never>?
 
     // MARK: - Lifecycle
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    convenience init(configuration: Configuration) {
+        self.init(
+            configuration: configuration,
+            motionUpdatesProvider: CoreMotionUpdatesProvider()
+        )
+    }
+
+    init(
+        configuration: Configuration,
+        motionUpdatesProvider: any MotionUpdatesProviding
+    ) {
+        self.configuration = configuration
+        self.motionUpdatesProvider = motionUpdatesProvider
+        super.init(frame: .zero)
         backgroundColor = .systemBackground
         setup()
     }
 
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        backgroundColor = .systemBackground
-        setup()
+        fatalError("init(coder:) has not been implemented")
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self)
-        motionManager.stopDeviceMotionUpdates()
-        motionManager.stopAccelerometerUpdates()
+        motionUpdatesTask?.cancel()
+        applicationLifecycleTask?.cancel()
     }
 
     override func layoutSubviews() {
@@ -135,7 +149,7 @@ final class GameDiceView: UIView {
     // MARK: - Public
 
     var canAddDice: Bool {
-        !isInteractionLocked && diceNodes.count < DiceCount.maximum
+        !isInteractionLocked && diceNodes.count < configuration.maximumDiceCount
     }
 
     func shake(intensity: Double = 1.2) {
@@ -155,7 +169,9 @@ final class GameDiceView: UIView {
     func setInteractionLocked(_ isLocked: Bool) {
         isInteractionLocked = isLocked
         diceNodes.forEach { $0.setLocked(isLocked) }
-        hintLabel.text = isLocked ? "骰子已鎖定" : "搖晃手機讓骰子晃動"
+        hintLabel.text = isLocked
+            ? configuration.lockedHintText
+            : configuration.unlockedHintText
     }
 
     func showTopDownView() {
@@ -169,6 +185,7 @@ final class GameDiceView: UIView {
     // MARK: - Setup
 
     private func setup() {
+        hintLabel.text = configuration.unlockedHintText
         setupViewHierarchy()
         setupViewLayout()
         setupScene()
@@ -194,7 +211,7 @@ final class GameDiceView: UIView {
 
     private func setupScene() {
         arena.scene.physicsWorld.contactDelegate = self
-        for _ in 0..<DiceCount.initial {
+        for _ in 0..<configuration.initialDiceCount {
             makeDiceNode()
         }
         sceneView.scene = arena.scene
@@ -220,54 +237,44 @@ final class GameDiceView: UIView {
     // MARK: - Motion
 
     private func startMotionUpdates() {
-        if motionManager.isDeviceMotionAvailable {
-            guard !motionManager.isDeviceMotionActive else { return }
+        guard motionUpdatesTask == nil else { return }
 
-            motionManager.deviceMotionUpdateInterval = MotionTuning.updateInterval
-            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main) { [weak self] motion, _ in
-                guard let self, let motion else { return }
-                self.handleDeviceMotion(motion)
-            }
-            return
-        }
-
-        guard motionManager.isAccelerometerAvailable else { return }
-        guard !motionManager.isAccelerometerActive else { return }
-
-        motionManager.accelerometerUpdateInterval = MotionTuning.updateInterval
-        motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
-            guard let self, let data else { return }
-
-            let acceleration = data.acceleration
-            let magnitude = sqrt(
-                acceleration.x * acceleration.x +
-                acceleration.y * acceleration.y +
-                acceleration.z * acceleration.z
+        motionUpdatesTask = Task { [weak self, motionUpdatesProvider] in
+            let updates = await motionUpdatesProvider.makeUpdates(
+                interval: MotionTuning.updateInterval
             )
-            let shakeIntensity = abs(magnitude - 1.0)
-            guard shakeIntensity > 0.35 else { return }
-
-            let now = CACurrentMediaTime()
-            guard now - self.lastImpulseTime > MotionTuning.impulseCooldown else { return }
-            self.lastImpulseTime = now
-            self.shake(intensity: shakeIntensity)
+            for await update in updates {
+                guard let self else { return }
+                handleMotionUpdate(update)
+            }
         }
     }
 
     private func stopMotionUpdates() {
-        motionManager.stopDeviceMotionUpdates()
-        motionManager.stopAccelerometerUpdates()
+        motionUpdatesTask?.cancel()
+        motionUpdatesTask = nil
     }
 
-    private func handleDeviceMotion(_ motion: CMDeviceMotion) {
+    private func handleMotionUpdate(_ update: MotionUpdate) {
+        switch update {
+        case .deviceMotion(let sample):
+            handleDeviceMotion(sample)
+        case .accelerometer(let acceleration):
+            handleAccelerometerUpdate(acceleration)
+        case .failed(let error):
+            AppLogger.ui.error("\(error.logDescription, privacy: .public)")
+        }
+    }
+
+    private func handleDeviceMotion(_ sample: DeviceMotionSample) {
         guard !isInteractionLocked else { return }
 
         arena.updateGravity(
-            deviceTiltX: motion.gravity.x,
-            deviceTiltY: motion.gravity.y
+            deviceTiltX: sample.gravity.x,
+            deviceTiltY: sample.gravity.y
         )
 
-        let acceleration = motion.userAcceleration
+        let acceleration = sample.userAcceleration
         let magnitude = sqrt(
             acceleration.x * acceleration.x +
             acceleration.y * acceleration.y +
@@ -285,7 +292,7 @@ final class GameDiceView: UIView {
             -Float(acceleration.y) * MotionTuning.horizontalForceScale
         )
         let torque = makeTorque(
-            rotationRate: motion.rotationRate,
+            rotationRate: sample.rotationRate,
             fallbackIntensity: Float(magnitude)
         )
 
@@ -300,8 +307,23 @@ final class GameDiceView: UIView {
         }
     }
 
+    private func handleAccelerometerUpdate(_ acceleration: MotionVector) {
+        let magnitude = sqrt(
+            acceleration.x * acceleration.x +
+            acceleration.y * acceleration.y +
+            acceleration.z * acceleration.z
+        )
+        let shakeIntensity = abs(magnitude - 1.0)
+        guard shakeIntensity > 0.35 else { return }
+
+        let now = CACurrentMediaTime()
+        guard now - lastImpulseTime > MotionTuning.impulseCooldown else { return }
+        lastImpulseTime = now
+        shake(intensity: shakeIntensity)
+    }
+
     private func makeTorque(
-        rotationRate: CMRotationRate,
+        rotationRate: MotionVector,
         fallbackIntensity: Float
     ) -> SCNVector4 {
         let x = Float(rotationRate.x)
@@ -337,17 +359,15 @@ final class GameDiceView: UIView {
     }
 
     private func observeApplicationLifecycle() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(prepareHapticsAfterBecomingActive),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
-    }
-
-    @objc
-    private func prepareHapticsAfterBecomingActive() {
-        setupHaptics()
+        applicationLifecycleTask = Task { [weak self] in
+            let notifications = NotificationCenter.default.notifications(
+                named: UIApplication.didBecomeActiveNotification
+            )
+            for await _ in notifications {
+                guard let self else { return }
+                setupHaptics()
+            }
+        }
     }
 
     private func prepareHapticEngineIfNeeded() throws {
@@ -383,12 +403,12 @@ final class GameDiceView: UIView {
         }
 
         engine.resetHandler = { [weak self] in
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.handleHapticEngineReset()
             }
         }
         engine.stoppedHandler = { [weak self] reason in
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.handleHapticEngineStopped(reason: reason)
             }
         }
