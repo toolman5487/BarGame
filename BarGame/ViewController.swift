@@ -107,8 +107,7 @@ final class ViewController: UIViewController {
         }
 
         controlCollectionView.snp.makeConstraints { make in
-            make.trailing.equalTo(view.safeAreaLayoutGuide).inset(ControlLayout.edgeInset)
-            make.centerY.equalToSuperview()
+            make.right.bottom.equalTo(view.safeAreaLayoutGuide).inset(ControlLayout.edgeInset)
             make.width.equalTo(ControlLayout.itemSize)
             make.height.equalTo(ControlLayout.collectionHeight)
         }
@@ -255,7 +254,11 @@ private final class DiceControlCollectionViewCell: UICollectionViewCell {
 
     static let reuseIdentifier = String(describing: DiceControlCollectionViewCell.self)
 
-    private let button = UIButton(type: .system)
+    private let button: UIButton = {
+        let button = UIButton(type: .system)
+        button.isUserInteractionEnabled = false
+        return button
+    }()
 
     override var isHighlighted: Bool {
         didSet {
@@ -294,7 +297,6 @@ private final class DiceControlCollectionViewCell: UICollectionViewCell {
     }
 
     private func setupButton() {
-        button.isUserInteractionEnabled = false
         contentView.addSubview(button)
         button.snp.makeConstraints { make in
             make.edges.equalToSuperview()

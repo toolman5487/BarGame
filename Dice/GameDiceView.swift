@@ -75,6 +75,7 @@ final class GameDiceView: UIView {
         sceneView.backgroundColor = .black
         sceneView.antialiasingMode = .multisampling4X
         sceneView.allowsCameraControl = false
+        sceneView.autoenablesDefaultLighting = false
         sceneView.isPlaying = true
         return sceneView
     }()
@@ -100,11 +101,13 @@ final class GameDiceView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        backgroundColor = .systemBackground
         setup()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        backgroundColor = .systemBackground
         setup()
     }
 
@@ -166,7 +169,6 @@ final class GameDiceView: UIView {
     // MARK: - Setup
 
     private func setup() {
-        backgroundColor = .systemBackground
         setupViewHierarchy()
         setupViewLayout()
         setupScene()
@@ -185,8 +187,8 @@ final class GameDiceView: UIView {
         }
 
         hintLabel.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(safeAreaLayoutGuide).inset(16)
-            make.bottom.equalTo(safeAreaLayoutGuide.snp.top)
+            make.left.right.equalTo(safeAreaLayoutGuide).inset(16)
+            make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom)
         }
     }
 
@@ -197,7 +199,6 @@ final class GameDiceView: UIView {
         }
         sceneView.scene = arena.scene
         sceneView.pointOfView = arena.cameraNode
-        sceneView.autoenablesDefaultLighting = false
     }
 
     @discardableResult
