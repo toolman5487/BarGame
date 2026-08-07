@@ -20,7 +20,7 @@
 		1596A271302599020018E77C /* DiceGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A270302599020018E77C /* DiceGameState.swift */; };
 		1596A273302599020018E77C /* DiceGameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A272302599020018E77C /* DiceGameViewModel.swift */; };
 		1596A2753025A4370018E77C /* DiceGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2743025A4370018E77C /* DiceGameView.swift */; };
-		1596A2773025A4370018E77C /* DiceControlCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2763025A4370018E77C /* DiceControlCollectionViewCell.swift */; };
+		1596A2773025A4370018E77C /* DiceControlButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2763025A4370018E77C /* DiceControlButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,7 +35,7 @@
 		1596A270302599020018E77C /* DiceGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameState.swift; sourceTree = "<group>"; };
 		1596A272302599020018E77C /* DiceGameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameViewModel.swift; sourceTree = "<group>"; };
 		1596A2743025A4370018E77C /* DiceGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameView.swift; sourceTree = "<group>"; };
-		1596A2763025A4370018E77C /* DiceControlCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceControlCollectionViewCell.swift; sourceTree = "<group>"; };
+		1596A2763025A4370018E77C /* DiceControlButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceControlButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -159,7 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				1596A2743025A4370018E77C /* DiceGameView.swift */,
-				1596A2763025A4370018E77C /* DiceControlCollectionViewCell.swift */,
+				1596A2763025A4370018E77C /* DiceControlButton.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -250,7 +250,7 @@
 				1596A271302599020018E77C /* DiceGameState.swift in Sources */,
 				1596A273302599020018E77C /* DiceGameViewModel.swift in Sources */,
 				1596A2753025A4370018E77C /* DiceGameView.swift in Sources */,
-				1596A2773025A4370018E77C /* DiceControlCollectionViewCell.swift in Sources */,
+				1596A2773025A4370018E77C /* DiceControlButton.swift in Sources */,
 				1562854F301F425400702D1E /* AppLogger.swift in Sources */,
 				15628551301F45A000702D1E /* DicePhysicsCategory.swift in Sources */,
 				15628553301F45A100702D1E /* DiceNode.swift in Sources */,

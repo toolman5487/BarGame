@@ -5,7 +5,6 @@
 //  Created by Willy Hsu on 2026/8/7.
 //
 
-import Combine
 import SnapKit
 import UIKit
 
@@ -20,48 +19,10 @@ final class DiceGameView: UIView {
         let gameDiceView: GameDiceView.Configuration
     }
 
-    private enum Layout {
-        static let controlItemSize: CGFloat = 56
-        static let controlItemSpacing: CGFloat = 12
-        static let edgeInset: CGFloat = 16
-        static let controlCollectionHeight = controlItemSize * 3 + controlItemSpacing * 2
-    }
-
     // MARK: - Properties
 
     private let gameDiceView: GameDiceView
-    private lazy var controlCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .vertical
-        layout.itemSize = CGSize(
-            width: Layout.controlItemSize,
-            height: Layout.controlItemSize
-        )
-        layout.minimumLineSpacing = Layout.controlItemSpacing
-
-        let collectionView = UICollectionView(
-            frame: .zero,
-            collectionViewLayout: layout
-        )
-        collectionView.backgroundColor = .clear
-        collectionView.contentInsetAdjustmentBehavior = .never
-        collectionView.isScrollEnabled = false
-        collectionView.showsVerticalScrollIndicator = false
-        collectionView.register(
-            DiceControlCollectionViewCell.self,
-            forCellWithReuseIdentifier: DiceControlCollectionViewCell.reuseIdentifier
-        )
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        return collectionView
-    }()
-
-    private let selectedControlSubject = PassthroughSubject<DiceGameControl, Never>()
     private var renderedState: DiceGameState
-
-    var selectedControlPublisher: AnyPublisher<DiceGameControl, Never> {
-        selectedControlSubject.eraseToAnyPublisher()
-    }
 
     // MARK: - Lifecycle
 
@@ -72,6 +33,7 @@ final class DiceGameView: UIView {
         backgroundColor = .systemBackground
         setupViewHierarchy()
         setupViewLayout()
+        applyRenderedState()
     }
 
     required init?(coder: NSCoder) {
@@ -96,10 +58,6 @@ final class DiceGameView: UIView {
                 gameDiceView.showTopDownView()
             }
         }
-
-        if previousState != state {
-            controlCollectionView.reloadData()
-        }
     }
 
     func execute(_ command: DiceGameViewCommand) {
@@ -115,107 +73,22 @@ final class DiceGameView: UIView {
 
     private func setupViewHierarchy() {
         addSubview(gameDiceView)
-        addSubview(controlCollectionView)
     }
 
     private func setupViewLayout() {
         gameDiceView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-
-        controlCollectionView.snp.makeConstraints { make in
-            make.right.bottom.equalTo(safeAreaLayoutGuide).inset(Layout.edgeInset)
-            make.width.equalTo(Layout.controlItemSize)
-            make.height.equalTo(Layout.controlCollectionHeight)
-        }
-    }
-}
-
-// MARK: - UICollectionViewDataSource
-
-extension DiceGameView: UICollectionViewDataSource {
-
-    func collectionView(
-        _ collectionView: UICollectionView,
-        numberOfItemsInSection section: Int
-    ) -> Int {
-        DiceGameControl.allCases.count
     }
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
-        guard let control = DiceGameControl(rawValue: indexPath.item),
-              let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: DiceControlCollectionViewCell.reuseIdentifier,
-                for: indexPath
-              ) as? DiceControlCollectionViewCell else {
-            return UICollectionViewCell()
-        }
+    private func applyRenderedState() {
+        gameDiceView.setInteractionLocked(renderedState.isDiceLocked)
 
-        configure(cell, for: control)
-        return cell
-    }
-
-    // MARK: - Cell Configuration
-
-    private func configure(
-        _ cell: DiceControlCollectionViewCell,
-        for control: DiceGameControl
-    ) {
-        switch control {
-        case .lock:
-            cell.configure(
-                with: DiceControlCollectionViewCell.Configuration(
-                    image: UIImage(
-                        systemName: renderedState.isDiceLocked ? "lock.fill" : "lock.open"
-                    ),
-                    foregroundColor: renderedState.isDiceLocked ? .systemOrange : .label,
-                    isEnabled: renderedState.isEnabled(.lock)
-                )
-            )
-
-        case .add:
-            cell.configure(
-                with: DiceControlCollectionViewCell.Configuration(
-                    image: UIImage(systemName: "plus"),
-                    foregroundColor: .label,
-                    isEnabled: renderedState.isEnabled(.add)
-                )
-            )
-
-        case .action:
-            cell.configure(
-                with: DiceControlCollectionViewCell.Configuration(
-                    image: UIImage(systemName: actionImageName),
-                    foregroundColor: .label,
-                    isEnabled: renderedState.isEnabled(.action)
-                )
-            )
-        }
-    }
-
-    private var actionImageName: String {
         switch renderedState.viewMode {
         case .perspective:
-            return "checkmark"
+            gameDiceView.showPerspectiveView()
         case .topDown:
-            return "arrow.backward"
+            gameDiceView.showTopDownView()
         }
-    }
-}
-
-// MARK: - UICollectionViewDelegate
-
-extension DiceGameView: UICollectionViewDelegate {
-
-    func collectionView(
-        _ collectionView: UICollectionView,
-        didSelectItemAt indexPath: IndexPath
-    ) {
-        collectionView.deselectItem(at: indexPath, animated: true)
-        guard let control = DiceGameControl(rawValue: indexPath.item) else { return }
-        selectedControlSubject.send(control)
     }
 }

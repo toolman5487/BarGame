@@ -6,6 +6,7 @@
 //
 
 import Combine
+import SnapKit
 import UIKit
 
 @MainActor
@@ -19,13 +20,36 @@ final class DiceGameViewController: UIViewController {
         let contentView: DiceGameView.Configuration
     }
 
+    private enum Layout {
+        static let controlButtonSize: CGFloat = 56
+        static let controlButtonSpacing: CGFloat = 16
+        static let edgeInset: CGFloat = 16
+    }
+
     // MARK: - Properties
 
     private let configuration: Configuration
-    private let contentView: DiceGameView
+    private let diceGameView: DiceGameView
     private let viewModel: any DiceGameViewModeling
+    private let selectedControlSubject = PassthroughSubject<DiceGameControl, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
+    private var renderedState: DiceGameState
+
+    private lazy var controlButtons = DiceGameControl.allCases.map { control in
+        DiceControlButton(control: control)
+    }
+
+    private lazy var controlStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: controlButtons)
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.distribution = .fillProportionally
+        stackView.spacing = Layout.controlButtonSpacing
+        stackView.isOpaque = false
+        stackView.clipsToBounds = false
+        return stackView
+    }()
 
     // MARK: - Lifecycle
 
@@ -34,8 +58,9 @@ final class DiceGameViewController: UIViewController {
         viewModel: any DiceGameViewModeling
     ) {
         self.configuration = configuration
-        contentView = DiceGameView(configuration: configuration.contentView)
+        diceGameView = DiceGameView(configuration: configuration.contentView)
         self.viewModel = viewModel
+        renderedState = configuration.contentView.initialState
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -43,13 +68,14 @@ final class DiceGameViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func loadView() {
-        view = contentView
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         title = configuration.title
+        view.backgroundColor = .systemBackground
+        setupViewHierarchy()
+        setupViewLayout()
+        setupControlActions()
+        configureControlButtons()
         bindViewModel()
     }
 
@@ -72,26 +98,124 @@ final class DiceGameViewController: UIViewController {
         shakeMotionSubject.send()
     }
 
+    // MARK: - Setup
+
+    private func setupViewHierarchy() {
+        view.addSubview(diceGameView)
+        view.addSubview(controlStackView)
+    }
+
+    private func setupViewLayout() {
+        diceGameView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        controlStackView.snp.makeConstraints { make in
+            make.right.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+        }
+
+        controlButtons.forEach { button in
+            button.snp.makeConstraints { make in
+                make.size.equalTo(Layout.controlButtonSize)
+            }
+        }
+    }
+
+    private func setupControlActions() {
+        controlButtons.forEach { button in
+            button.addTarget(
+                self,
+                action: #selector(didSelectControl(_:)),
+                for: .touchUpInside
+            )
+        }
+    }
+
     // MARK: - Binding
 
     private func bindViewModel() {
         let input = DiceGameViewModelInput(
-            selectedControl: contentView.selectedControlPublisher,
+            selectedControl: selectedControlSubject.eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
 
         output.state
-            .sink { [weak contentView] state in
-                contentView?.configure(with: state)
+            .sink { [weak self] state in
+                self?.apply(state)
             }
             .store(in: &cancellables)
 
         output.command
-            .sink { [weak contentView] command in
-                contentView?.execute(command)
+            .sink { [weak diceGameView] command in
+                diceGameView?.execute(command)
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - State Updates
+
+    private func apply(_ state: DiceGameState) {
+        diceGameView.configure(with: state)
+
+        if renderedState != state {
+            renderedState = state
+            configureControlButtons()
+        }
+    }
+
+    private func configureControlButtons() {
+        controlButtons.forEach { button in
+            configure(button, for: button.control)
+        }
+    }
+
+    private func configure(_ button: DiceControlButton, for control: DiceGameControl) {
+        let configuration: DiceControlButton.Configuration
+
+        switch control {
+        case .lock:
+            configuration = DiceControlButton.Configuration(
+                image: UIImage(
+                    systemName: renderedState.isDiceLocked ? "lock.fill" : "lock.open"
+                ),
+                foregroundColor: renderedState.isDiceLocked ? .systemOrange : .label,
+                isEnabled: renderedState.isEnabled(.lock)
+            )
+
+        case .add:
+            configuration = DiceControlButton.Configuration(
+                image: UIImage(systemName: "plus"),
+                foregroundColor: .label,
+                isEnabled: renderedState.isEnabled(.add)
+            )
+
+        case .action:
+            configuration = DiceControlButton.Configuration(
+                image: UIImage(systemName: actionImageName),
+                foregroundColor: .label,
+                isEnabled: renderedState.isEnabled(.action)
+            )
+        }
+
+        button.configure(with: configuration)
+    }
+
+    private var actionImageName: String {
+        switch renderedState.viewMode {
+        case .perspective:
+            return "checkmark"
+        case .topDown:
+            return "arrow.backward"
+        }
+    }
+
+    // MARK: - Actions
+
+    @objc
+    private func didSelectControl(_ button: DiceControlButton) {
+        selectedControlSubject.send(button.control)
     }
 }
 

@@ -42,6 +42,27 @@ final class GameDiceView: UIView {
         static let cooldown: CFTimeInterval = 0.06
     }
 
+    private enum DiceSizing {
+        static let largestEdgeLength: CGFloat = 0.72
+        static let smallestEdgeLength: CGFloat = 0.44
+
+        static func edgeLength(for diceCount: Int, maximumDiceCount: Int) -> CGFloat {
+            let upperBound = max(maximumDiceCount, 1)
+            let boundedCount = min(max(diceCount, 1), upperBound)
+            guard upperBound > 1 else { return largestEdgeLength }
+
+            let progress = CGFloat(boundedCount - 1) / CGFloat(upperBound - 1)
+            return largestEdgeLength - (largestEdgeLength - smallestEdgeLength) * progress
+        }
+    }
+
+    private enum DiceSpawnLayout {
+        static let ringRadius: Float = 0.82
+        static let positionsPerRing = 7
+        static let baseHeight: Float = 1.4
+        static let layerHeight: Float = 0.7
+    }
+
     private enum HapticError: Error {
         case unsupportedHardware
         case engineUnavailable
@@ -220,7 +241,14 @@ final class GameDiceView: UIView {
 
     @discardableResult
     private func makeDiceNode() -> DiceNode {
-        let diceNode = DiceNode()
+        let updatedDiceCount = diceNodes.count + 1
+        let edgeLength = DiceSizing.edgeLength(
+            for: updatedDiceCount,
+            maximumDiceCount: configuration.maximumDiceCount
+        )
+        diceNodes.forEach { $0.resize(to: edgeLength) }
+
+        let diceNode = DiceNode(edgeLength: edgeLength)
         let position = spawnPosition(for: diceNodes.count)
         diceNodes.append(diceNode)
         arena.attach(dice: diceNode, at: position)
@@ -228,10 +256,19 @@ final class GameDiceView: UIView {
     }
 
     private func spawnPosition(for index: Int) -> SCNVector3 {
-        let horizontalPositions: [Float] = [-0.4, 0.4, -0.8, 0.8, 0]
-        let horizontalPosition = horizontalPositions[index % horizontalPositions.count]
-        let verticalLayer = Float((index / horizontalPositions.count) % 2)
-        return SCNVector3(horizontalPosition, 1.4 + verticalLayer * 0.8, 0)
+        guard index > 0 else {
+            return SCNVector3(0, DiceSpawnLayout.baseHeight, 0)
+        }
+
+        let adjustedIndex = index - 1
+        let ringIndex = adjustedIndex % DiceSpawnLayout.positionsPerRing
+        let verticalLayer = adjustedIndex / DiceSpawnLayout.positionsPerRing
+        let angle = Float(ringIndex) * 2 * .pi / Float(DiceSpawnLayout.positionsPerRing)
+        return SCNVector3(
+            cos(angle) * DiceSpawnLayout.ringRadius,
+            DiceSpawnLayout.baseHeight + Float(verticalLayer) * DiceSpawnLayout.layerHeight,
+            sin(angle) * DiceSpawnLayout.ringRadius
+        )
     }
 
     // MARK: - Motion

@@ -12,21 +12,27 @@ final class DiceArena {
 
     // MARK: - Types
 
-    private enum CameraTransition {
-        static let perspectiveHeight: Float = 1.2
-        static let perspectiveDistance: Float = 5.5
+    private enum Camera {
+        static let perspectiveHeight: Float = 3.4
+        static let perspectiveDistance: Float = 5.4
+        static let focusHeight: Float = 0.35
+        static let fieldOfView: CGFloat = 42
         static let topDownHeight: Float = 7
-        static let duration: TimeInterval = 0.8
+        static let transitionDuration: TimeInterval = 0.8
+
+        static var focusPoint: SCNVector3 {
+            SCNVector3(0, focusHeight, 0)
+        }
     }
 
     private enum Physics {
         static let gravity: Float = 9.8
         static let lateralGravityScale: Float = 3
         static let simulationTimeStep: TimeInterval = 1.0 / 120.0
-        static let floorRestitution: CGFloat = 0.28
-        static let floorFriction: CGFloat = 0.68
-        static let wallRestitution: CGFloat = 0.48
-        static let wallFriction: CGFloat = 0.35
+        static let floorRestitution: CGFloat = 0.16
+        static let floorFriction: CGFloat = 0.78
+        static let wallRestitution: CGFloat = 0.26
+        static let wallFriction: CGFloat = 0.52
     }
 
     private enum Appearance {
@@ -113,9 +119,9 @@ final class DiceArena {
 
     func showTopDownView() {
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = CameraTransition.duration
+        SCNTransaction.animationDuration = Camera.transitionDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        cameraNode.position = SCNVector3(0, CameraTransition.topDownHeight, 0)
+        cameraNode.position = SCNVector3(0, Camera.topDownHeight, 0)
         cameraNode.eulerAngles = SCNVector3(-Float.pi / 2, 0, 0)
         SCNTransaction.commit()
         updateViewportBoundaries(for: viewportSize)
@@ -123,14 +129,14 @@ final class DiceArena {
 
     func showPerspectiveView() {
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = CameraTransition.duration
+        SCNTransaction.animationDuration = Camera.transitionDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         cameraNode.position = SCNVector3(
             0,
-            CameraTransition.perspectiveHeight,
-            CameraTransition.perspectiveDistance
+            Camera.perspectiveHeight,
+            Camera.perspectiveDistance
         )
-        cameraNode.look(at: SCNVector3(0, 0, 0))
+        cameraNode.look(at: Camera.focusPoint)
         SCNTransaction.commit()
         updateViewportBoundaries(for: viewportSize)
     }
@@ -151,7 +157,7 @@ final class DiceArena {
         viewportSize = viewBounds
         let aspect = Float(viewBounds.width / viewBounds.height)
         let fovRadians = Float(camera.fieldOfView) * .pi / 180
-        let playPoint = SCNVector3(0, 0.5, 0)
+        let playPoint = Camera.focusPoint
         let cameraPosition = cameraNode.position
         let deltaX = playPoint.x - cameraPosition.x
         let deltaY = playPoint.y - cameraPosition.y
@@ -206,17 +212,17 @@ final class DiceArena {
         scene.physicsWorld.timeStep = Physics.simulationTimeStep
 
         cameraNode.camera = SCNCamera()
-        cameraNode.camera?.fieldOfView = 45
+        cameraNode.camera?.fieldOfView = Camera.fieldOfView
         cameraNode.camera?.wantsHDR = true
         cameraNode.camera?.wantsExposureAdaptation = true
         cameraNode.camera?.exposureOffset = -0.15
         cameraNode.camera?.motionBlurIntensity = 0.08
         cameraNode.position = SCNVector3(
             0,
-            CameraTransition.perspectiveHeight,
-            CameraTransition.perspectiveDistance
+            Camera.perspectiveHeight,
+            Camera.perspectiveDistance
         )
-        cameraNode.look(at: SCNVector3(0, 0, 0))
+        cameraNode.look(at: Camera.focusPoint)
         scene.rootNode.addChildNode(cameraNode)
 
         configureLightingEnvironment()
