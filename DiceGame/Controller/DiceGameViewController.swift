@@ -10,7 +10,7 @@ import SnapKit
 import UIKit
 
 @MainActor
-final class DiceGameViewController: UIViewController {
+final class DiceGameViewController: StandardBaseViewController {
 
     // MARK: - Types
 
@@ -22,7 +22,7 @@ final class DiceGameViewController: UIViewController {
         let contentView: DiceGameView.Configuration
     }
 
-    private enum Layout {
+    private enum Metrics {
         static let controlButtonSize: CGFloat = 56
         static let controlButtonSpacing: CGFloat = 16
         static let controlStackCenterYOffset: CGFloat = 80
@@ -47,7 +47,7 @@ final class DiceGameViewController: UIViewController {
 
     private let hintLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.white.withAlphaComponent(0.7)
+        label.textColor = .label
         label.font = .preferredFont(forTextStyle: .subheadline)
         label.textAlignment = .center
         return label
@@ -62,7 +62,7 @@ final class DiceGameViewController: UIViewController {
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.distribution = .fillProportionally
-        stackView.spacing = Layout.controlButtonSpacing
+        stackView.spacing = Metrics.controlButtonSpacing
         stackView.isOpaque = false
         stackView.clipsToBounds = false
         return stackView
@@ -78,23 +78,7 @@ final class DiceGameViewController: UIViewController {
         self.viewModel = viewModel
         diceGameView = DiceGameView(configuration: configuration.contentView)
         renderedState = configuration.contentView.initialState
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        title = configuration.title
-        view.backgroundColor = .systemBackground
-        setupViewHierarchy()
-        setupViewLayout()
-        setupControlActions()
-        configureHintLabel()
-        configureControlButtons()
-        bindViewModel()
+        super.init()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -116,53 +100,51 @@ final class DiceGameViewController: UIViewController {
         shakeMotionSubject.send()
     }
 
-    // MARK: - Setup
+    // MARK: - Overridable
 
-    private func setupViewHierarchy() {
+    override func setHierarchy() {
         view.addSubview(diceGameView)
         view.addSubview(hintLabel)
         view.addSubview(controlStackView)
+        setupControlActions()
     }
 
-    private func setupViewLayout() {
+    override func setLayout() {
         diceGameView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
         hintLabel.snp.makeConstraints { make in
-            make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
-            make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
         }
 
         controlStackView.snp.makeConstraints { make in
-            make.right.equalTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
             make.centerY
                 .equalTo(view.safeAreaLayoutGuide)
-                .offset(Layout.controlStackCenterYOffset)
+                .offset(Metrics.controlStackCenterYOffset)
                 .priority(.high)
-            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).inset(Layout.edgeInset)
+            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
         }
 
         controlButtons.forEach { button in
             button.snp.makeConstraints { make in
-                make.size.equalTo(Layout.controlButtonSize)
+                make.size.equalTo(Metrics.controlButtonSize)
             }
         }
     }
 
-    private func setupControlActions() {
-        controlButtons.forEach { button in
-            button.addTarget(
-                self,
-                action: #selector(didSelectControl(_:)),
-                for: .touchUpInside
-            )
-        }
+    override func setAppearance() {
+        configureHintLabel()
+        configureControlButtons()
     }
 
-    // MARK: - Binding
+    override func setNavigation() {
+        title = configuration.title
+    }
 
-    private func bindViewModel() {
+    override func bind() {
         let input = DiceGameViewModelInput(
             selectedControl: selectedControlSubject.eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
@@ -180,6 +162,18 @@ final class DiceGameViewController: UIViewController {
                 diceGameView?.execute(command)
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - Setup
+
+    private func setupControlActions() {
+        controlButtons.forEach { button in
+            button.addTarget(
+                self,
+                action: #selector(didSelectControl(_:)),
+                for: .touchUpInside
+            )
+        }
     }
 
     // MARK: - State Updates

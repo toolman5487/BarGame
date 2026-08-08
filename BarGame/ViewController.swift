@@ -6,16 +6,13 @@
 //
 
 import UIKit
-import SnapKit
 
 @MainActor
-final class ViewController: UIViewController {
+final class ViewController: MainBaseViewController {
 
-    // MARK: - Lifecycle
+    // MARK: - Overridable
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func setNavigation() {
         title = "頁面"
-        view.backgroundColor = .systemBackground
     }
 }
