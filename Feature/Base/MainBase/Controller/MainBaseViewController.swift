@@ -61,17 +61,11 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
 
     // MARK: - UI Elements
 
-    private(set) lazy var collectionView: UICollectionView = {
-        let collectionView = UICollectionView(
-            frame: .zero,
-            collectionViewLayout: makeCollectionViewLayout()
-        )
-        collectionView.backgroundColor = .clear
-        collectionView.alwaysBounceVertical = true
-        collectionView.contentInsetAdjustmentBehavior = .automatic
-        collectionView.delegate = self
-        return collectionView
-    }()
+    private(set) lazy var contentView = MainBaseView()
+
+    var collectionView: UICollectionView {
+        contentView.collectionView
+    }
 
     // MARK: - Lifecycle
 
@@ -88,11 +82,12 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
     // MARK: - Overridable
 
     override func setHierarchy() {
-        view.addSubview(collectionView)
+        view.addSubview(contentView)
+        collectionView.delegate = self
     }
 
     override func setLayout() {
-        collectionView.snp.makeConstraints { make in
+        contentView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
@@ -100,15 +95,6 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
     override func setNavigation() {
         navigationItem.largeTitleDisplayMode = .always
         title = titleText
-    }
-
-    func makeCollectionViewLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .vertical
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
-        layout.sectionInset = collectionViewSectionInset
-        return layout
     }
 }
 
