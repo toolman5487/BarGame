@@ -13,16 +13,13 @@ final class DiceArena {
     // MARK: - Types
 
     private enum Camera {
-        static let perspectiveHeight: Float = 3.4
+        static let elevatedHeight: Float = 3.4
+        static let elevatedFocusHeight: Float = 0.35
+        static let horizontalHeight: Float = 0.5
         static let perspectiveDistance: Float = 5.4
-        static let focusHeight: Float = 0.35
         static let fieldOfView: CGFloat = 42
         static let topDownHeight: Float = 7
         static let transitionDuration: TimeInterval = 0.8
-
-        static var focusPoint: SCNVector3 {
-            SCNVector3(0, focusHeight, 0)
-        }
     }
 
     private enum Physics {
@@ -68,6 +65,7 @@ final class DiceArena {
     let cameraNode = SCNNode()
 
     private let sceneAppearance: DiceSceneAppearance
+    private let cameraViewpoint: DiceCameraViewpoint
     private let leftWallNode: SCNNode
     private let rightWallNode: SCNNode
     private let frontWallNode: SCNNode
@@ -77,8 +75,12 @@ final class DiceArena {
 
     // MARK: - Lifecycle
 
-    init(sceneAppearance: DiceSceneAppearance) {
+    init(
+        sceneAppearance: DiceSceneAppearance,
+        cameraViewpoint: DiceCameraViewpoint
+    ) {
         self.sceneAppearance = sceneAppearance
+        self.cameraViewpoint = cameraViewpoint
         leftWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallThickness,
             height: TransparentCup.wallHeight,
@@ -133,12 +135,8 @@ final class DiceArena {
         SCNTransaction.begin()
         SCNTransaction.animationDuration = Camera.transitionDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        cameraNode.position = SCNVector3(
-            0,
-            Camera.perspectiveHeight,
-            Camera.perspectiveDistance
-        )
-        cameraNode.look(at: Camera.focusPoint)
+        cameraNode.position = perspectiveCameraPosition
+        cameraNode.look(at: focusPoint)
         SCNTransaction.commit()
         updateViewportBoundaries(for: viewportSize)
     }
@@ -159,7 +157,7 @@ final class DiceArena {
         viewportSize = viewBounds
         let aspect = Float(viewBounds.width / viewBounds.height)
         let fovRadians = Float(camera.fieldOfView) * .pi / 180
-        let playPoint = Camera.focusPoint
+        let playPoint = focusPoint
         let cameraPosition = cameraNode.position
         let deltaX = playPoint.x - cameraPosition.x
         let deltaY = playPoint.y - cameraPosition.y
@@ -219,12 +217,8 @@ final class DiceArena {
         cameraNode.camera?.wantsExposureAdaptation = true
         cameraNode.camera?.exposureOffset = -0.15
         cameraNode.camera?.motionBlurIntensity = 0.08
-        cameraNode.position = SCNVector3(
-            0,
-            Camera.perspectiveHeight,
-            Camera.perspectiveDistance
-        )
-        cameraNode.look(at: Camera.focusPoint)
+        cameraNode.position = perspectiveCameraPosition
+        cameraNode.look(at: focusPoint)
         scene.rootNode.addChildNode(cameraNode)
 
         configureLightingEnvironment()
@@ -456,6 +450,38 @@ final class DiceArena {
             material.writesToDepthBuffer = false
             material.readsFromDepthBuffer = false
             return material
+        }
+    }
+
+    private var perspectiveCameraPosition: SCNVector3 {
+        SCNVector3(
+            0,
+            cameraHeight,
+            Camera.perspectiveDistance
+        )
+    }
+
+    private var focusPoint: SCNVector3 {
+        SCNVector3(0, cameraFocusHeight, 0)
+    }
+
+    private var cameraHeight: Float {
+        switch cameraViewpoint {
+        case .elevated:
+            return Camera.elevatedHeight
+
+        case .horizontal:
+            return Camera.horizontalHeight
+        }
+    }
+
+    private var cameraFocusHeight: Float {
+        switch cameraViewpoint {
+        case .elevated:
+            return Camera.elevatedFocusHeight
+
+        case .horizontal:
+            return Camera.horizontalHeight
         }
     }
 }

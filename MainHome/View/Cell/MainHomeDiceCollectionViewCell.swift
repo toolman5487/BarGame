@@ -18,7 +18,8 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
             initialDiceCount: 6,
             maximumDiceCount: 6,
             preferredEdgeLength: 1.0,
-            sceneAppearance: .systemBackground
+            sceneAppearance: .systemBackground,
+            cameraViewpoint: .horizontal
         )
     )
 

@@ -24,6 +24,7 @@
 		1578333D3027820F0087747A /* StandardBaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157833353027820F0087747A /* StandardBaseViewController.swift */; };
 		1578333E3027820F0087747A /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157833383027820F0087747A /* AppLogger.swift */; };
 		157833423027822D0087747A /* MainHomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1578333F3027822D0087747A /* MainHomeViewController.swift */; };
+		157833643028D3D40087747A /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157833633028D3D40087747A /* UIColor+Extension.swift */; };
 		1596A26D302590E50018E77C /* DiceGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A26C302590E50018E77C /* DiceGameViewController.swift */; };
 		1596A271302599020018E77C /* DiceGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A270302599020018E77C /* DiceGameState.swift */; };
 		1596A273302599020018E77C /* DiceGameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A272302599020018E77C /* DiceGameViewModel.swift */; };
@@ -50,6 +51,7 @@
 		157833353027820F0087747A /* StandardBaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardBaseViewController.swift; sourceTree = "<group>"; };
 		157833383027820F0087747A /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		1578333F3027822D0087747A /* MainHomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeViewController.swift; sourceTree = "<group>"; };
+		157833633028D3D40087747A /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
 		1596A26C302590E50018E77C /* DiceGameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameViewController.swift; sourceTree = "<group>"; };
 		1596A270302599020018E77C /* DiceGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameState.swift; sourceTree = "<group>"; };
 		1596A272302599020018E77C /* DiceGameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameViewModel.swift; sourceTree = "<group>"; };
@@ -231,8 +233,10 @@
 			isa = PBXGroup;
 			children = (
 				157833373027820F0087747A /* Base */,
+				157833623028D3AD0087747A /* Extension */,
 				1596A26A302590B50018E77C /* Game */,
 				157833393027820F0087747A /* Looger */,
+				157833613028D2EF0087747A /* Theme */,
 			);
 			path = Feature;
 			sourceTree = "<group>";
@@ -253,6 +257,21 @@
 				153935E730286DB60026C98C /* View */,
 			);
 			path = MainHome;
+			sourceTree = "<group>";
+		};
+		157833613028D2EF0087747A /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		157833623028D3AD0087747A /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				157833633028D3D40087747A /* UIColor+Extension.swift */,
+			);
+			path = Extension;
 			sourceTree = "<group>";
 		};
 		1596A2693025909F0018E77C /* DiceGame */ = {
@@ -443,6 +462,7 @@
 				15628551301F45A000702D1E /* DicePhysicsCategory.swift in Sources */,
 				15628553301F45A100702D1E /* DiceNode.swift in Sources */,
 				1596A26D302590E50018E77C /* DiceGameViewController.swift in Sources */,
+				157833643028D3D40087747A /* UIColor+Extension.swift in Sources */,
 				15628555301F45A200702D1E /* DiceArena.swift in Sources */,
 				1562854B301F3EBE00702D1E /* GameDiceView.swift in Sources */,
 			);

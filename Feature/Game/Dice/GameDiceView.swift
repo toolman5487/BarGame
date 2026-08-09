@@ -16,6 +16,11 @@ nonisolated enum DiceSceneAppearance: Sendable {
     case systemBackground
 }
 
+nonisolated enum DiceCameraViewpoint: Sendable {
+    case elevated
+    case horizontal
+}
+
 @MainActor
 final class GameDiceView: UIView {
 
@@ -27,17 +32,20 @@ final class GameDiceView: UIView {
         let maximumDiceCount: Int
         let preferredEdgeLength: CGFloat?
         let sceneAppearance: DiceSceneAppearance
+        let cameraViewpoint: DiceCameraViewpoint
 
         init(
             initialDiceCount: Int,
             maximumDiceCount: Int,
             preferredEdgeLength: CGFloat? = nil,
-            sceneAppearance: DiceSceneAppearance = .walnut
+            sceneAppearance: DiceSceneAppearance = .walnut,
+            cameraViewpoint: DiceCameraViewpoint = .elevated
         ) {
             self.initialDiceCount = initialDiceCount
             self.maximumDiceCount = maximumDiceCount
             self.preferredEdgeLength = preferredEdgeLength
             self.sceneAppearance = sceneAppearance
+            self.cameraViewpoint = cameraViewpoint
         }
     }
 
@@ -153,7 +161,10 @@ final class GameDiceView: UIView {
     ) {
         self.configuration = configuration
         self.motionUpdatesProvider = motionUpdatesProvider
-        arena = DiceArena(sceneAppearance: configuration.sceneAppearance)
+        arena = DiceArena(
+            sceneAppearance: configuration.sceneAppearance,
+            cameraViewpoint: configuration.cameraViewpoint
+        )
         super.init(frame: .zero)
         backgroundColor = .systemBackground
         sceneView.backgroundColor = configuration.sceneAppearance.backgroundColor
