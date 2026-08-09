@@ -20,6 +20,17 @@ final class GameDiceView: UIView {
 
         let initialDiceCount: Int
         let maximumDiceCount: Int
+        let preferredEdgeLength: CGFloat?
+
+        init(
+            initialDiceCount: Int,
+            maximumDiceCount: Int,
+            preferredEdgeLength: CGFloat? = nil
+        ) {
+            self.initialDiceCount = initialDiceCount
+            self.maximumDiceCount = maximumDiceCount
+            self.preferredEdgeLength = preferredEdgeLength
+        }
     }
 
     private enum MotionTuning {
@@ -228,10 +239,7 @@ final class GameDiceView: UIView {
     @discardableResult
     private func makeDiceNode() -> DiceNode {
         let updatedDiceCount = diceNodes.count + 1
-        let edgeLength = DiceSizing.edgeLength(
-            for: updatedDiceCount,
-            maximumDiceCount: configuration.maximumDiceCount
-        )
+        let edgeLength = edgeLength(for: updatedDiceCount)
         diceNodes.forEach { $0.resize(to: edgeLength) }
 
         let diceNode = DiceNode(edgeLength: edgeLength)
@@ -239,6 +247,17 @@ final class GameDiceView: UIView {
         diceNodes.append(diceNode)
         arena.attach(dice: diceNode, at: position)
         return diceNode
+    }
+
+    private func edgeLength(for diceCount: Int) -> CGFloat {
+        if let preferredEdgeLength = configuration.preferredEdgeLength {
+            return preferredEdgeLength
+        }
+
+        return DiceSizing.edgeLength(
+            for: diceCount,
+            maximumDiceCount: configuration.maximumDiceCount
+        )
     }
 
     private func spawnPosition(for index: Int) -> SCNVector3 {

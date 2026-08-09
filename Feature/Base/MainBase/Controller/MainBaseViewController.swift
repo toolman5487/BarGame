@@ -96,6 +96,18 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
         navigationItem.largeTitleDisplayMode = .always
         title = titleText
     }
+
+    func collectionViewItemSize(
+        in collectionView: UICollectionView,
+        at indexPath: IndexPath
+    ) -> CGSize {
+        let inset = collectionViewSectionInset
+        let width = max(
+            0,
+            collectionView.bounds.width - inset.left - inset.right
+        )
+        return CGSize(width: width, height: 56)
+    }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout

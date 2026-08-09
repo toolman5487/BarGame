@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		1539357F302850010026C98C /* MainBaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1539357E302850010026C98C /* MainBaseView.swift */; };
 		15393581302851010026C98C /* MainBaseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15393580302851010026C98C /* MainBaseCollectionViewCell.swift */; };
+		153935F1302871000026C98C /* MainHomeDiceCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */; };
+		153935F3302871000026C98C /* MainHomeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153935F2302871000026C98C /* MainHomeItem.swift */; };
 		1562853C301F3A2500702D1E /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 1562853B301F3A2500702D1E /* SDWebImage */; };
 		1562853F301F3A3100702D1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1562853E301F3A3100702D1E /* SnapKit */; };
 		15628542301F3A5400702D1E /* SkeletonView in Frameworks */ = {isa = PBXBuildFile; productRef = 15628541301F3A5400702D1E /* SkeletonView */; };
@@ -36,6 +38,8 @@
 		150B9259301F31AC00BA35E2 /* BarGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1539357E302850010026C98C /* MainBaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseView.swift; sourceTree = "<group>"; };
 		15393580302851010026C98C /* MainBaseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseCollectionViewCell.swift; sourceTree = "<group>"; };
+		153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeDiceCollectionViewCell.swift; sourceTree = "<group>"; };
+		153935F2302871000026C98C /* MainHomeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeItem.swift; sourceTree = "<group>"; };
 		1562854A301F3EBE00702D1E /* GameDiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDiceView.swift; sourceTree = "<group>"; };
 		15628550301F45A000702D1E /* DicePhysicsCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DicePhysicsCategory.swift; sourceTree = "<group>"; };
 		15628552301F45A100702D1E /* DiceNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceNode.swift; sourceTree = "<group>"; };
@@ -97,7 +101,6 @@
 				150B925B301F31AC00BA35E2 /* BarGame */,
 				1596A2693025909F0018E77C /* DiceGame */,
 				1578333A3027820F0087747A /* Feature */,
-				1596A26A302590B50018E77C /* MainGame */,
 				157833413027822D0087747A /* MainHome */,
 				1596A2E93025C9C80018E77C /* MainTabBar */,
 				150B925A301F31AC00BA35E2 /* Products */,
@@ -143,6 +146,30 @@
 				1539357E302850010026C98C /* MainBaseView.swift */,
 			);
 			path = SubView;
+			sourceTree = "<group>";
+		};
+		153935E730286DB60026C98C /* View */ = {
+			isa = PBXGroup;
+			children = (
+				153935E830286DC40026C98C /* Cell */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		153935E830286DC40026C98C /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */,
+			);
+			path = Cell;
+			sourceTree = "<group>";
+		};
+		153935F4302871000026C98C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				153935F2302871000026C98C /* MainHomeItem.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		15628546301F3DB900702D1E /* Dice */ = {
@@ -204,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				157833373027820F0087747A /* Base */,
+				1596A26A302590B50018E77C /* Game */,
 				157833393027820F0087747A /* Looger */,
 			);
 			path = Feature;
@@ -221,6 +249,8 @@
 			isa = PBXGroup;
 			children = (
 				157833403027822D0087747A /* Controller */,
+				153935F4302871000026C98C /* Model */,
+				153935E730286DB60026C98C /* View */,
 			);
 			path = MainHome;
 			sourceTree = "<group>";
@@ -236,12 +266,12 @@
 			path = DiceGame;
 			sourceTree = "<group>";
 		};
-		1596A26A302590B50018E77C /* MainGame */ = {
+		1596A26A302590B50018E77C /* Game */ = {
 			isa = PBXGroup;
 			children = (
 				15628546301F3DB900702D1E /* Dice */,
 			);
-			path = MainGame;
+			path = Game;
 			sourceTree = "<group>";
 		};
 		1596A26B302590C90018E77C /* Controller */ = {
@@ -402,6 +432,8 @@
 				1578333D3027820F0087747A /* StandardBaseViewController.swift in Sources */,
 				1578333E3027820F0087747A /* AppLogger.swift in Sources */,
 				157833423027822D0087747A /* MainHomeViewController.swift in Sources */,
+				153935F1302871000026C98C /* MainHomeDiceCollectionViewCell.swift in Sources */,
+				153935F3302871000026C98C /* MainHomeItem.swift in Sources */,
 				1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */,
 				15A1B2C13026A0010018E77C /* MainTabBarState.swift in Sources */,
 				15A1B2C33026A0010018E77C /* MainTabBarViewModel.swift in Sources */,
