@@ -24,19 +24,6 @@ protocol MainCollectionLayoutConfiguring: AnyObject {
 
 extension MainCollectionLayoutConfiguring {
 
-    var collectionViewHorizontalInset: CGFloat {
-        16
-    }
-
-    var collectionViewSectionInset: UIEdgeInsets {
-        UIEdgeInsets(
-            top: 0,
-            left: collectionViewHorizontalInset,
-            bottom: 0,
-            right: collectionViewHorizontalInset
-        )
-    }
-
     func collectionViewItemSize(
         in collectionView: UICollectionView,
         at indexPath: IndexPath
@@ -58,6 +45,19 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
     // MARK: - Properties
 
     private let titleText: String
+
+    var collectionViewHorizontalInset: CGFloat {
+        16
+    }
+
+    var collectionViewSectionInset: UIEdgeInsets {
+        UIEdgeInsets(
+            top: 0,
+            left: collectionViewHorizontalInset,
+            bottom: 0,
+            right: collectionViewHorizontalInset
+        )
+    }
 
     // MARK: - UI Elements
 

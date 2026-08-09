@@ -11,12 +11,6 @@ import UIKit
 @MainActor
 final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
 
-    // MARK: - Metrics
-
-    private enum Metrics {
-        static let cornerRadius: CGFloat = 12
-    }
-
     // MARK: - UI Elements
 
     private let diceView = GameDiceView(
@@ -41,8 +35,6 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
 
     override func setAppearance() {
         super.setAppearance()
-        contentView.clipsToBounds = true
-        contentView.layer.cornerRadius = Metrics.cornerRadius
         accessibilityLabel = "骰子"
     }
 

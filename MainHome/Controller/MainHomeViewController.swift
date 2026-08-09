@@ -14,6 +14,10 @@ final class MainHomeViewController: MainBaseViewController {
 
     private let items = MainHomeItem.allCases
 
+    override var collectionViewSectionInset: UIEdgeInsets {
+        .zero
+    }
+
     // MARK: - Lifecycle
 
     override func viewDidAppear(_ animated: Bool) {
