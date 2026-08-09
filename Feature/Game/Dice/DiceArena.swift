@@ -67,6 +67,7 @@ final class DiceArena {
     let scene = SCNScene()
     let cameraNode = SCNNode()
 
+    private let sceneAppearance: DiceSceneAppearance
     private let leftWallNode: SCNNode
     private let rightWallNode: SCNNode
     private let frontWallNode: SCNNode
@@ -76,7 +77,8 @@ final class DiceArena {
 
     // MARK: - Lifecycle
 
-    init() {
+    init(sceneAppearance: DiceSceneAppearance) {
+        self.sceneAppearance = sceneAppearance
         leftWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallThickness,
             height: TransparentCup.wallHeight,
@@ -208,7 +210,7 @@ final class DiceArena {
     // MARK: - Setup
 
     private func setupScene() {
-        scene.background.contents = UIColor.black
+        scene.background.contents = sceneAppearance.backgroundColor
         scene.physicsWorld.timeStep = Physics.simulationTimeStep
 
         cameraNode.camera = SCNCamera()
@@ -230,7 +232,7 @@ final class DiceArena {
 
         let floorGeometry = SCNFloor()
         floorGeometry.reflectivity = Appearance.floorReflectivity
-        floorGeometry.firstMaterial = Self.makeWoodMaterial()
+        floorGeometry.firstMaterial = floorMaterial
 
         let floor = SCNNode(geometry: floorGeometry)
         floor.categoryBitMask = RenderingCategory.floor
@@ -440,5 +442,33 @@ final class DiceArena {
             forResource: resourceName,
             withExtension: fileExtension
         )
+    }
+
+    private var floorMaterial: SCNMaterial {
+        switch sceneAppearance {
+        case .walnut:
+            return Self.makeWoodMaterial()
+
+        case .systemBackground:
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.clear
+            material.transparency = 0
+            material.writesToDepthBuffer = false
+            material.readsFromDepthBuffer = false
+            return material
+        }
+    }
+}
+
+private extension DiceSceneAppearance {
+
+    var backgroundColor: UIColor {
+        switch self {
+        case .walnut:
+            return .black
+
+        case .systemBackground:
+            return .systemBackground
+        }
     }
 }

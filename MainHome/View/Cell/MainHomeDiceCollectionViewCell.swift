@@ -15,9 +15,10 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
 
     private let diceView = GameDiceView(
         configuration: GameDiceView.Configuration(
-            initialDiceCount: 2,
-            maximumDiceCount: 2,
-            preferredEdgeLength: 1.0
+            initialDiceCount: 6,
+            maximumDiceCount: 6,
+            preferredEdgeLength: 1.0,
+            sceneAppearance: .systemBackground
         )
     )
 
@@ -35,6 +36,7 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
 
     override func setAppearance() {
         super.setAppearance()
+        contentView.backgroundColor = .systemBackground
         accessibilityLabel = "骰子"
     }
 

@@ -11,6 +11,11 @@ import CoreHaptics
 import SnapKit
 import OSLog
 
+nonisolated enum DiceSceneAppearance: Sendable {
+    case walnut
+    case systemBackground
+}
+
 @MainActor
 final class GameDiceView: UIView {
 
@@ -21,15 +26,18 @@ final class GameDiceView: UIView {
         let initialDiceCount: Int
         let maximumDiceCount: Int
         let preferredEdgeLength: CGFloat?
+        let sceneAppearance: DiceSceneAppearance
 
         init(
             initialDiceCount: Int,
             maximumDiceCount: Int,
-            preferredEdgeLength: CGFloat? = nil
+            preferredEdgeLength: CGFloat? = nil,
+            sceneAppearance: DiceSceneAppearance = .walnut
         ) {
             self.initialDiceCount = initialDiceCount
             self.maximumDiceCount = maximumDiceCount
             self.preferredEdgeLength = preferredEdgeLength
+            self.sceneAppearance = sceneAppearance
         }
     }
 
@@ -117,7 +125,7 @@ final class GameDiceView: UIView {
 
     private let configuration: Configuration
     private let motionUpdatesProvider: any MotionUpdatesProviding
-    private let arena = DiceArena()
+    private let arena: DiceArena
     private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
 
     // MARK: - State
@@ -145,8 +153,10 @@ final class GameDiceView: UIView {
     ) {
         self.configuration = configuration
         self.motionUpdatesProvider = motionUpdatesProvider
+        arena = DiceArena(sceneAppearance: configuration.sceneAppearance)
         super.init(frame: .zero)
         backgroundColor = .systemBackground
+        sceneView.backgroundColor = configuration.sceneAppearance.backgroundColor
         setup()
     }
 
@@ -577,6 +587,19 @@ final class GameDiceView: UIView {
             1.0
         )
         playImpactHaptic(intensity: max(impulseIntensity, speedIntensity))
+    }
+}
+
+private extension DiceSceneAppearance {
+
+    var backgroundColor: UIColor {
+        switch self {
+        case .walnut:
+            return .black
+
+        case .systemBackground:
+            return .systemBackground
+        }
     }
 }
 
