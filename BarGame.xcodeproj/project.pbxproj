@@ -26,6 +26,8 @@
 		1596A2753025A4370018E77C /* DiceGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2743025A4370018E77C /* DiceGameView.swift */; };
 		1596A2773025A4370018E77C /* DiceControlButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2763025A4370018E77C /* DiceControlButton.swift */; };
 		1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2EB3025C9E40018E77C /* MainTabBarController.swift */; };
+		15A1B2C13026A0010018E77C /* MainTabBarState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A1B2C03026A0010018E77C /* MainTabBarState.swift */; };
+		15A1B2C33026A0010018E77C /* MainTabBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +48,8 @@
 		1596A2743025A4370018E77C /* DiceGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameView.swift; sourceTree = "<group>"; };
 		1596A2763025A4370018E77C /* DiceControlButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceControlButton.swift; sourceTree = "<group>"; };
 		1596A2EB3025C9E40018E77C /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
+		15A1B2C03026A0010018E77C /* MainTabBarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarState.swift; sourceTree = "<group>"; };
+		15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -239,6 +243,8 @@
 			isa = PBXGroup;
 			children = (
 				1596A2EA3025C9D20018E77C /* Controller */,
+				15A1B2C43026A0010018E77C /* Model */,
+				15A1B2C53026A0010018E77C /* ViewModel */,
 			);
 			path = MainTabBar;
 			sourceTree = "<group>";
@@ -249,6 +255,22 @@
 				1596A2EB3025C9E40018E77C /* MainTabBarController.swift */,
 			);
 			path = Controller;
+			sourceTree = "<group>";
+		};
+		15A1B2C43026A0010018E77C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				15A1B2C03026A0010018E77C /* MainTabBarState.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		15A1B2C53026A0010018E77C /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */,
+			);
+			path = ViewModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -341,6 +363,8 @@
 				1578333E3027820F0087747A /* AppLogger.swift in Sources */,
 				157833423027822D0087747A /* MainHomeViewController.swift in Sources */,
 				1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */,
+				15A1B2C13026A0010018E77C /* MainTabBarState.swift in Sources */,
+				15A1B2C33026A0010018E77C /* MainTabBarViewModel.swift in Sources */,
 				1596A273302599020018E77C /* DiceGameViewModel.swift in Sources */,
 				1596A2753025A4370018E77C /* DiceGameView.swift in Sources */,
 				1596A2773025A4370018E77C /* DiceControlButton.swift in Sources */,

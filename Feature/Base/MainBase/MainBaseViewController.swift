@@ -55,6 +55,10 @@ extension MainCollectionLayoutConfiguring {
 @MainActor
 class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutConfiguring {
 
+    // MARK: - Properties
+
+    private let titleText: String
+
     // MARK: - UI Elements
 
     private(set) lazy var collectionView: UICollectionView = {
@@ -62,7 +66,7 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
             frame: .zero,
             collectionViewLayout: makeCollectionViewLayout()
         )
-        collectionView.backgroundColor = .systemBackground
+        collectionView.backgroundColor = .clear
         collectionView.alwaysBounceVertical = true
         collectionView.contentInsetAdjustmentBehavior = .automatic
         collectionView.delegate = self
@@ -70,6 +74,11 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
     }()
 
     // MARK: - Lifecycle
+
+    init(title: String) {
+        titleText = title
+        super.init()
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -90,6 +99,7 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
 
     override func setNavigation() {
         navigationItem.largeTitleDisplayMode = .always
+        title = titleText
     }
 
     func makeCollectionViewLayout() -> UICollectionViewLayout {

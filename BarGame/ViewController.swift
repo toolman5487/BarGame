@@ -8,11 +8,4 @@
 import UIKit
 
 @MainActor
-final class ViewController: MainBaseViewController {
-
-    // MARK: - Overridable
-
-    override func setNavigation() {
-        title = "頁面"
-    }
-}
+final class ViewController: MainBaseViewController {}

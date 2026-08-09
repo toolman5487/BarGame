@@ -9,11 +9,5 @@ import UIKit
 
 @MainActor
 final class MainHomeViewController: MainBaseViewController {
-
-    // MARK: - Overridable
-
-    override func setNavigation() {
-        super.setNavigation()
-        title = "首頁"
-    }
+    
 }
