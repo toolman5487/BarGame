@@ -36,6 +36,7 @@ final class MainTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureAppearance()
         delegate = self
         bind()
         viewDidLoadSubject.send()
@@ -87,6 +88,9 @@ final class MainTabBarController: UITabBarController {
 
     // MARK: - Setup
 
+    private func configureAppearance() {
+        tabBar.tintColor = ThemeColor.primary
+    }
     private func configureTabs(with items: [MainTabItem]) {
         viewControllers = items.map { item in
             let rootViewController = makeRootViewController(for: item)

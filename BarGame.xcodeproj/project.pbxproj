@@ -33,6 +33,7 @@
 		1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2EB3025C9E40018E77C /* MainTabBarController.swift */; };
 		15A1B2C13026A0010018E77C /* MainTabBarState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A1B2C03026A0010018E77C /* MainTabBarState.swift */; };
 		15A1B2C33026A0010018E77C /* MainTabBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */; };
+		15C8B67D3029821700457B00 /* ThemeColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C8B67C3029821700457B00 /* ThemeColor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,7 @@
 		1596A2EB3025C9E40018E77C /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 		15A1B2C03026A0010018E77C /* MainTabBarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarState.swift; sourceTree = "<group>"; };
 		15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarViewModel.swift; sourceTree = "<group>"; };
+		15C8B67C3029821700457B00 /* ThemeColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeColor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -262,6 +264,7 @@
 		157833613028D2EF0087747A /* Theme */ = {
 			isa = PBXGroup;
 			children = (
+				15C8B67C3029821700457B00 /* ThemeColor.swift */,
 			);
 			path = Theme;
 			sourceTree = "<group>";
@@ -444,6 +447,7 @@
 			files = (
 				1539357F302850010026C98C /* MainBaseView.swift in Sources */,
 				15393581302851010026C98C /* MainBaseCollectionViewCell.swift in Sources */,
+				15C8B67D3029821700457B00 /* ThemeColor.swift in Sources */,
 				15628557301F6D8B00702D1E /* CoreMotionUpdatesProvider.swift in Sources */,
 				1596A271302599020018E77C /* DiceGameState.swift in Sources */,
 				1578333B3027820F0087747A /* MainBaseViewController.swift in Sources */,
