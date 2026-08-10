@@ -23,13 +23,13 @@ final class DiceArena {
     }
 
     private enum Physics {
-        static let gravity: Float = 9.8
-        static let lateralGravityScale: Float = 3
+        static let gravity: Float = 10.4
+        static let lateralGravityScale: Float = 4.2
         static let simulationTimeStep: TimeInterval = 1.0 / 120.0
-        static let floorRestitution: CGFloat = 0.28
-        static let floorFriction: CGFloat = 0.58
-        static let wallRestitution: CGFloat = 0.28
-        static let wallFriction: CGFloat = 0.42
+        static let floorRestitution: CGFloat = 0.4
+        static let floorFriction: CGFloat = 0.52
+        static let wallRestitution: CGFloat = 0.4
+        static let wallFriction: CGFloat = 0.38
     }
 
     private enum Appearance {

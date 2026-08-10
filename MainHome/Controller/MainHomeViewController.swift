@@ -10,6 +10,12 @@ import UIKit
 @MainActor
 final class MainHomeViewController: MainBaseViewController {
 
+    // MARK: - Types
+
+    private enum Layout {
+        static let dicePreviewAspectRatio: CGFloat = 1.2
+    }
+
     // MARK: - State
 
     private let items = MainHomeItem.allCases
@@ -30,6 +36,12 @@ final class MainHomeViewController: MainBaseViewController {
         resignFirstResponder()
     }
 
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        updateCollectionViewEdgeInsets()
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+
     // MARK: - UIResponder
 
     override var canBecomeFirstResponder: Bool { true }
@@ -43,8 +55,14 @@ final class MainHomeViewController: MainBaseViewController {
 
     override func setHierarchy() {
         super.setHierarchy()
+        collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(MainHomeDiceCollectionViewCell.self)
         collectionView.dataSource = self
+    }
+
+    override func setLayout() {
+        super.setLayout()
+        updateCollectionViewEdgeInsets()
     }
 
     override func collectionViewItemSize(
@@ -59,7 +77,7 @@ final class MainHomeViewController: MainBaseViewController {
 
         switch items[indexPath.item] {
         case .dicePreview:
-            return CGSize(width: width, height: width * 2 / 3)
+            return CGSize(width: width, height: width * Layout.dicePreviewAspectRatio)
         }
     }
 
@@ -69,6 +87,16 @@ final class MainHomeViewController: MainBaseViewController {
         collectionView.visibleCells
             .compactMap { $0 as? MainHomeDiceCollectionViewCell }
             .forEach { $0.shakeDice() }
+    }
+
+    // MARK: - Private
+
+    private func updateCollectionViewEdgeInsets() {
+        let bottom = view.safeAreaInsets.bottom
+        let edgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: bottom, right: 0)
+        collectionView.contentInset = edgeInsets
+        collectionView.scrollIndicatorInsets = edgeInsets
+        collectionView.verticalScrollIndicatorInsets = edgeInsets
     }
 }
 

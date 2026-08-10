@@ -22,12 +22,12 @@ nonisolated final class DiceNode: SCNNode {
     }
 
     private enum Physics {
-        static let mass: CGFloat = 0.8
-        static let friction: CGFloat = 0.48
-        static let rollingFriction: CGFloat = 0.08
-        static let restitution: CGFloat = 0.28
-        static let angularDamping: CGFloat = 0.12
-        static let damping: CGFloat = 0.06
+        static let mass: CGFloat = 0.7
+        static let friction: CGFloat = 0.44
+        static let rollingFriction: CGFloat = 0.06
+        static let restitution: CGFloat = 0.42
+        static let angularDamping: CGFloat = 0.08
+        static let damping: CGFloat = 0.035
     }
 
     private enum Appearance {
@@ -74,18 +74,18 @@ nonisolated final class DiceNode: SCNNode {
     func applyShake(intensity: Double) {
         guard let body = physicsBody else { return }
 
-        let clamped = min(max(intensity, 0.3), 2.5)
-        let forceScale = Float(clamped) * 4.0
+        let clamped = min(max(intensity, 0.3), 2.8)
+        let forceScale = Float(clamped) * 6.2
         let force = SCNVector3(
             Float.random(in: -1...1) * forceScale,
-            Float.random(in: 0.4...1.2) * forceScale,
+            Float.random(in: 0.5...1.4) * forceScale,
             Float.random(in: -1...1) * forceScale
         )
         let torque = SCNVector4(
             Float.random(in: -1...1),
             Float.random(in: -1...1),
             Float.random(in: -1...1),
-            Float(clamped) * 2.5
+            Float(clamped) * 3.8
         )
 
         if body.isResting {

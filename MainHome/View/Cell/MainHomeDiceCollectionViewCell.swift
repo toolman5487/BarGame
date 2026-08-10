@@ -17,7 +17,7 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
         configuration: GameDiceView.Configuration(
             initialDiceCount: 6,
             maximumDiceCount: 6,
-            preferredEdgeLength: 1.0,
+            preferredEdgeLength: 0.62,
             sceneAppearance: .systemBackground,
             cameraViewpoint: .horizontal
         )

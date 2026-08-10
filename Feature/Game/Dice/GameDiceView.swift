@@ -51,19 +51,19 @@ final class GameDiceView: UIView {
 
     private enum MotionTuning {
         static let updateInterval: TimeInterval = 1.0 / 60.0
-        static let minimumImpulseMagnitude = 0.28
-        static let impulseCooldown: CFTimeInterval = 0.12
-        static let horizontalForceScale: Float = 3.6
-        static let verticalForceScale: Float = 2.8
-        static let rotationScale: Float = 0.35
-        static let forceJitterRatio: Float = 0.12
+        static let minimumImpulseMagnitude = 0.22
+        static let impulseCooldown: CFTimeInterval = 0.09
+        static let horizontalForceScale: Float = 5.6
+        static let verticalForceScale: Float = 4.4
+        static let rotationScale: Float = 0.55
+        static let forceJitterRatio: Float = 0.14
     }
 
     private enum ImpactFeedback {
-        static let minimumImpulse: Float = 0.03
-        static let fullIntensityImpulse: Float = 2.2
-        static let minimumSpeed: Float = 0.8
-        static let fullIntensitySpeed: Float = 6
+        static let minimumImpulse: Float = 0.05
+        static let fullIntensityImpulse: Float = 3.4
+        static let minimumSpeed: Float = 1.1
+        static let fullIntensitySpeed: Float = 9
         static let cooldown: CFTimeInterval = 0.06
     }
 
@@ -121,7 +121,7 @@ final class GameDiceView: UIView {
 
     private let sceneView: SCNView = {
         let sceneView = SCNView()
-        sceneView.backgroundColor = .black
+        sceneView.backgroundColor = .systemBackground
         sceneView.antialiasingMode = .multisampling4X
         sceneView.allowsCameraControl = false
         sceneView.autoenablesDefaultLighting = false
