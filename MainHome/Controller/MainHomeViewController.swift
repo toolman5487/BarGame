@@ -78,8 +78,9 @@ final class MainHomeViewController: MainBaseViewController {
         super.setHierarchy()
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(MainHomeDiceCollectionViewCell.self)
-        collectionView.register(MainHomeGameListCell.self)
         collectionView.register(MainHomeTitleHeader.self)
+        collectionView.register(MainHomeGameListCell.self)
+        collectionView.register(MainHomeGameResultsCell.self)
         collectionView.dataSource = self
     }
 
@@ -107,6 +108,8 @@ final class MainHomeViewController: MainBaseViewController {
                 itemCount: renderedContent?.games.count ?? 0
             )
             return CGSize(width: width, height: height)
+        case .gameResults:
+            return CGSize(width: width, height: MainHomeGameResultsCell.Layout.preferredHeight)
         }
     }
 
@@ -227,6 +230,11 @@ extension MainHomeViewController: UICollectionViewDataSource {
             )
             cell.configure(games: renderedContent?.games ?? [])
             return cell
+        case .gameResults:
+            return collectionView.dequeueReusableCell(
+                MainHomeGameResultsCell.self,
+                for: indexPath
+            )
         }
     }
 

@@ -13,6 +13,7 @@ nonisolated enum MainHomeItem: Int, CaseIterable, Sendable {
 
     case dicePreview
     case gameList
+    case gameResults
 }
 
 // MARK: - Game
@@ -20,6 +21,14 @@ nonisolated enum MainHomeItem: Int, CaseIterable, Sendable {
 nonisolated struct MainHomeGame: Equatable, Sendable {
 
     let title: String
+}
+
+// MARK: - Game Result
+
+nonisolated struct MainHomeGameResult: Equatable, Sendable {
+
+    let title: String
+    let detail: String
 }
 
 // MARK: - Section
@@ -36,24 +45,29 @@ nonisolated struct MainHomeContent: Equatable, Sendable {
 
     let sections: [MainHomeSection]
     let games: [MainHomeGame]
+    let results: [MainHomeGameResult]
 }
 
 // MARK: - Configuration
 
 nonisolated struct MainHomeConfiguration: Sendable {
 
+    /// 預設：戰績為空
     static let standard = MainHomeConfiguration(
         sections: MainHomeSection.standard,
-        games: MainHomeGame.standardList
+        games: MainHomeGame.standardList,
+        results: MainHomeGameResult.emptyList
     )
 
     let sections: [MainHomeSection]
     let games: [MainHomeGame]
+    let results: [MainHomeGameResult]
 
     var initialContent: MainHomeContent {
         MainHomeContent(
             sections: sections,
-            games: games
+            games: games,
+            results: results
         )
     }
 }
@@ -78,6 +92,10 @@ extension MainHomeSection {
         MainHomeSection(
             headerTitle: "遊戲列表",
             items: [.gameList]
+        ),
+        MainHomeSection(
+            headerTitle: "遊戲戰績",
+            items: [.gameResults]
         ),
     ]
 }
@@ -106,4 +124,12 @@ extension MainHomeGame {
         MainHomeGame(title: "二十一點"),
         MainHomeGame(title: "賓果")
     ]
+}
+
+// MARK: - Results
+
+extension MainHomeGameResult {
+
+    /// 空戰績
+    nonisolated static let emptyList: [MainHomeGameResult] = []
 }
