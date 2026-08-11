@@ -14,12 +14,12 @@ final class MainHomeViewController: MainBaseViewController {
 
     private enum Layout {
         static let dicePreviewAspectRatio: CGFloat = 1.2
-        static let gameListHeight: CGFloat = 200
     }
 
     // MARK: - State
 
     private let sections = MainHomeSection.standard
+    private let gameListItemCount = MainHomeGameListCell.Layout.defaultItemCount
 
     override var collectionViewSectionInset: UIEdgeInsets {
         .zero
@@ -58,6 +58,7 @@ final class MainHomeViewController: MainBaseViewController {
         super.setHierarchy()
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(MainHomeDiceCollectionViewCell.self)
+        collectionView.register(MainHomeGameListCell.self)
         collectionView.register(MainHomeTitleHeader.self)
         collectionView.dataSource = self
     }
@@ -81,7 +82,11 @@ final class MainHomeViewController: MainBaseViewController {
         case .dicePreview:
             return CGSize(width: width, height: width * Layout.dicePreviewAspectRatio)
         case .gameList:
-            return CGSize(width: width, height: Layout.gameListHeight)
+            let height = MainHomeGameListCell.preferredHeight(
+                forWidth: width,
+                itemCount: gameListItemCount
+            )
+            return CGSize(width: width, height: height)
         }
     }
 
@@ -148,10 +153,12 @@ extension MainHomeViewController: UICollectionViewDataSource {
                 for: indexPath
             )
         case .gameList:
-            return collectionView.dequeueReusableCell(
-                MainBaseCollectionViewCell.self,
+            let cell = collectionView.dequeueReusableCell(
+                MainHomeGameListCell.self,
                 for: indexPath
             )
+            cell.configure(itemCount: gameListItemCount)
+            return cell
         }
     }
 

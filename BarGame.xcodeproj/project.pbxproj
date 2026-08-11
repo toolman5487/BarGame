@@ -36,6 +36,7 @@
 		15C4905B302AC64C00EFF3E9 /* PlaceholderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4905A302AC64C00EFF3E9 /* PlaceholderCell.swift */; };
 		15C4F0D0302AD3B700EFF3E9 /* MainBaseTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F0CF302AD3B700EFF3E9 /* MainBaseTitleHeader.swift */; };
 		15C4F0D3302AD6B500EFF3E9 /* MainHomeTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F0D2302AD6B500EFF3E9 /* MainHomeTitleHeader.swift */; };
+		15C4F0D5302AF41900EFF3E9 /* MainHomeGameListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F0D4302AF41900EFF3E9 /* MainHomeGameListCell.swift */; };
 		15C8B67D3029821700457B00 /* ThemeColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C8B67C3029821700457B00 /* ThemeColor.swift */; };
 /* End PBXBuildFile section */
 
@@ -67,6 +68,7 @@
 		15C4905A302AC64C00EFF3E9 /* PlaceholderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderCell.swift; sourceTree = "<group>"; };
 		15C4F0CF302AD3B700EFF3E9 /* MainBaseTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseTitleHeader.swift; sourceTree = "<group>"; };
 		15C4F0D2302AD6B500EFF3E9 /* MainHomeTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeTitleHeader.swift; sourceTree = "<group>"; };
+		15C4F0D4302AF41900EFF3E9 /* MainHomeGameListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeGameListCell.swift; sourceTree = "<group>"; };
 		15C8B67C3029821700457B00 /* ThemeColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeColor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -172,6 +174,7 @@
 			isa = PBXGroup;
 			children = (
 				153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */,
+				15C4F0D4302AF41900EFF3E9 /* MainHomeGameListCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -507,6 +510,7 @@
 				1596A273302599020018E77C /* DiceGameViewModel.swift in Sources */,
 				1596A2753025A4370018E77C /* DiceGameView.swift in Sources */,
 				1596A2773025A4370018E77C /* DiceControlButton.swift in Sources */,
+				15C4F0D5302AF41900EFF3E9 /* MainHomeGameListCell.swift in Sources */,
 				15628551301F45A000702D1E /* DicePhysicsCategory.swift in Sources */,
 				15628553301F45A100702D1E /* DiceNode.swift in Sources */,
 				1596A26D302590E50018E77C /* DiceGameViewController.swift in Sources */,
