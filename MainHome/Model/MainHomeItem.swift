@@ -15,6 +15,13 @@ nonisolated enum MainHomeItem: Int, CaseIterable, Sendable {
     case gameList
 }
 
+// MARK: - Game
+
+nonisolated struct MainHomeGame: Equatable, Sendable {
+
+    let title: String
+}
+
 // MARK: - Section
 
 nonisolated struct MainHomeSection: Equatable, Sendable {
@@ -23,11 +30,47 @@ nonisolated struct MainHomeSection: Equatable, Sendable {
     let items: [MainHomeItem]
 }
 
+// MARK: - Content
+
+nonisolated struct MainHomeContent: Equatable, Sendable {
+
+    let sections: [MainHomeSection]
+    let games: [MainHomeGame]
+}
+
+// MARK: - Configuration
+
+nonisolated struct MainHomeConfiguration: Sendable {
+
+    static let standard = MainHomeConfiguration(
+        sections: MainHomeSection.standard,
+        games: MainHomeGame.standardList
+    )
+
+    let sections: [MainHomeSection]
+    let games: [MainHomeGame]
+
+    var initialContent: MainHomeContent {
+        MainHomeContent(
+            sections: sections,
+            games: games
+        )
+    }
+}
+
+// MARK: - State
+
+nonisolated enum MainHomeState: Equatable, Sendable {
+
+    case idle
+    case ready(MainHomeContent)
+}
+
 // MARK: - Sections
 
 extension MainHomeSection {
 
-    static let standard: [MainHomeSection] = [
+    nonisolated static let standard: [MainHomeSection] = [
         MainHomeSection(
             headerTitle: "",
             items: [.dicePreview]
@@ -36,5 +79,31 @@ extension MainHomeSection {
             headerTitle: "遊戲列表",
             items: [.gameList]
         ),
+    ]
+}
+
+// MARK: - Games
+
+extension MainHomeGame {
+
+    nonisolated static let standardList: [MainHomeGame] = [
+        MainHomeGame(title: "骰子"),
+        MainHomeGame(title: "啤牌"),
+        MainHomeGame(title: "輪盤"),
+        MainHomeGame(title: "骰寶"),
+        MainHomeGame(title: "二十一點"),
+        MainHomeGame(title: "賓果"),
+        MainHomeGame(title: "骰子"),
+        MainHomeGame(title: "啤牌"),
+        MainHomeGame(title: "輪盤"),
+        MainHomeGame(title: "骰寶"),
+        MainHomeGame(title: "二十一點"),
+        MainHomeGame(title: "賓果"),
+        MainHomeGame(title: "骰子"),
+        MainHomeGame(title: "啤牌"),
+        MainHomeGame(title: "輪盤"),
+        MainHomeGame(title: "骰寶"),
+        MainHomeGame(title: "二十一點"),
+        MainHomeGame(title: "賓果")
     ]
 }

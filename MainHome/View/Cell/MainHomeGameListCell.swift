@@ -18,7 +18,6 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
         static let interitemSpacing: CGFloat = 12
         static let lineSpacing: CGFloat = 12
         static let sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        static let defaultItemCount = 20
     }
 
     // MARK: - UI Elements
@@ -34,22 +33,19 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(
-            PlaceholderCell.self,
-            forCellWithReuseIdentifier: String(describing: PlaceholderCell.self)
-        )
+        collectionView.register(MainHomeGameCell.self)
         return collectionView
     }()
 
     // MARK: - State
 
-    private var itemCount = Layout.defaultItemCount
+    private var games: [MainHomeGame] = []
 
     // MARK: - Preferred Size
 
     static func preferredHeight(
         forWidth width: CGFloat,
-        itemCount: Int = Layout.defaultItemCount
+        itemCount: Int
     ) -> CGFloat {
         guard itemCount > 0, width > 0 else {
             return 0
@@ -90,7 +86,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        itemCount = Layout.defaultItemCount
+        games = []
         collectionView.reloadData()
     }
 
@@ -101,8 +97,8 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     // MARK: - Configuration
 
-    func configure(itemCount: Int = Layout.defaultItemCount) {
-        self.itemCount = max(0, itemCount)
+    func configure(games: [MainHomeGame]) {
+        self.games = games
         collectionView.reloadData()
     }
 
@@ -126,17 +122,19 @@ extension MainHomeGameListCell: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        itemCount
+        games.count
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        collectionView.dequeueReusableCell(
-            withReuseIdentifier: String(describing: PlaceholderCell.self),
+        let cell = collectionView.dequeueReusableCell(
+            MainHomeGameCell.self,
             for: indexPath
         )
+        cell.configure(title: games[indexPath.item].title)
+        return cell
     }
 }
 
@@ -151,5 +149,51 @@ extension MainHomeGameListCell: UICollectionViewDelegateFlowLayout {
     ) -> CGSize {
         let side = Self.itemSideLength(forWidth: collectionView.bounds.width)
         return CGSize(width: side, height: side)
+    }
+}
+
+// MARK: - MainHomeGameCell
+
+@MainActor
+final class MainHomeGameCell: MainBaseCollectionViewCell {
+
+    // MARK: - UI Elements
+
+    private let actionButton = ViewFactory.makeButton()
+
+    // MARK: - Overridable
+
+    override func setHierarchy() {
+        contentView.addSubview(actionButton)
+    }
+
+    override func setLayout() {
+        actionButton.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+
+    override func setAppearance() {
+        super.setAppearance()
+        contentView.backgroundColor = .clear
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        applyTitle(nil)
+    }
+
+    // MARK: - Configuration
+
+    func configure(title: String) {
+        applyTitle(title)
+    }
+
+    // MARK: - Private
+
+    private func applyTitle(_ title: String?) {
+        var configuration = actionButton.configuration ?? .glass()
+        configuration.title = title
+        actionButton.configuration = configuration
     }
 }

@@ -5,6 +5,7 @@
 //  Created by Willy Hsu on 2026/8/8.
 //
 
+import Combine
 import UIKit
 
 @MainActor
@@ -16,16 +17,35 @@ final class MainHomeViewController: MainBaseViewController {
         static let dicePreviewAspectRatio: CGFloat = 1.2
     }
 
+    // MARK: - Dependencies
+
+    private let viewModel: any MainHomeViewModeling
+
     // MARK: - State
 
-    private let sections = MainHomeSection.standard
-    private let gameListItemCount = MainHomeGameListCell.Layout.defaultItemCount
+    private let viewDidLoadSubject = PassthroughSubject<Void, Never>()
+    private let shakeMotionSubject = PassthroughSubject<Void, Never>()
+    private var cancellables = Set<AnyCancellable>()
+    private var renderedContent: MainHomeContent?
 
     override var collectionViewSectionInset: UIEdgeInsets {
         .zero
     }
 
     // MARK: - Lifecycle
+
+    init(
+        title: String,
+        viewModel: any MainHomeViewModeling
+    ) {
+        self.viewModel = viewModel
+        super.init(title: title)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        viewDidLoadSubject.send()
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -49,7 +69,7 @@ final class MainHomeViewController: MainBaseViewController {
 
     override func motionBegan(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         guard motion == .motionShake else { return }
-        shakeVisibleDice()
+        shakeMotionSubject.send()
     }
 
     // MARK: - Overridable
@@ -84,7 +104,7 @@ final class MainHomeViewController: MainBaseViewController {
         case .gameList:
             let height = MainHomeGameListCell.preferredHeight(
                 forWidth: width,
-                itemCount: gameListItemCount
+                itemCount: renderedContent?.games.count ?? 0
             )
             return CGSize(width: width, height: height)
         }
@@ -94,7 +114,11 @@ final class MainHomeViewController: MainBaseViewController {
         in collectionView: UICollectionView,
         section: Int
     ) -> CGSize {
-        let title = sections[section].headerTitle
+        guard let renderedContent,
+              renderedContent.sections.indices.contains(section)
+        else { return .zero }
+
+        let title = renderedContent.sections[section].headerTitle
         guard !title.isEmpty else {
             return .zero
         }
@@ -102,6 +126,26 @@ final class MainHomeViewController: MainBaseViewController {
             width: collectionView.bounds.width,
             height: MainBaseTitleHeader.Layout.preferredHeight
         )
+    }
+
+    override func bind() {
+        let input = MainHomeViewModelInput(
+            viewDidLoad: viewDidLoadSubject.eraseToAnyPublisher(),
+            shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
+        )
+        let output = viewModel.transform(input: input)
+
+        output.state
+            .sink { [weak self] state in
+                self?.apply(state)
+            }
+            .store(in: &cancellables)
+
+        output.command
+            .sink { [weak self] command in
+                self?.execute(command)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Actions
@@ -115,7 +159,10 @@ final class MainHomeViewController: MainBaseViewController {
     // MARK: - Private
 
     private func item(at indexPath: IndexPath) -> MainHomeItem {
-        sections[indexPath.section].items[indexPath.item]
+        guard let renderedContent else {
+            preconditionFailure("MainHome content must be loaded before requesting items")
+        }
+        return renderedContent.sections[indexPath.section].items[indexPath.item]
     }
 
     private func updateCollectionViewEdgeInsets() {
@@ -125,6 +172,27 @@ final class MainHomeViewController: MainBaseViewController {
         collectionView.scrollIndicatorInsets = edgeInsets
         collectionView.verticalScrollIndicatorInsets = edgeInsets
     }
+
+    // MARK: - State Updates
+
+    private func apply(_ state: MainHomeState) {
+        switch state {
+        case .idle:
+            break
+
+        case .ready(let content):
+            renderedContent = content
+            collectionView.reloadData()
+            collectionView.collectionViewLayout.invalidateLayout()
+        }
+    }
+
+    private func execute(_ command: MainHomeViewCommand) {
+        switch command {
+        case .shakeDice:
+            shakeVisibleDice()
+        }
+    }
 }
 
 // MARK: - UICollectionViewDataSource
@@ -132,14 +200,14 @@ final class MainHomeViewController: MainBaseViewController {
 extension MainHomeViewController: UICollectionViewDataSource {
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        sections.count
+        renderedContent?.sections.count ?? 0
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        sections[section].items.count
+        renderedContent?.sections[section].items.count ?? 0
     }
 
     func collectionView(
@@ -157,7 +225,7 @@ extension MainHomeViewController: UICollectionViewDataSource {
                 MainHomeGameListCell.self,
                 for: indexPath
             )
-            cell.configure(itemCount: gameListItemCount)
+            cell.configure(games: renderedContent?.games ?? [])
             return cell
         }
     }
@@ -175,7 +243,22 @@ extension MainHomeViewController: UICollectionViewDataSource {
             MainHomeTitleHeader.self,
             for: indexPath
         )
-        header.configure(title: sections[indexPath.section].headerTitle)
+        header.configure(
+            title: renderedContent?.sections[indexPath.section].headerTitle ?? ""
+        )
         return header
+    }
+}
+
+// MARK: - Composition
+
+extension MainHomeViewController {
+
+    convenience init(
+        title: String,
+        configuration: MainHomeConfiguration = .standard
+    ) {
+        let viewModel = MainHomeViewModel(configuration: configuration)
+        self.init(title: title, viewModel: viewModel)
     }
 }
