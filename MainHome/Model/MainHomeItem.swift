@@ -25,10 +25,17 @@ nonisolated struct MainHomeGame: Equatable, Sendable {
 
 // MARK: - Game Result
 
+nonisolated struct MainHomeGameResultDetail: Equatable, Sendable {
+
+    let wins: Int
+    let draws: Int
+    let losses: Int
+}
+
 nonisolated struct MainHomeGameResult: Equatable, Sendable {
 
-    let title: String
-    let detail: String
+    let gameTitle: String
+    let detail: MainHomeGameResultDetail
 }
 
 // MARK: - Section
@@ -55,7 +62,7 @@ nonisolated struct MainHomeConfiguration: Sendable {
     static let standard = MainHomeConfiguration(
         sections: MainHomeSection.standard,
         games: MainHomeGame.standardList,
-        results: MainHomeGameResult.emptyList
+        results: MainHomeGameResult.standardList
     )
 
     let sections: [MainHomeSection]
@@ -197,5 +204,30 @@ extension MainHomeGame {
 
 extension MainHomeGameResult {
 
-    nonisolated static let emptyList: [MainHomeGameResult] = []
+    nonisolated static let standardList: [MainHomeGameResult] = [
+        MainHomeGameResult(
+            gameTitle: "骰子",
+            detail: MainHomeGameResultDetail(wins: 12, draws: 3, losses: 5)
+        ),
+        MainHomeGameResult(
+            gameTitle: "啤牌",
+            detail: MainHomeGameResultDetail(wins: 8, draws: 1, losses: 3)
+        ),
+        MainHomeGameResult(
+            gameTitle: "輪盤",
+            detail: MainHomeGameResultDetail(wins: 4, draws: 2, losses: 7)
+        ),
+        MainHomeGameResult(
+            gameTitle: "骰寶",
+            detail: MainHomeGameResultDetail(wins: 6, draws: 4, losses: 6)
+        ),
+        MainHomeGameResult(
+            gameTitle: "二十一點",
+            detail: MainHomeGameResultDetail(wins: 15, draws: 0, losses: 9)
+        ),
+        MainHomeGameResult(
+            gameTitle: "賓果",
+            detail: MainHomeGameResultDetail(wins: 3, draws: 5, losses: 2)
+        ),
+    ]
 }

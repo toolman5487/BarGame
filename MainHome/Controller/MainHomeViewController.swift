@@ -299,10 +299,12 @@ extension MainHomeViewController: UICollectionViewDataSource {
             cell.configure(games: renderedContent?.games ?? [])
             return cell
         case .gameResults:
-            return collectionView.dequeueReusableCell(
+            let cell = collectionView.dequeueReusableCell(
                 MainHomeGameResultsCell.self,
                 for: indexPath
             )
+            cell.configure(results: renderedContent?.results ?? [])
+            return cell
         }
     }
 
