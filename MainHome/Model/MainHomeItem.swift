@@ -52,7 +52,6 @@ nonisolated struct MainHomeContent: Equatable, Sendable {
 
 nonisolated struct MainHomeConfiguration: Sendable {
 
-    /// 預設：戰績為空
     static let standard = MainHomeConfiguration(
         sections: MainHomeSection.standard,
         games: MainHomeGame.standardList,
@@ -74,10 +73,78 @@ nonisolated struct MainHomeConfiguration: Sendable {
 
 // MARK: - State
 
+nonisolated enum MainHomeFailure: Error, Equatable, Sendable {
+
+    enum ConfigurationReason: Equatable, Sendable {
+        case emptySections
+        case emptySectionItems
+        case missingGames
+    }
+
+    case contentUnavailable(reason: ConfigurationReason)
+    case loadFailed
+
+    var title: String {
+        switch self {
+        case .contentUnavailable:
+            return "首頁暫時無法顯示"
+
+        case .loadFailed:
+            return "暫時無法載入首頁"
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .contentUnavailable:
+            return "內容準備時發生問題，請稍後再回來看看。"
+
+        case .loadFailed:
+            return "請輕觸畫面重新載入；若仍無法顯示，請稍後再試。"
+        }
+    }
+
+    var isRetryable: Bool {
+        switch self {
+        case .contentUnavailable:
+            return false
+
+        case .loadFailed:
+            return true
+        }
+    }
+
+    var logDescription: String {
+        switch self {
+        case .contentUnavailable(let reason):
+            return "MainHome configuration error: \(reason)"
+
+        case .loadFailed:
+            return "MainHome content loading failed"
+        }
+    }
+}
+
 nonisolated enum MainHomeState: Equatable, Sendable {
 
     case idle
+    case loading
     case ready(MainHomeContent)
+    case failed(MainHomeFailure)
+
+    var content: MainHomeContent? {
+        if case .ready(let content) = self {
+            return content
+        }
+        return nil
+    }
+
+    var failure: MainHomeFailure? {
+        if case .failed(let failure) = self {
+            return failure
+        }
+        return nil
+    }
 }
 
 // MARK: - Sections
@@ -130,6 +197,5 @@ extension MainHomeGame {
 
 extension MainHomeGameResult {
 
-    /// 空戰績
     nonisolated static let emptyList: [MainHomeGameResult] = []
 }

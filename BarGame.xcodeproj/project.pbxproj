@@ -41,6 +41,7 @@
 		15C4F135302AFF9D00EFF3E9 /* ViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F134302AFF9D00EFF3E9 /* ViewFactory.swift */; };
 		15C4F137302B087000EFF3E9 /* MainHomeGameResultsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F136302B087000EFF3E9 /* MainHomeGameResultsCell.swift */; };
 		15C4F13D302B0CBC00EFF3E9 /* BaseHintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F13C302B0CBC00EFF3E9 /* BaseHintView.swift */; };
+		15C4F1A9302B1A6500EFF3E9 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F1A8302B1A6500EFF3E9 /* ErrorView.swift */; };
 		15C8B67D3029821700457B00 /* ThemeColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C8B67C3029821700457B00 /* ThemeColor.swift */; };
 /* End PBXBuildFile section */
 
@@ -77,6 +78,7 @@
 		15C4F134302AFF9D00EFF3E9 /* ViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewFactory.swift; sourceTree = "<group>"; };
 		15C4F136302B087000EFF3E9 /* MainHomeGameResultsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeGameResultsCell.swift; sourceTree = "<group>"; };
 		15C4F13C302B0CBC00EFF3E9 /* BaseHintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHintView.swift; sourceTree = "<group>"; };
+		15C4F1A8302B1A6500EFF3E9 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		15C8B67C3029821700457B00 /* ThemeColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeColor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -236,6 +238,7 @@
 		157833373027820F0087747A /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				15C4F1A7302B1A4800EFF3E9 /* ErrorView */,
 				15C4F13B302B0CA800EFF3E9 /* HintView */,
 				157833323027820F0087747A /* MainBase */,
 				157833343027820F0087747A /* RootBase */,
@@ -443,6 +446,14 @@
 			path = HintView;
 			sourceTree = "<group>";
 		};
+		15C4F1A7302B1A4800EFF3E9 /* ErrorView */ = {
+			isa = PBXGroup;
+			children = (
+				15C4F1A8302B1A6500EFF3E9 /* ErrorView.swift */,
+			);
+			path = ErrorView;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -532,6 +543,7 @@
 				1596A271302599020018E77C /* DiceGameState.swift in Sources */,
 				1578333B3027820F0087747A /* MainBaseViewController.swift in Sources */,
 				1578333C3027820F0087747A /* RootBaseViewController.swift in Sources */,
+				15C4F1A9302B1A6500EFF3E9 /* ErrorView.swift in Sources */,
 				15C4905B302AC64C00EFF3E9 /* PlaceholderCell.swift in Sources */,
 				1578333D3027820F0087747A /* StandardBaseViewController.swift in Sources */,
 				1578333E3027820F0087747A /* AppLogger.swift in Sources */,

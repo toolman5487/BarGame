@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import OSLog
 
 // MARK: - Input
 
@@ -14,6 +15,7 @@ struct MainHomeViewModelInput {
 
     let viewDidLoad: AnyPublisher<Void, Never>
     let shakeMotion: AnyPublisher<Void, Never>
+    let didRequestRetry: AnyPublisher<Void, Never>
 }
 
 // MARK: - Output
@@ -81,6 +83,12 @@ final class MainHomeViewModel: MainHomeViewModeling {
             }
             .store(in: &cancellables)
 
+        input.didRequestRetry
+            .sink { [weak self] in
+                self?.handleRetry()
+            }
+            .store(in: &cancellables)
+
         return MainHomeViewModelOutput(
             state: stateSubject
                 .removeDuplicates()
@@ -94,21 +102,75 @@ final class MainHomeViewModel: MainHomeViewModeling {
     private func handleViewDidLoad() {
         switch state {
         case .idle:
-            updateState(.ready(configuration.initialContent))
+            loadContent()
 
-        case .ready:
+        case .loading, .ready, .failed:
+            break
+        }
+    }
+
+    private func handleRetry() {
+        switch state {
+        case .failed(let failure) where failure.isRetryable:
+            loadContent()
+
+        case .idle, .loading, .ready, .failed:
             break
         }
     }
 
     private func handleShakeMotion() {
         switch state {
-        case .idle:
-            break
-
         case .ready:
             commandSubject.send(.shakeDice)
+
+        case .idle, .loading, .failed:
+            break
         }
+    }
+
+    // MARK: - Load
+
+    private func loadContent() {
+        updateState(.loading)
+
+        switch Self.resolveContent(from: configuration) {
+        case .success(let content):
+            updateState(.ready(content))
+
+        case .failure(let failure):
+            AppLogger.configuration.error(
+                "\(failure.logDescription, privacy: .public)"
+            )
+            updateState(.failed(failure))
+        }
+    }
+
+    private static func resolveContent(
+        from configuration: MainHomeConfiguration
+    ) -> Result<MainHomeContent, MainHomeFailure> {
+        guard !configuration.sections.isEmpty else {
+            return .failure(
+                .contentUnavailable(reason: .emptySections)
+            )
+        }
+
+        guard configuration.sections.allSatisfy({ !$0.items.isEmpty }) else {
+            return .failure(
+                .contentUnavailable(reason: .emptySectionItems)
+            )
+        }
+
+        let hasGameList = configuration.sections.contains { section in
+            section.items.contains(.gameList)
+        }
+        if hasGameList, configuration.games.isEmpty {
+            return .failure(
+                .contentUnavailable(reason: .missingGames)
+            )
+        }
+
+        return .success(configuration.initialContent)
     }
 
     // MARK: - State Updates

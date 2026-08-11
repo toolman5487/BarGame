@@ -77,7 +77,6 @@ class BaseHintView: UIView {
         static let imageSize: CGFloat = 48
         static let preferredHeight: CGFloat = 160
         static let defaultImageSystemName = "tray.fill"
-        static let defaultSymbolPointSize: CGFloat = 32
     }
 
     typealias SymbolEffect = BaseEmptySymbolEffect
@@ -99,10 +98,9 @@ class BaseHintView: UIView {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.tintColor = ThemeColor.secondary
-        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
-            pointSize: Layout.defaultSymbolPointSize,
-            weight: .regular
-        )
+        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title2)
+            .applying(UIImage.SymbolConfiguration(weight: .regular))
+        imageView.adjustsImageSizeForAccessibilityContentSizeCategory = true
         imageView.image = UIImage(systemName: Layout.defaultImageSystemName)
         return imageView
     }()

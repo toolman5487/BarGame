@@ -31,7 +31,7 @@ class MainBaseTitleHeader: UICollectionReusableView {
 
     private(set) lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .title2)
+        label.font = .preferredFont(forTextStyle: .title1)
         label.adjustsFontForContentSizeCategory = true
         label.textColor = ThemeColor.primary
         label.numberOfLines = 1

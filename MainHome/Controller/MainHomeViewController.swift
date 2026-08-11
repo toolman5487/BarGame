@@ -6,6 +6,7 @@
 //
 
 import Combine
+import SnapKit
 import UIKit
 
 @MainActor
@@ -25,8 +26,19 @@ final class MainHomeViewController: MainBaseViewController {
 
     private let viewDidLoadSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
+    private let didRequestRetrySubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedContent: MainHomeContent?
+    private var currentFailure: MainHomeFailure?
+
+    // MARK: - UI Elements
+
+    private let errorView = ErrorView()
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
 
     override var collectionViewSectionInset: UIEdgeInsets {
         .zero
@@ -82,11 +94,25 @@ final class MainHomeViewController: MainBaseViewController {
         collectionView.register(MainHomeGameListCell.self)
         collectionView.register(MainHomeGameResultsCell.self)
         collectionView.dataSource = self
+
+        view.addSubview(errorView)
+        view.addSubview(loadingIndicator)
+        errorView.isHidden = true
+        configureErrorViewRetry()
     }
 
     override func setLayout() {
         super.setLayout()
         updateCollectionViewEdgeInsets()
+
+        errorView.snp.makeConstraints { make in
+            make.center.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
+        }
+
+        loadingIndicator.snp.makeConstraints { make in
+            make.center.equalTo(view.safeAreaLayoutGuide)
+        }
     }
 
     override func collectionViewItemSize(
@@ -134,7 +160,8 @@ final class MainHomeViewController: MainBaseViewController {
     override func bind() {
         let input = MainHomeViewModelInput(
             viewDidLoad: viewDidLoadSubject.eraseToAnyPublisher(),
-            shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
+            shakeMotion: shakeMotionSubject.eraseToAnyPublisher(),
+            didRequestRetry: didRequestRetrySubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
 
@@ -159,13 +186,28 @@ final class MainHomeViewController: MainBaseViewController {
             .forEach { $0.shakeDice() }
     }
 
+    @objc
+    private func handleErrorViewTap() {
+        guard currentFailure?.isRetryable == true else { return }
+        didRequestRetrySubject.send()
+    }
+
     // MARK: - Private
 
     private func item(at indexPath: IndexPath) -> MainHomeItem {
         guard let renderedContent else {
-            preconditionFailure("MainHome content must be loaded before requesting items")
+            preconditionFailure("MainHome content must be ready before requesting items")
         }
         return renderedContent.sections[indexPath.section].items[indexPath.item]
+    }
+
+    private func configureErrorViewRetry() {
+        let tap = UITapGestureRecognizer(
+            target: self,
+            action: #selector(handleErrorViewTap)
+        )
+        errorView.addGestureRecognizer(tap)
+        errorView.isUserInteractionEnabled = true
     }
 
     private func updateCollectionViewEdgeInsets() {
@@ -181,12 +223,38 @@ final class MainHomeViewController: MainBaseViewController {
     private func apply(_ state: MainHomeState) {
         switch state {
         case .idle:
-            break
+            renderedContent = nil
+            currentFailure = nil
+            collectionView.isHidden = true
+            errorView.isHidden = true
+            loadingIndicator.stopAnimating()
+            collectionView.reloadData()
+
+        case .loading:
+            renderedContent = nil
+            currentFailure = nil
+            collectionView.isHidden = true
+            errorView.isHidden = true
+            loadingIndicator.startAnimating()
+            collectionView.reloadData()
 
         case .ready(let content):
             renderedContent = content
+            currentFailure = nil
+            collectionView.isHidden = false
+            errorView.isHidden = true
+            loadingIndicator.stopAnimating()
             collectionView.reloadData()
             collectionView.collectionViewLayout.invalidateLayout()
+
+        case .failed(let failure):
+            renderedContent = nil
+            currentFailure = failure
+            collectionView.isHidden = true
+            errorView.isHidden = false
+            loadingIndicator.stopAnimating()
+            errorView.configure(message: failure.message, title: failure.title)
+            collectionView.reloadData()
         }
     }
 
