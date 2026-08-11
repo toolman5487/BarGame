@@ -45,14 +45,14 @@ nonisolated struct MainTabBarConfiguration: Sendable {
             MainTabItem(
                 tab: .home,
                 title: "遊戲",
-                imageSystemName: "flag.2.crossed",
-                selectedImageSystemName: "flag.pattern.checkered.2.crossed"
+                imageSystemName: "dice",
+                selectedImageSystemName: "dice.fill"
             ),
             MainTabItem(
                 tab: .pageA,
                 title: "頁面A",
-                imageSystemName: "trophy",
-                selectedImageSystemName: "trophy.fill"
+                imageSystemName: "flag.2.crossed",
+                selectedImageSystemName: "flag.pattern.checkered.2.crossed"
             ),
             MainTabItem(
                 tab: .pageB,

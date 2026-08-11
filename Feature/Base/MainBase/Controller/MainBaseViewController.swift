@@ -76,6 +76,7 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        tabBarController?.tabBarMinimizeBehavior = .onScrollDown
         navigationController?.navigationBar.prefersLargeTitles = true
     }
 
@@ -108,6 +109,13 @@ class MainBaseViewController: StandardBaseViewController, MainCollectionLayoutCo
         )
         return CGSize(width: width, height: 56)
     }
+
+    func collectionViewHeaderSize(
+        in collectionView: UICollectionView,
+        section: Int
+    ) -> CGSize {
+        .zero
+    }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
@@ -120,6 +128,14 @@ extension MainBaseViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         collectionViewItemSize(in: collectionView, at: indexPath)
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        referenceSizeForHeaderInSection section: Int
+    ) -> CGSize {
+        collectionViewHeaderSize(in: collectionView, section: section)
     }
 
     func collectionView(

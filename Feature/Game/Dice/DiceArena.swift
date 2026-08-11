@@ -16,7 +16,8 @@ final class DiceArena {
         static let elevatedHeight: Float = 3.4
         static let elevatedFocusHeight: Float = 0.35
         static let horizontalHeight: Float = 0.5
-        static let perspectiveDistance: Float = 5.4
+        static let horizontalFocusHeight: Float = 1.1
+        static let defaultPerspectiveDistance: Float = 5.4
         static let fieldOfView: CGFloat = 42
         static let topDownHeight: Float = 7
         static let transitionDuration: TimeInterval = 0.8
@@ -66,6 +67,7 @@ final class DiceArena {
 
     private let sceneAppearance: DiceSceneAppearance
     private let cameraViewpoint: DiceCameraViewpoint
+    private let cameraDistance: Float
     private let leftWallNode: SCNNode
     private let rightWallNode: SCNNode
     private let frontWallNode: SCNNode
@@ -77,10 +79,12 @@ final class DiceArena {
 
     init(
         sceneAppearance: DiceSceneAppearance,
-        cameraViewpoint: DiceCameraViewpoint
+        cameraViewpoint: DiceCameraViewpoint,
+        preferredCameraDistance: Float?
     ) {
         self.sceneAppearance = sceneAppearance
         self.cameraViewpoint = cameraViewpoint
+        cameraDistance = preferredCameraDistance ?? Camera.defaultPerspectiveDistance
         leftWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallThickness,
             height: TransparentCup.wallHeight,
@@ -457,7 +461,7 @@ final class DiceArena {
         SCNVector3(
             0,
             cameraHeight,
-            Camera.perspectiveDistance
+            cameraDistance
         )
     }
 
@@ -481,7 +485,7 @@ final class DiceArena {
             return Camera.elevatedFocusHeight
 
         case .horizontal:
-            return Camera.horizontalHeight
+            return Camera.horizontalFocusHeight
         }
     }
 }

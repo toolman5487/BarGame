@@ -14,11 +14,12 @@ final class MainHomeViewController: MainBaseViewController {
 
     private enum Layout {
         static let dicePreviewAspectRatio: CGFloat = 1.2
+        static let gameListHeight: CGFloat = 200
     }
 
     // MARK: - State
 
-    private let items = MainHomeItem.allCases
+    private let sections = MainHomeSection.standard
 
     override var collectionViewSectionInset: UIEdgeInsets {
         .zero
@@ -57,6 +58,7 @@ final class MainHomeViewController: MainBaseViewController {
         super.setHierarchy()
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(MainHomeDiceCollectionViewCell.self)
+        collectionView.register(MainHomeTitleHeader.self)
         collectionView.dataSource = self
     }
 
@@ -75,10 +77,26 @@ final class MainHomeViewController: MainBaseViewController {
             collectionView.bounds.width - inset.left - inset.right
         )
 
-        switch items[indexPath.item] {
+        switch item(at: indexPath) {
         case .dicePreview:
             return CGSize(width: width, height: width * Layout.dicePreviewAspectRatio)
+        case .gameList:
+            return CGSize(width: width, height: Layout.gameListHeight)
         }
+    }
+
+    override func collectionViewHeaderSize(
+        in collectionView: UICollectionView,
+        section: Int
+    ) -> CGSize {
+        let title = sections[section].headerTitle
+        guard !title.isEmpty else {
+            return .zero
+        }
+        return CGSize(
+            width: collectionView.bounds.width,
+            height: MainBaseTitleHeader.Layout.preferredHeight
+        )
     }
 
     // MARK: - Actions
@@ -90,6 +108,10 @@ final class MainHomeViewController: MainBaseViewController {
     }
 
     // MARK: - Private
+
+    private func item(at indexPath: IndexPath) -> MainHomeItem {
+        sections[indexPath.section].items[indexPath.item]
+    }
 
     private func updateCollectionViewEdgeInsets() {
         let bottom = view.safeAreaInsets.bottom
@@ -104,23 +126,49 @@ final class MainHomeViewController: MainBaseViewController {
 
 extension MainHomeViewController: UICollectionViewDataSource {
 
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        sections.count
+    }
+
     func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        items.count
+        sections[section].items.count
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        switch items[indexPath.item] {
+        switch item(at: indexPath) {
         case .dicePreview:
             return collectionView.dequeueReusableCell(
                 MainHomeDiceCollectionViewCell.self,
                 for: indexPath
             )
+        case .gameList:
+            return collectionView.dequeueReusableCell(
+                MainBaseCollectionViewCell.self,
+                for: indexPath
+            )
         }
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
+        guard kind == MainHomeTitleHeader.elementKind else {
+            return UICollectionReusableView()
+        }
+
+        let header = collectionView.dequeueReusableHeader(
+            MainHomeTitleHeader.self,
+            for: indexPath
+        )
+        header.configure(title: sections[indexPath.section].headerTitle)
+        return header
     }
 }

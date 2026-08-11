@@ -9,6 +9,6 @@ import UIKit
 
 enum ThemeColor {
 
-    static let ThemePrimary = "#C62828"
-    static let primary: UIColor = UIColor(hex: ThemePrimary) ?? .systemRed
+    static let primary: UIColor = .label
+    static let secondary: UIColor = .secondaryLabel
 }

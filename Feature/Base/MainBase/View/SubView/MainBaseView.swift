@@ -52,6 +52,7 @@ final class MainBaseView: UIView {
 
     private func registerCells() {
         collectionView.register(MainBaseCollectionViewCell.self)
+        collectionView.register(MainBaseTitleHeader.self)
     }
 
     private func makeCollectionViewLayout() -> UICollectionViewLayout {
@@ -59,6 +60,7 @@ final class MainBaseView: UIView {
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
+        layout.headerReferenceSize = .zero
         return layout
     }
 }

@@ -33,6 +33,9 @@
 		1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1596A2EB3025C9E40018E77C /* MainTabBarController.swift */; };
 		15A1B2C13026A0010018E77C /* MainTabBarState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A1B2C03026A0010018E77C /* MainTabBarState.swift */; };
 		15A1B2C33026A0010018E77C /* MainTabBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */; };
+		15C4905B302AC64C00EFF3E9 /* PlaceholderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4905A302AC64C00EFF3E9 /* PlaceholderCell.swift */; };
+		15C4F0D0302AD3B700EFF3E9 /* MainBaseTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F0CF302AD3B700EFF3E9 /* MainBaseTitleHeader.swift */; };
+		15C4F0D3302AD6B500EFF3E9 /* MainHomeTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F0D2302AD6B500EFF3E9 /* MainHomeTitleHeader.swift */; };
 		15C8B67D3029821700457B00 /* ThemeColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C8B67C3029821700457B00 /* ThemeColor.swift */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +64,9 @@
 		1596A2EB3025C9E40018E77C /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 		15A1B2C03026A0010018E77C /* MainTabBarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarState.swift; sourceTree = "<group>"; };
 		15A1B2C23026A0010018E77C /* MainTabBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarViewModel.swift; sourceTree = "<group>"; };
+		15C4905A302AC64C00EFF3E9 /* PlaceholderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderCell.swift; sourceTree = "<group>"; };
+		15C4F0CF302AD3B700EFF3E9 /* MainBaseTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseTitleHeader.swift; sourceTree = "<group>"; };
+		15C4F0D2302AD6B500EFF3E9 /* MainHomeTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeTitleHeader.swift; sourceTree = "<group>"; };
 		15C8B67C3029821700457B00 /* ThemeColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeColor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				1539357C30284EBF0026C98C /* Cell */,
+				15C4F0CA302AD30D00EFF3E9 /* Header */,
 				1539357D30284ECB0026C98C /* SubView */,
 			);
 			path = View;
@@ -156,6 +163,7 @@
 			isa = PBXGroup;
 			children = (
 				153935E830286DC40026C98C /* Cell */,
+				15C4F0D1302AD69A00EFF3E9 /* Header */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -234,6 +242,7 @@
 		1578333A3027820F0087747A /* Feature */ = {
 			isa = PBXGroup;
 			children = (
+				15C49058302AC61600EFF3E9 /* Placeholder */,
 				157833373027820F0087747A /* Base */,
 				157833623028D3AD0087747A /* Extension */,
 				1596A26A302590B50018E77C /* Game */,
@@ -363,6 +372,38 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
+		15C49058302AC61600EFF3E9 /* Placeholder */ = {
+			isa = PBXGroup;
+			children = (
+				15C49059302AC62900EFF3E9 /* Cell */,
+			);
+			path = Placeholder;
+			sourceTree = "<group>";
+		};
+		15C49059302AC62900EFF3E9 /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				15C4905A302AC64C00EFF3E9 /* PlaceholderCell.swift */,
+			);
+			path = Cell;
+			sourceTree = "<group>";
+		};
+		15C4F0CA302AD30D00EFF3E9 /* Header */ = {
+			isa = PBXGroup;
+			children = (
+				15C4F0CF302AD3B700EFF3E9 /* MainBaseTitleHeader.swift */,
+			);
+			path = Header;
+			sourceTree = "<group>";
+		};
+		15C4F0D1302AD69A00EFF3E9 /* Header */ = {
+			isa = PBXGroup;
+			children = (
+				15C4F0D2302AD6B500EFF3E9 /* MainHomeTitleHeader.swift */,
+			);
+			path = Header;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -452,12 +493,15 @@
 				1596A271302599020018E77C /* DiceGameState.swift in Sources */,
 				1578333B3027820F0087747A /* MainBaseViewController.swift in Sources */,
 				1578333C3027820F0087747A /* RootBaseViewController.swift in Sources */,
+				15C4905B302AC64C00EFF3E9 /* PlaceholderCell.swift in Sources */,
 				1578333D3027820F0087747A /* StandardBaseViewController.swift in Sources */,
 				1578333E3027820F0087747A /* AppLogger.swift in Sources */,
+				15C4F0D0302AD3B700EFF3E9 /* MainBaseTitleHeader.swift in Sources */,
 				157833423027822D0087747A /* MainHomeViewController.swift in Sources */,
 				153935F1302871000026C98C /* MainHomeDiceCollectionViewCell.swift in Sources */,
 				153935F3302871000026C98C /* MainHomeItem.swift in Sources */,
 				1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */,
+				15C4F0D3302AD6B500EFF3E9 /* MainHomeTitleHeader.swift in Sources */,
 				15A1B2C13026A0010018E77C /* MainTabBarState.swift in Sources */,
 				15A1B2C33026A0010018E77C /* MainTabBarViewModel.swift in Sources */,
 				1596A273302599020018E77C /* DiceGameViewModel.swift in Sources */,

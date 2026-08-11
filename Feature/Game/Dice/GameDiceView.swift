@@ -31,6 +31,7 @@ final class GameDiceView: UIView {
         let initialDiceCount: Int
         let maximumDiceCount: Int
         let preferredEdgeLength: CGFloat?
+        let preferredCameraDistance: Float?
         let sceneAppearance: DiceSceneAppearance
         let cameraViewpoint: DiceCameraViewpoint
 
@@ -38,12 +39,14 @@ final class GameDiceView: UIView {
             initialDiceCount: Int,
             maximumDiceCount: Int,
             preferredEdgeLength: CGFloat? = nil,
+            preferredCameraDistance: Float? = nil,
             sceneAppearance: DiceSceneAppearance = .walnut,
             cameraViewpoint: DiceCameraViewpoint = .elevated
         ) {
             self.initialDiceCount = initialDiceCount
             self.maximumDiceCount = maximumDiceCount
             self.preferredEdgeLength = preferredEdgeLength
+            self.preferredCameraDistance = preferredCameraDistance
             self.sceneAppearance = sceneAppearance
             self.cameraViewpoint = cameraViewpoint
         }
@@ -163,7 +166,8 @@ final class GameDiceView: UIView {
         self.motionUpdatesProvider = motionUpdatesProvider
         arena = DiceArena(
             sceneAppearance: configuration.sceneAppearance,
-            cameraViewpoint: configuration.cameraViewpoint
+            cameraViewpoint: configuration.cameraViewpoint,
+            preferredCameraDistance: configuration.preferredCameraDistance
         )
         super.init(frame: .zero)
         backgroundColor = .systemBackground
