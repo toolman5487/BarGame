@@ -56,14 +56,12 @@ class MainBaseTitleHeader: UICollectionReusableView {
     override func prepareForReuse() {
         super.prepareForReuse()
         titleLabel.text = nil
-        accessibilityLabel = nil
     }
 
     // MARK: - Configuration
 
     func configure(title: String) {
         titleLabel.text = title
-        accessibilityLabel = title
     }
 
     // MARK: - Overridable
@@ -83,8 +81,6 @@ class MainBaseTitleHeader: UICollectionReusableView {
 
     func setAppearance() {
         backgroundColor = .clear
-        isAccessibilityElement = true
-        accessibilityTraits = .header
     }
 }
 

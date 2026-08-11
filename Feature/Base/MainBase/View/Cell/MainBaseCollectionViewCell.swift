@@ -44,7 +44,6 @@ class MainBaseCollectionViewCell: UICollectionViewCell {
     func setAppearance() {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
-        isAccessibilityElement = true
     }
 }
 

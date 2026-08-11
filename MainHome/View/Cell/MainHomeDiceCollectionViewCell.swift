@@ -39,7 +39,6 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
     override func setAppearance() {
         super.setAppearance()
         contentView.backgroundColor = .systemBackground
-        accessibilityLabel = "骰子"
     }
 
     // MARK: - Public
