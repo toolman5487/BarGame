@@ -91,8 +91,8 @@ final class MainHomeViewController: MainBaseViewController {
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(MainHomeDiceCollectionViewCell.self)
         collectionView.register(MainHomeTitleHeader.self)
-        collectionView.register(MainHomeGameListCell.self)
         collectionView.register(MainHomeGameResultsCell.self)
+        collectionView.register(MainHomeGameListCell.self)
         collectionView.dataSource = self
 
         view.addSubview(errorView)

@@ -164,12 +164,12 @@ extension MainHomeSection {
             items: [.dicePreview]
         ),
         MainHomeSection(
-            headerTitle: "遊戲列表",
-            items: [.gameList]
-        ),
-        MainHomeSection(
             headerTitle: "遊戲戰績",
             items: [.gameResults]
+        ),
+        MainHomeSection(
+            headerTitle: "遊戲列表",
+            items: [.gameList]
         ),
     ]
 }
