@@ -35,10 +35,10 @@ final class MainHomeResultEmptyView: BaseHintView {
 @MainActor
 final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
 
-    // MARK: - Layout
+    // MARK: - Metrics
 
-    enum Layout {
-        static let preferredHeight = BaseHintView.Layout.preferredHeight
+    enum Metrics {
+        static let preferredHeight = BaseHintView.Metrics.preferredHeight
         static let itemSize = CGSize(width: 280, height: 128)
         static let interitemSpacing: CGFloat = 12
         static let contentInset = UIEdgeInsets(
@@ -116,9 +116,9 @@ final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
     private func makeFlowLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.itemSize = Layout.itemSize
-        layout.minimumLineSpacing = Layout.interitemSpacing
-        layout.sectionInset = Layout.contentInset
+        layout.itemSize = Metrics.itemSize
+        layout.minimumLineSpacing = Metrics.interitemSpacing
+        layout.sectionInset = Metrics.contentInset
         return layout
     }
 

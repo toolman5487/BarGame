@@ -19,9 +19,9 @@ class MainBaseTitleHeader: UICollectionReusableView {
 
     static let elementKind = UICollectionView.elementKindSectionHeader
 
-    // MARK: - Layout
+    // MARK: - Metrics
 
-    enum Layout {
+    enum Metrics {
         static let horizontalInset: CGFloat = 16
         static let verticalInset: CGFloat = 8
         static let preferredHeight: CGFloat = 44
@@ -72,10 +72,10 @@ class MainBaseTitleHeader: UICollectionReusableView {
 
     func setLayout() {
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(Layout.horizontalInset)
-            make.trailing.equalToSuperview().inset(Layout.horizontalInset)
-            make.top.equalToSuperview().inset(Layout.verticalInset)
-            make.bottom.equalToSuperview().inset(Layout.verticalInset)
+            make.left.equalToSuperview().inset(Metrics.horizontalInset)
+            make.right.equalToSuperview().inset(Metrics.horizontalInset)
+            make.top.equalToSuperview().inset(Metrics.verticalInset)
+            make.bottom.equalToSuperview().inset(Metrics.verticalInset)
         }
     }
 

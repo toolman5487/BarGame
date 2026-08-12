@@ -11,9 +11,9 @@ import UIKit
 @MainActor
 final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
-    // MARK: - Layout
+    // MARK: - Metrics
 
-    enum Layout {
+    enum Metrics {
         static let columns = 3
         static let interitemSpacing: CGFloat = 12
         static let lineSpacing: CGFloat = 12
@@ -52,19 +52,19 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
         }
 
         let side = itemSideLength(forWidth: width)
-        let rows = Int(ceil(Double(itemCount) / Double(Layout.columns)))
+        let rows = Int(ceil(Double(itemCount) / Double(Metrics.columns)))
         let rowsHeight = CGFloat(rows) * side
-        let spacingHeight = CGFloat(max(0, rows - 1)) * Layout.lineSpacing
-        let inset = Layout.sectionInset
+        let spacingHeight = CGFloat(max(0, rows - 1)) * Metrics.lineSpacing
+        let inset = Metrics.sectionInset
 
         return inset.top + inset.bottom + rowsHeight + spacingHeight
     }
 
     static func itemSideLength(forWidth width: CGFloat) -> CGFloat {
-        let inset = Layout.sectionInset
-        let totalSpacing = Layout.interitemSpacing * CGFloat(Layout.columns - 1)
+        let inset = Metrics.sectionInset
+        let totalSpacing = Metrics.interitemSpacing * CGFloat(Metrics.columns - 1)
         let availableWidth = width - inset.left - inset.right - totalSpacing
-        return floor(max(0, availableWidth / CGFloat(Layout.columns)))
+        return floor(max(0, availableWidth / CGFloat(Metrics.columns)))
     }
 
     // MARK: - Overridable
@@ -107,9 +107,9 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
     private func makeFlowLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        layout.minimumInteritemSpacing = Layout.interitemSpacing
-        layout.minimumLineSpacing = Layout.lineSpacing
-        layout.sectionInset = Layout.sectionInset
+        layout.minimumInteritemSpacing = Metrics.interitemSpacing
+        layout.minimumLineSpacing = Metrics.lineSpacing
+        layout.sectionInset = Metrics.sectionInset
         return layout
     }
 }

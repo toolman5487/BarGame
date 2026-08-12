@@ -10,9 +10,9 @@ import UIKit
 @MainActor
 final class PlaceholderCell: UICollectionViewCell {
 
-    // MARK: - Layout
+    // MARK: - Metrics
 
-    private enum Layout {
+    private enum Metrics {
         static let cornerRadiusRatio: CGFloat = 0.12
     }
 
@@ -31,6 +31,6 @@ final class PlaceholderCell: UICollectionViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        contentView.layer.cornerRadius = contentView.bounds.height * Layout.cornerRadiusRatio
+        contentView.layer.cornerRadius = contentView.bounds.height * Metrics.cornerRadiusRatio
     }
 }

@@ -84,7 +84,7 @@ final class GameDiceView: UIView {
         }
     }
 
-    private enum DiceSpawnLayout {
+    private enum DiceSpawnMetrics {
         static let ringRadius: Float = 0.82
         static let positionsPerRing = 7
         static let baseHeight: Float = 1.4
@@ -287,17 +287,17 @@ final class GameDiceView: UIView {
 
     private func spawnPosition(for index: Int) -> SCNVector3 {
         guard index > 0 else {
-            return SCNVector3(0, DiceSpawnLayout.baseHeight, 0)
+            return SCNVector3(0, DiceSpawnMetrics.baseHeight, 0)
         }
 
         let adjustedIndex = index - 1
-        let ringIndex = adjustedIndex % DiceSpawnLayout.positionsPerRing
-        let verticalLayer = adjustedIndex / DiceSpawnLayout.positionsPerRing
-        let angle = Float(ringIndex) * 2 * .pi / Float(DiceSpawnLayout.positionsPerRing)
+        let ringIndex = adjustedIndex % DiceSpawnMetrics.positionsPerRing
+        let verticalLayer = adjustedIndex / DiceSpawnMetrics.positionsPerRing
+        let angle = Float(ringIndex) * 2 * .pi / Float(DiceSpawnMetrics.positionsPerRing)
         return SCNVector3(
-            cos(angle) * DiceSpawnLayout.ringRadius,
-            DiceSpawnLayout.baseHeight + Float(verticalLayer) * DiceSpawnLayout.layerHeight,
-            sin(angle) * DiceSpawnLayout.ringRadius
+            cos(angle) * DiceSpawnMetrics.ringRadius,
+            DiceSpawnMetrics.baseHeight + Float(verticalLayer) * DiceSpawnMetrics.layerHeight,
+            sin(angle) * DiceSpawnMetrics.ringRadius
         )
     }
 

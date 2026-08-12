@@ -70,7 +70,7 @@ class BaseHintView: UIView {
 
     // MARK: - Types
 
-    enum Layout {
+    enum Metrics {
         static let horizontalInset: CGFloat = 16
         static let verticalInset: CGFloat = 16
         static let contentSpacing: CGFloat = 8
@@ -101,7 +101,7 @@ class BaseHintView: UIView {
         imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title2)
             .applying(UIImage.SymbolConfiguration(weight: .regular))
         imageView.adjustsImageSizeForAccessibilityContentSizeCategory = true
-        imageView.image = UIImage(systemName: Layout.defaultImageSystemName)
+        imageView.image = UIImage(systemName: Metrics.defaultImageSystemName)
         return imageView
     }()
 
@@ -133,7 +133,7 @@ class BaseHintView: UIView {
         ])
         stackView.axis = .vertical
         stackView.alignment = .center
-        stackView.spacing = Layout.contentSpacing
+        stackView.spacing = Metrics.contentSpacing
         return stackView
     }()
 
@@ -174,13 +174,13 @@ class BaseHintView: UIView {
 
     func setLayout() {
         imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(Layout.imageSize)
+            make.width.height.equalTo(Metrics.imageSize)
         }
 
         contentStackView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(Layout.horizontalInset)
-            make.top.greaterThanOrEqualToSuperview().inset(Layout.verticalInset)
-            make.bottom.lessThanOrEqualToSuperview().inset(Layout.verticalInset)
+            make.left.right.equalToSuperview().inset(Metrics.horizontalInset)
+            make.top.greaterThanOrEqualToSuperview().inset(Metrics.verticalInset)
+            make.bottom.lessThanOrEqualToSuperview().inset(Metrics.verticalInset)
             make.centerY.equalToSuperview()
         }
     }
@@ -192,7 +192,7 @@ class BaseHintView: UIView {
     // MARK: - Private
 
     private func applyImage(_ image: UIImage?) {
-        imageView.image = image ?? UIImage(systemName: Layout.defaultImageSystemName)
+        imageView.image = image ?? UIImage(systemName: Metrics.defaultImageSystemName)
         imageView.isHidden = false
         applySymbolEffectIfNeeded()
     }

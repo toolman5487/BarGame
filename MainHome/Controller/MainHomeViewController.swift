@@ -14,7 +14,7 @@ final class MainHomeViewController: MainBaseViewController {
 
     // MARK: - Types
 
-    private enum Layout {
+    private enum Metrics {
         static let dicePreviewAspectRatio: CGFloat = 1.2
     }
 
@@ -107,7 +107,7 @@ final class MainHomeViewController: MainBaseViewController {
 
         errorView.snp.makeConstraints { make in
             make.center.equalTo(view.safeAreaLayoutGuide)
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
+            make.left.right.equalTo(view.safeAreaLayoutGuide).inset(24)
         }
 
         loadingIndicator.snp.makeConstraints { make in
@@ -127,7 +127,7 @@ final class MainHomeViewController: MainBaseViewController {
 
         switch item(at: indexPath) {
         case .dicePreview:
-            return CGSize(width: width, height: width * Layout.dicePreviewAspectRatio)
+            return CGSize(width: width, height: width * Metrics.dicePreviewAspectRatio)
         case .gameList:
             let height = MainHomeGameListCell.preferredHeight(
                 forWidth: width,
@@ -135,7 +135,7 @@ final class MainHomeViewController: MainBaseViewController {
             )
             return CGSize(width: width, height: height)
         case .gameResults:
-            return CGSize(width: width, height: MainHomeGameResultsCell.Layout.preferredHeight)
+            return CGSize(width: width, height: MainHomeGameResultsCell.Metrics.preferredHeight)
         }
     }
 
@@ -153,7 +153,7 @@ final class MainHomeViewController: MainBaseViewController {
         }
         return CGSize(
             width: collectionView.bounds.width,
-            height: MainBaseTitleHeader.Layout.preferredHeight
+            height: MainBaseTitleHeader.Metrics.preferredHeight
         )
     }
 
