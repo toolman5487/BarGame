@@ -15,6 +15,7 @@
 		15351307302C720100F367B8 /* GameDetailRuleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15351306302C720100F367B8 /* GameDetailRuleCell.swift */; };
 		15351309302C730100F367B8 /* GameDetailRuleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15351308302C730100F367B8 /* GameDetailRuleCatalog.swift */; };
 		1535130B302C740100F367B8 /* GameDetailRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1535130A302C740100F367B8 /* GameDetailRouter.swift */; };
+		1535130E302C750100F367B8 /* GameDetailStartCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1535130D302C750100F367B8 /* GameDetailStartCell.swift */; };
 		1539357F302850010026C98C /* MainBaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1539357E302850010026C98C /* MainBaseView.swift */; };
 		15393581302851010026C98C /* MainBaseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15393580302851010026C98C /* MainBaseCollectionViewCell.swift */; };
 		153935F1302871000026C98C /* MainHomeDiceCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */; };
@@ -75,6 +76,7 @@
 		15351306302C720100F367B8 /* GameDetailRuleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRuleCell.swift; sourceTree = "<group>"; };
 		15351308302C730100F367B8 /* GameDetailRuleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRuleCatalog.swift; sourceTree = "<group>"; };
 		1535130A302C740100F367B8 /* GameDetailRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRouter.swift; sourceTree = "<group>"; };
+		1535130D302C750100F367B8 /* GameDetailStartCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailStartCell.swift; sourceTree = "<group>"; };
 		1539357E302850010026C98C /* MainBaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseView.swift; sourceTree = "<group>"; };
 		15393580302851010026C98C /* MainBaseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseCollectionViewCell.swift; sourceTree = "<group>"; };
 		153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeDiceCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -252,6 +254,7 @@
 			isa = PBXGroup;
 			children = (
 				15351306302C720100F367B8 /* GameDetailRuleCell.swift */,
+				1535130D302C750100F367B8 /* GameDetailStartCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -801,6 +804,7 @@
 				15351307302C720100F367B8 /* GameDetailRuleCell.swift in Sources */,
 				15351309302C730100F367B8 /* GameDetailRuleCatalog.swift in Sources */,
 				1535130B302C740100F367B8 /* GameDetailRouter.swift in Sources */,
+				1535130E302C750100F367B8 /* GameDetailStartCell.swift in Sources */,
 				15D20001302C100100000001 /* DiceGame.swift in Sources */,
 				15D20002302C100100000002 /* GameStatistics.swift in Sources */,
 				15D20003302C100100000003 /* MainHomeSnapshot.swift in Sources */,

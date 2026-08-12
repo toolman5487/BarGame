@@ -43,6 +43,7 @@ final class GameDetailViewController: DetailBaseViewController {
         super.setHierarchy()
         collectionView.dataSource = self
         collectionView.register(GameDetailRuleCell.self)
+        collectionView.register(GameDetailStartCell.self)
         collectionView.register(GameDetailTitleHeader.self)
     }
 
@@ -85,8 +86,11 @@ extension GameDetailViewController: UICollectionViewDataSource {
         case .rules(let rules):
             return rules.count
 
-        case .settings, .start:
+        case .settings:
             return 0
+
+        case .start:
+            return 1
         }
     }
 
@@ -111,10 +115,21 @@ extension GameDetailViewController: UICollectionViewDataSource {
             cell.configure(rule: rules[indexPath.item])
             return cell
 
-        case .settings, .start:
+        case .settings:
             preconditionFailure(
                 "GameDetail section does not provide a cell: \(indexPath.section)"
             )
+
+        case .start:
+            let cell = collectionView.dequeueReusableCell(
+                GameDetailStartCell.self,
+                for: indexPath
+            )
+            cell.configure(title: "進入遊戲")
+            cell.tapHandler = { [weak self] in
+                self?.startGame()
+            }
+            return cell
         }
     }
 
