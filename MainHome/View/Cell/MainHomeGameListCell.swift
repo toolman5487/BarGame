@@ -22,7 +22,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     // MARK: - Callback
 
-    var gameTapHandler: ((Game) -> Void)?
+    var gameTapHandler: ((DiceGame) -> Void)?
 
     // MARK: - UI Elements
 
@@ -43,7 +43,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     // MARK: - State
 
-    private var games: [Game] = []
+    private var games: [DiceGame] = []
 
     // MARK: - Preferred Size
 
@@ -102,7 +102,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     // MARK: - Configuration
 
-    func configure(games: [Game]) {
+    func configure(games: [DiceGame]) {
         self.games = games
         collectionView.reloadData()
     }
@@ -209,7 +209,7 @@ final class MainHomeGameCell: MainBaseCollectionViewCell {
 
     // MARK: - Configuration
 
-    func configure(game: Game) {
+    func configure(game: DiceGame) {
         applyTitle(game.title)
     }
 

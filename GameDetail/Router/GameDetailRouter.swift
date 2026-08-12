@@ -10,7 +10,7 @@ import UIKit
 // MARK: - GameDetailRoute
 
 nonisolated enum GameDetailRoute: Equatable, Sendable {
-    case startGame(GameID)
+    case startGame(DiceGameID)
 }
 
 // MARK: - GameDetailRouting
@@ -32,7 +32,7 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
         }
     }
 
-    private func showGame(for gameID: GameID) {
+    private func showGame(for gameID: DiceGameID) {
         switch gameID {
         case .dice:
             let destination = DiceGameViewController()

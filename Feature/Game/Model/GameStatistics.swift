@@ -25,8 +25,8 @@ nonisolated struct GameStatistics: Equatable, Sendable {
 
 nonisolated struct GameOverview: Identifiable, Equatable, Sendable {
 
-    var id: GameID { game.id }
+    var id: DiceGameID { game.id }
 
-    let game: Game
+    let game: DiceGame
     let statistics: GameStatistics
 }

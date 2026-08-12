@@ -13,7 +13,7 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
     case settings
     case start
 
-    static func standard(for gameID: GameID) -> [GameDetailSection] {
+    static func standard(for gameID: DiceGameID) -> [GameDetailSection] {
         [
             .rules(GameDetailRuleCatalog.rules(for: gameID)),
             .settings,

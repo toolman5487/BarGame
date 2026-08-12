@@ -9,7 +9,7 @@ import Foundation
 
 nonisolated enum GameDetailRuleCatalog {
 
-    static func rules(for gameID: GameID) -> [GameDetailRule] {
+    static func rules(for gameID: DiceGameID) -> [GameDetailRule] {
         switch gameID {
         case .dice:
             return makeRules(

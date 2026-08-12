@@ -13,7 +13,7 @@ nonisolated enum MainHomeSection: Equatable, Sendable {
 
     case dicePreview
     case gameResults([GameOverview])
-    case gameList([Game])
+    case gameList([DiceGame])
 
     var headerTitle: String {
         switch self {

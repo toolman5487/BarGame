@@ -12,7 +12,7 @@ final class GameDetailViewController: DetailBaseViewController {
 
     // MARK: - Dependencies
 
-    private let game: Game
+    private let game: DiceGame
     private lazy var router: any GameDetailRouting = GameDetailRouter(
         sourceViewController: self
     )
@@ -24,7 +24,7 @@ final class GameDetailViewController: DetailBaseViewController {
     // MARK: - Lifecycle
 
     init(
-        game: Game,
+        game: DiceGame,
         sections: [GameDetailSection]? = nil
     ) {
         self.game = game

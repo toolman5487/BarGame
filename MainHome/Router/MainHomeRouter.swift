@@ -11,7 +11,7 @@ import UIKit
 
 nonisolated enum MainHomeRoute: Equatable, Sendable {
 
-    case game(Game)
+    case game(DiceGame)
 }
 
 // MARK: - Protocol
@@ -38,7 +38,7 @@ final class MainHomeRouter: BaseRouter, MainHomeRouting {
 
     // MARK: - Private
 
-    private func makeGameViewController(for game: Game) -> UIViewController {
+    private func makeGameViewController(for game: DiceGame) -> UIViewController {
         switch game.id {
         case .dice:
             return GameDetailViewController(game: game)

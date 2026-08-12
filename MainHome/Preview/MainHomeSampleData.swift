@@ -17,14 +17,14 @@ nonisolated enum MainHomeSampleData {
         ]
     )
 
-    private static let dice = Game(id: .dice, title: "骰子")
-    private static let playingCards = Game(id: .playingCards, title: "啤牌")
-    private static let roulette = Game(id: .roulette, title: "輪盤")
-    private static let sicBo = Game(id: .sicBo, title: "骰寶")
-    private static let blackjack = Game(id: .blackjack, title: "二十一點")
-    private static let bingo = Game(id: .bingo, title: "賓果")
+    private static let dice = DiceGame(id: .dice, title: "骰子")
+    private static let playingCards = DiceGame(id: .playingCards, title: "啤牌")
+    private static let roulette = DiceGame(id: .roulette, title: "輪盤")
+    private static let sicBo = DiceGame(id: .sicBo, title: "骰寶")
+    private static let blackjack = DiceGame(id: .blackjack, title: "二十一點")
+    private static let bingo = DiceGame(id: .bingo, title: "賓果")
 
-    private static let games: [Game] = [
+    private static let games: [DiceGame] = [
         dice,
         playingCards,
         roulette,
