@@ -86,9 +86,6 @@ extension GameDetailViewController: UICollectionViewDataSource {
         case .rules(let rules):
             return rules.count
 
-        case .settings:
-            return 0
-
         case .start:
             return 1
         }
@@ -114,11 +111,6 @@ extension GameDetailViewController: UICollectionViewDataSource {
             )
             cell.configure(rule: rules[indexPath.item])
             return cell
-
-        case .settings:
-            preconditionFailure(
-                "GameDetail section does not provide a cell: \(indexPath.section)"
-            )
 
         case .start:
             let cell = collectionView.dequeueReusableCell(
