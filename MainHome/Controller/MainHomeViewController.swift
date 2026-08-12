@@ -6,6 +6,7 @@
 //
 
 import Combine
+import OSLog
 import SnapKit
 import UIKit
 
@@ -28,7 +29,7 @@ final class MainHomeViewController: MainBaseViewController {
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private let didRequestRetrySubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
-    private var renderedContent: MainHomeContent?
+    private var renderedSnapshot: MainHomeSnapshot?
     private var currentFailure: MainHomeFailure?
 
     // MARK: - UI Elements
@@ -125,13 +126,13 @@ final class MainHomeViewController: MainBaseViewController {
             collectionView.bounds.width - inset.left - inset.right
         )
 
-        switch item(at: indexPath) {
+        switch section(at: indexPath.section) {
         case .dicePreview:
             return CGSize(width: width, height: width * Metrics.dicePreviewAspectRatio)
-        case .gameList:
+        case .gameList(let games):
             let height = MainHomeGameListCell.preferredHeight(
                 forWidth: width,
-                itemCount: renderedContent?.games.count ?? 0
+                itemCount: games.count
             )
             return CGSize(width: width, height: height)
         case .gameResults:
@@ -143,11 +144,11 @@ final class MainHomeViewController: MainBaseViewController {
         in collectionView: UICollectionView,
         section: Int
     ) -> CGSize {
-        guard let renderedContent,
-              renderedContent.sections.indices.contains(section)
+        guard let renderedSnapshot,
+              renderedSnapshot.sections.indices.contains(section)
         else { return .zero }
 
-        let title = renderedContent.sections[section].headerTitle
+        let title = renderedSnapshot.sections[section].headerTitle
         guard !title.isEmpty else {
             return .zero
         }
@@ -186,6 +187,12 @@ final class MainHomeViewController: MainBaseViewController {
             .forEach { $0.shakeDice() }
     }
 
+    private func handleGameResultTap(_ result: GameOverview) {
+        AppLogger.domain.debug(
+            "Selected game result: \(result.id.rawValue, privacy: .public)"
+        )
+    }
+
     @objc
     private func handleErrorViewTap() {
         guard currentFailure?.isRetryable == true else { return }
@@ -194,11 +201,11 @@ final class MainHomeViewController: MainBaseViewController {
 
     // MARK: - Private
 
-    private func item(at indexPath: IndexPath) -> MainHomeItem {
-        guard let renderedContent else {
-            preconditionFailure("MainHome content must be ready before requesting items")
+    private func section(at index: Int) -> MainHomeSection {
+        guard let renderedSnapshot else {
+            preconditionFailure("MainHome snapshot must be ready before requesting sections")
         }
-        return renderedContent.sections[indexPath.section].items[indexPath.item]
+        return renderedSnapshot.sections[index]
     }
 
     private func configureErrorViewRetry() {
@@ -223,7 +230,7 @@ final class MainHomeViewController: MainBaseViewController {
     private func apply(_ state: MainHomeState) {
         switch state {
         case .idle:
-            renderedContent = nil
+            renderedSnapshot = nil
             currentFailure = nil
             collectionView.isHidden = true
             errorView.isHidden = true
@@ -231,15 +238,15 @@ final class MainHomeViewController: MainBaseViewController {
             collectionView.reloadData()
 
         case .loading:
-            renderedContent = nil
+            renderedSnapshot = nil
             currentFailure = nil
             collectionView.isHidden = true
             errorView.isHidden = true
             loadingIndicator.startAnimating()
             collectionView.reloadData()
 
-        case .ready(let content):
-            renderedContent = content
+        case .ready(let snapshot):
+            renderedSnapshot = snapshot
             currentFailure = nil
             collectionView.isHidden = false
             errorView.isHidden = true
@@ -248,7 +255,7 @@ final class MainHomeViewController: MainBaseViewController {
             collectionView.collectionViewLayout.invalidateLayout()
 
         case .failed(let failure):
-            renderedContent = nil
+            renderedSnapshot = nil
             currentFailure = failure
             collectionView.isHidden = true
             errorView.isHidden = false
@@ -271,39 +278,42 @@ final class MainHomeViewController: MainBaseViewController {
 extension MainHomeViewController: UICollectionViewDataSource {
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        renderedContent?.sections.count ?? 0
+        renderedSnapshot?.sections.count ?? 0
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        renderedContent?.sections[section].items.count ?? 0
+        renderedSnapshot == nil ? 0 : 1
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        switch item(at: indexPath) {
+        switch section(at: indexPath.section) {
         case .dicePreview:
             return collectionView.dequeueReusableCell(
                 MainHomeDiceCollectionViewCell.self,
                 for: indexPath
             )
-        case .gameList:
+        case .gameList(let games):
             let cell = collectionView.dequeueReusableCell(
                 MainHomeGameListCell.self,
                 for: indexPath
             )
-            cell.configure(games: renderedContent?.games ?? [])
+            cell.configure(games: games)
             return cell
-        case .gameResults:
+        case .gameResults(let results):
             let cell = collectionView.dequeueReusableCell(
                 MainHomeGameResultsCell.self,
                 for: indexPath
             )
-            cell.configure(results: renderedContent?.results ?? [])
+            cell.configure(results: results)
+            cell.tapHandler = { [weak self] result in
+                self?.handleGameResultTap(result)
+            }
             return cell
         }
     }
@@ -322,7 +332,7 @@ extension MainHomeViewController: UICollectionViewDataSource {
             for: indexPath
         )
         header.configure(
-            title: renderedContent?.sections[indexPath.section].headerTitle ?? ""
+            title: renderedSnapshot?.sections[indexPath.section].headerTitle ?? ""
         )
         return header
     }

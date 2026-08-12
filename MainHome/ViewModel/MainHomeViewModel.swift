@@ -134,9 +134,9 @@ final class MainHomeViewModel: MainHomeViewModeling {
     private func loadContent() {
         updateState(.loading)
 
-        switch Self.resolveContent(from: configuration) {
-        case .success(let content):
-            updateState(.ready(content))
+        switch Self.resolveSnapshot(from: configuration) {
+        case .success(let snapshot):
+            updateState(.ready(snapshot))
 
         case .failure(let failure):
             AppLogger.configuration.error(
@@ -146,31 +146,28 @@ final class MainHomeViewModel: MainHomeViewModeling {
         }
     }
 
-    private static func resolveContent(
+    private static func resolveSnapshot(
         from configuration: MainHomeConfiguration
-    ) -> Result<MainHomeContent, MainHomeFailure> {
-        guard !configuration.sections.isEmpty else {
+    ) -> Result<MainHomeSnapshot, MainHomeFailure> {
+        let snapshot = configuration.snapshot
+
+        guard !snapshot.sections.isEmpty else {
             return .failure(
                 .contentUnavailable(reason: .emptySections)
             )
         }
 
-        guard configuration.sections.allSatisfy({ !$0.items.isEmpty }) else {
-            return .failure(
-                .contentUnavailable(reason: .emptySectionItems)
-            )
+        let hasEmptyGameList = snapshot.sections.contains { section in
+            guard case .gameList(let games) = section else { return false }
+            return games.isEmpty
         }
-
-        let hasGameList = configuration.sections.contains { section in
-            section.items.contains(.gameList)
-        }
-        if hasGameList, configuration.games.isEmpty {
+        if hasEmptyGameList {
             return .failure(
                 .contentUnavailable(reason: .missingGames)
             )
         }
 
-        return .success(configuration.initialContent)
+        return .success(snapshot)
     }
 
     // MARK: - State Updates

@@ -39,7 +39,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     // MARK: - State
 
-    private var games: [MainHomeGame] = []
+    private var games: [Game] = []
 
     // MARK: - Preferred Size
 
@@ -97,7 +97,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     // MARK: - Configuration
 
-    func configure(games: [MainHomeGame]) {
+    func configure(games: [Game]) {
         self.games = games
         collectionView.reloadData()
     }

@@ -38,8 +38,7 @@ final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
     // MARK: - Metrics
 
     enum Metrics {
-        static let preferredHeight = BaseHintView.Metrics.preferredHeight
-        static let itemSize = CGSize(width: 280, height: 128)
+        static let itemSize = CGSize(width: 280, height: 144)
         static let interitemSpacing: CGFloat = 12
         static let contentInset = UIEdgeInsets(
             top: 16,
@@ -47,6 +46,9 @@ final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
             bottom: 16,
             right: 16
         )
+        static let preferredHeight = itemSize.height
+            + contentInset.top
+            + contentInset.bottom
     }
 
     // MARK: - UI Elements
@@ -64,14 +66,19 @@ final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
         collectionView.isDirectionalLockEnabled = true
         collectionView.decelerationRate = .fast
         collectionView.allowsSelection = false
+        collectionView.delaysContentTouches = false
         collectionView.dataSource = self
         collectionView.register(MainHomeGameResultItemCell.self)
         return collectionView
     }()
 
+    // MARK: - Callback
+
+    var tapHandler: ((GameOverview) -> Void)?
+
     // MARK: - State
 
-    private var results: [MainHomeGameResult] = []
+    private var results: [GameOverview] = []
 
     // MARK: - Overridable
 
@@ -98,6 +105,7 @@ final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         results = []
+        tapHandler = nil
         collectionView.setContentOffset(.zero, animated: false)
         updateContentVisibility()
         collectionView.reloadData()
@@ -105,7 +113,7 @@ final class MainHomeGameResultsCell: MainBaseCollectionViewCell {
 
     // MARK: - Configuration
 
-    func configure(results: [MainHomeGameResult]) {
+    func configure(results: [GameOverview]) {
         self.results = results
         updateContentVisibility()
         collectionView.reloadData()
@@ -148,7 +156,11 @@ extension MainHomeGameResultsCell: UICollectionViewDataSource {
             MainHomeGameResultItemCell.self,
             for: indexPath
         )
-        cell.configure(result: results[indexPath.item])
+        let result = results[indexPath.item]
+        cell.configure(result: result)
+        cell.tapHandler = { [weak self] in
+            self?.tapHandler?(result)
+        }
         return cell
     }
 }
@@ -158,106 +170,226 @@ extension MainHomeGameResultsCell: UICollectionViewDataSource {
 @MainActor
 final class MainHomeGameResultItemCell: MainBaseCollectionViewCell {
 
-    // MARK: - Layout
+    // MARK: - Metrics
 
-    private enum Layout {
+    private enum Metrics {
         static let contentInset: CGFloat = 16
-        static let contentSpacing: CGFloat = 8
-        static let cornerRadius: CGFloat = 20
+        static let verticalInset: CGFloat = 16
+        static let scoreSpacing: CGFloat = 4
+        static let iconSpacing: CGFloat = 8
     }
+
+    // MARK: - Callback
+
+    var tapHandler: (() -> Void)?
 
     // MARK: - UI Elements
 
+    private let backgroundButton: UIButton = {
+        let button = ViewFactory.makeButton()
+        button.isUserInteractionEnabled = true
+        return button
+    }()
+
     private let gameTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .headline)
+        label.font = .preferredFont(forTextStyle: .title2)
         label.textColor = ThemeColor.primary
         label.numberOfLines = 1
-        label.adjustsFontForContentSizeCategory = true
+        label.textAlignment = .center
+        label.setContentHuggingPriority(.required, for: .vertical)
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
         return label
     }()
 
-    private let winsLabel: UILabel = {
+    private let winsScoreView = ScoreMetricView(
+        systemName: "trophy.fill",
+        tintColor: .systemYellow,
+        imagePlacement: .leading
+    )
+
+    private let lossesScoreView = ScoreMetricView(
+        systemName: "xmark",
+        tintColor: .systemRed,
+        imagePlacement: .trailing
+    )
+
+    private let scoreSeparatorLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.font = .preferredFont(forTextStyle: .title2)
+        label.text = "-"
         label.textColor = ThemeColor.secondary
-        label.numberOfLines = 1
-        label.adjustsFontForContentSizeCategory = true
+        label.textAlignment = .center
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
 
-    private let drawsLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .subheadline)
-        label.textColor = ThemeColor.secondary
-        label.numberOfLines = 1
-        label.adjustsFontForContentSizeCategory = true
-        return label
+    private lazy var scoreboardStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [
+            winsScoreView,
+            scoreSeparatorLabel,
+            lossesScoreView,
+        ])
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fillEqually
+        stackView.spacing = Metrics.scoreSpacing
+        stackView.isUserInteractionEnabled = false
+        stackView.setContentHuggingPriority(.required, for: .vertical)
+        stackView.setContentCompressionResistancePriority(.required, for: .vertical)
+        return stackView
     }()
 
-    private let lossesLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .subheadline)
-        label.textColor = ThemeColor.secondary
-        label.numberOfLines = 1
-        label.adjustsFontForContentSizeCategory = true
-        return label
+    private lazy var contentStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [
+            gameTitleLabel,
+            scoreboardStackView,
+        ])
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.distribution = .fillProportionally
+        stackView.isUserInteractionEnabled = false
+        return stackView
     }()
 
     // MARK: - Overridable
 
     override func setHierarchy() {
-        contentView.addSubview(gameTitleLabel)
-        contentView.addSubview(winsLabel)
-        contentView.addSubview(drawsLabel)
-        contentView.addSubview(lossesLabel)
+        contentView.addSubview(backgroundButton)
+        contentView.addSubview(contentStackView)
     }
 
     override func setLayout() {
-        gameTitleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(Layout.contentInset)
-            make.leading.trailing.equalToSuperview().inset(Layout.contentInset)
+        backgroundButton.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
-        winsLabel.snp.makeConstraints { make in
-            make.top.equalTo(gameTitleLabel.snp.bottom).offset(Layout.contentSpacing)
-            make.leading.trailing.equalToSuperview().inset(Layout.contentInset)
+        contentStackView.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(Metrics.verticalInset)
+            make.bottom.equalToSuperview().inset(Metrics.verticalInset / 2)
+            make.left.right.equalToSuperview().inset(Metrics.contentInset)
         }
 
-        drawsLabel.snp.makeConstraints { make in
-            make.top.equalTo(winsLabel.snp.bottom).offset(Layout.contentSpacing)
-            make.leading.trailing.equalToSuperview().inset(Layout.contentInset)
-        }
-
-        lossesLabel.snp.makeConstraints { make in
-            make.top.equalTo(drawsLabel.snp.bottom).offset(Layout.contentSpacing)
-            make.leading.trailing.equalToSuperview().inset(Layout.contentInset)
-            make.bottom.lessThanOrEqualToSuperview().inset(Layout.contentInset)
+        scoreboardStackView.snp.makeConstraints { make in
+            make.left.right.equalToSuperview()
         }
     }
 
     override func setAppearance() {
         super.setAppearance()
-        contentView.backgroundColor = .secondarySystemBackground
-        contentView.layer.cornerRadius = Layout.cornerRadius
-        contentView.layer.cornerCurve = .continuous
-        contentView.clipsToBounds = true
+        contentView.backgroundColor = .clear
+        backgroundButton.addAction(
+            UIAction { [weak self] _ in
+                self?.tapHandler?()
+            },
+            for: .primaryActionTriggered
+        )
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        tapHandler = nil
         gameTitleLabel.text = nil
-        winsLabel.text = nil
-        drawsLabel.text = nil
-        lossesLabel.text = nil
+        winsScoreView.apply(value: nil)
+        lossesScoreView.apply(value: nil)
     }
 
     // MARK: - Configuration
 
-    func configure(result: MainHomeGameResult) {
-        gameTitleLabel.text = result.gameTitle
-        winsLabel.text = "勝 \(result.detail.wins)"
-        drawsLabel.text = "和 \(result.detail.draws)"
-        lossesLabel.text = "負 \(result.detail.losses)"
+    func configure(result: GameOverview) {
+        gameTitleLabel.text = result.game.title
+        winsScoreView.apply(value: result.statistics.wins)
+        lossesScoreView.apply(value: result.statistics.losses)
+    }
+
+    // MARK: - ScoreMetricView
+
+    @MainActor
+    private final class ScoreMetricView: UIView {
+
+        enum ImagePlacement {
+            case leading
+            case trailing
+        }
+
+        private let imagePlacement: ImagePlacement
+
+        private let valueLabel: UILabel = {
+            let label = UILabel()
+            label.font = .monospacedDigitSystemFont(
+                ofSize: UIFont.preferredFont(forTextStyle: .title3).pointSize,
+                weight: .bold
+            )
+            label.numberOfLines = 1
+            label.textAlignment = .center
+            return label
+        }()
+
+        private let iconView: UIImageView = {
+            let imageView = UIImageView()
+            imageView.contentMode = .scaleAspectFit
+            imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
+                pointSize: UIFont.preferredFont(forTextStyle: .title2).pointSize,
+                weight: .regular
+            )
+            return imageView
+        }()
+
+        private lazy var stackView: UIStackView = {
+            let arrangedSubviews: [UIView]
+            switch imagePlacement {
+            case .leading:
+                arrangedSubviews = [iconView, valueLabel]
+
+            case .trailing:
+                arrangedSubviews = [valueLabel, iconView]
+            }
+
+            let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
+            stackView.axis = .horizontal
+            stackView.alignment = .center
+            stackView.spacing = Metrics.iconSpacing
+            return stackView
+        }()
+
+        init(
+            systemName: String,
+            tintColor: UIColor,
+            imagePlacement: ImagePlacement
+        ) {
+            self.imagePlacement = imagePlacement
+            super.init(frame: .zero)
+            iconView.image = UIImage(systemName: systemName)
+            iconView.tintColor = tintColor
+            valueLabel.textColor = ThemeColor.primary
+            backgroundColor = .clear
+            addSubview(stackView)
+
+            stackView.snp.makeConstraints { make in
+                make.centerY.equalToSuperview()
+                make.top.greaterThanOrEqualToSuperview()
+                make.bottom.lessThanOrEqualToSuperview()
+
+                switch imagePlacement {
+                case .leading:
+                    make.left.greaterThanOrEqualToSuperview()
+                    make.right.equalToSuperview()
+
+                case .trailing:
+                    make.left.equalToSuperview()
+                    make.right.lessThanOrEqualToSuperview()
+                }
+            }
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        func apply(value: Int?) {
+            valueLabel.text = value.map(String.init)
+        }
     }
 }

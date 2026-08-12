@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15071E72302C4DDF00B1817D /* BaseRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15071E71302C4DDF00B1817D /* BaseRouter.swift */; };
 		1539357F302850010026C98C /* MainBaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1539357E302850010026C98C /* MainBaseView.swift */; };
 		15393581302851010026C98C /* MainBaseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15393580302851010026C98C /* MainBaseCollectionViewCell.swift */; };
 		153935F1302871000026C98C /* MainHomeDiceCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */; };
-		153935F3302871000026C98C /* MainHomeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153935F2302871000026C98C /* MainHomeItem.swift */; };
 		1562853C301F3A2500702D1E /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 1562853B301F3A2500702D1E /* SDWebImage */; };
 		1562853F301F3A3100702D1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1562853E301F3A3100702D1E /* SnapKit */; };
 		15628542301F3A5400702D1E /* SkeletonView in Frameworks */ = {isa = PBXBuildFile; productRef = 15628541301F3A5400702D1E /* SkeletonView */; };
@@ -43,14 +43,20 @@
 		15C4F13D302B0CBC00EFF3E9 /* BaseHintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F13C302B0CBC00EFF3E9 /* BaseHintView.swift */; };
 		15C4F1A9302B1A6500EFF3E9 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C4F1A8302B1A6500EFF3E9 /* ErrorView.swift */; };
 		15C8B67D3029821700457B00 /* ThemeColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C8B67C3029821700457B00 /* ThemeColor.swift */; };
+		15D20001302C100100000001 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D10001302C100100000001 /* Game.swift */; };
+		15D20002302C100100000002 /* GameStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D10002302C100100000002 /* GameStatistics.swift */; };
+		15D20003302C100100000003 /* MainHomeSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D10003302C100100000003 /* MainHomeSnapshot.swift */; };
+		15D20004302C100100000004 /* MainHomeConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D10004302C100100000004 /* MainHomeConfiguration.swift */; };
+		15D20005302C100100000005 /* MainHomeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D10005302C100100000005 /* MainHomeState.swift */; };
+		15D20006302C100100000006 /* MainHomeSampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D10006302C100100000006 /* MainHomeSampleData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		15071E71302C4DDF00B1817D /* BaseRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseRouter.swift; sourceTree = "<group>"; };
 		150B9259301F31AC00BA35E2 /* BarGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1539357E302850010026C98C /* MainBaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseView.swift; sourceTree = "<group>"; };
 		15393580302851010026C98C /* MainBaseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainBaseCollectionViewCell.swift; sourceTree = "<group>"; };
 		153935F0302871000026C98C /* MainHomeDiceCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeDiceCollectionViewCell.swift; sourceTree = "<group>"; };
-		153935F2302871000026C98C /* MainHomeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeItem.swift; sourceTree = "<group>"; };
 		1562854A301F3EBE00702D1E /* GameDiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDiceView.swift; sourceTree = "<group>"; };
 		15628550301F45A000702D1E /* DicePhysicsCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DicePhysicsCategory.swift; sourceTree = "<group>"; };
 		15628552301F45A100702D1E /* DiceNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceNode.swift; sourceTree = "<group>"; };
@@ -80,6 +86,12 @@
 		15C4F13C302B0CBC00EFF3E9 /* BaseHintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHintView.swift; sourceTree = "<group>"; };
 		15C4F1A8302B1A6500EFF3E9 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		15C8B67C3029821700457B00 /* ThemeColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeColor.swift; sourceTree = "<group>"; };
+		15D10001302C100100000001 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		15D10002302C100100000002 /* GameStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStatistics.swift; sourceTree = "<group>"; };
+		15D10003302C100100000003 /* MainHomeSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeSnapshot.swift; sourceTree = "<group>"; };
+		15D10004302C100100000004 /* MainHomeConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeConfiguration.swift; sourceTree = "<group>"; };
+		15D10005302C100100000005 /* MainHomeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeState.swift; sourceTree = "<group>"; };
+		15D10006302C100100000006 /* MainHomeSampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeSampleData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -117,6 +129,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15071E70302C4DCF00B1817D /* Router */ = {
+			isa = PBXGroup;
+			children = (
+				15071E71302C4DDF00B1817D /* BaseRouter.swift */,
+			);
+			path = Router;
+			sourceTree = "<group>";
+		};
 		150B9250301F31AC00BA35E2 = {
 			isa = PBXGroup;
 			children = (
@@ -193,7 +213,9 @@
 		153935F4302871000026C98C /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				153935F2302871000026C98C /* MainHomeItem.swift */,
+				15D10004302C100100000004 /* MainHomeConfiguration.swift */,
+				15D10003302C100100000003 /* MainHomeSnapshot.swift */,
+				15D10005302C100100000005 /* MainHomeState.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -242,6 +264,7 @@
 				15C4F13B302B0CA800EFF3E9 /* HintView */,
 				157833323027820F0087747A /* MainBase */,
 				157833343027820F0087747A /* RootBase */,
+				15071E70302C4DCF00B1817D /* Router */,
 				157833363027820F0087747A /* StandardBase */,
 			);
 			path = Base;
@@ -282,6 +305,7 @@
 			children = (
 				157833403027822D0087747A /* Controller */,
 				153935F4302871000026C98C /* Model */,
+				15D10008302C100100000008 /* Preview */,
 				153935E730286DB60026C98C /* View */,
 				15C4F130302AFB4F00EFF3E9 /* ViewModel */,
 			);
@@ -319,6 +343,7 @@
 			isa = PBXGroup;
 			children = (
 				15628546301F3DB900702D1E /* Dice */,
+				15D10007302C100100000007 /* Model */,
 			);
 			path = Game;
 			sourceTree = "<group>";
@@ -454,6 +479,23 @@
 			path = ErrorView;
 			sourceTree = "<group>";
 		};
+		15D10007302C100100000007 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				15D10001302C100100000001 /* Game.swift */,
+				15D10002302C100100000002 /* GameStatistics.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		15D10008302C100100000008 /* Preview */ = {
+			isa = PBXGroup;
+			children = (
+				15D10006302C100100000006 /* MainHomeSampleData.swift */,
+			);
+			path = Preview;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -552,7 +594,12 @@
 				157833423027822D0087747A /* MainHomeViewController.swift in Sources */,
 				15C4F132302AFB6700EFF3E9 /* MainHomeViewModel.swift in Sources */,
 				153935F1302871000026C98C /* MainHomeDiceCollectionViewCell.swift in Sources */,
-				153935F3302871000026C98C /* MainHomeItem.swift in Sources */,
+				15D20001302C100100000001 /* Game.swift in Sources */,
+				15D20002302C100100000002 /* GameStatistics.swift in Sources */,
+				15D20003302C100100000003 /* MainHomeSnapshot.swift in Sources */,
+				15D20004302C100100000004 /* MainHomeConfiguration.swift in Sources */,
+				15D20005302C100100000005 /* MainHomeState.swift in Sources */,
+				15D20006302C100100000006 /* MainHomeSampleData.swift in Sources */,
 				1596A2EC3025C9E40018E77C /* MainTabBarController.swift in Sources */,
 				15C4F137302B087000EFF3E9 /* MainHomeGameResultsCell.swift in Sources */,
 				15C4F0D3302AD6B500EFF3E9 /* MainHomeTitleHeader.swift in Sources */,
@@ -565,6 +612,7 @@
 				15C4F0D5302AF41900EFF3E9 /* MainHomeGameListCell.swift in Sources */,
 				15628551301F45A000702D1E /* DicePhysicsCategory.swift in Sources */,
 				15628553301F45A100702D1E /* DiceNode.swift in Sources */,
+				15071E72302C4DDF00B1817D /* BaseRouter.swift in Sources */,
 				1596A26D302590E50018E77C /* DiceGameViewController.swift in Sources */,
 				157833643028D3D40087747A /* UIColor+Extension.swift in Sources */,
 				15628555301F45A200702D1E /* DiceArena.swift in Sources */,

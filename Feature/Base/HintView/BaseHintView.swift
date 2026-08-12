@@ -98,9 +98,10 @@ class BaseHintView: UIView {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.tintColor = ThemeColor.secondary
-        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title2)
-            .applying(UIImage.SymbolConfiguration(weight: .regular))
-        imageView.adjustsImageSizeForAccessibilityContentSizeCategory = true
+        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
+            pointSize: UIFont.preferredFont(forTextStyle: .title2).pointSize,
+            weight: .regular
+        )
         imageView.image = UIImage(systemName: Metrics.defaultImageSystemName)
         return imageView
     }()
@@ -111,7 +112,6 @@ class BaseHintView: UIView {
         label.textColor = ThemeColor.primary
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.adjustsFontForContentSizeCategory = true
         return label
     }()
 
@@ -121,7 +121,6 @@ class BaseHintView: UIView {
         label.textColor = ThemeColor.secondary
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.adjustsFontForContentSizeCategory = true
         return label
     }()
 
