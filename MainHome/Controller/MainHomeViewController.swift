@@ -22,6 +22,9 @@ final class MainHomeViewController: MainBaseViewController {
     // MARK: - Dependencies
 
     private let viewModel: any MainHomeViewModeling
+    private lazy var router: any MainHomeRouting = MainHomeRouter(
+        sourceViewController: self
+    )
 
     // MARK: - State
 
@@ -304,6 +307,9 @@ extension MainHomeViewController: UICollectionViewDataSource {
                 for: indexPath
             )
             cell.configure(games: games)
+            cell.gameTapHandler = { [weak self] game in
+                self?.router.route(to: .game(game))
+            }
             return cell
         case .gameResults(let results):
             let cell = collectionView.dequeueReusableCell(

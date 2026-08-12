@@ -20,6 +20,10 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
         static let sectionInset = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
     }
 
+    // MARK: - Callback
+
+    var gameTapHandler: ((Game) -> Void)?
+
     // MARK: - UI Elements
 
     private lazy var collectionView: UICollectionView = {
@@ -86,6 +90,7 @@ final class MainHomeGameListCell: MainBaseCollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        gameTapHandler = nil
         games = []
         collectionView.reloadData()
     }
@@ -133,7 +138,11 @@ extension MainHomeGameListCell: UICollectionViewDataSource {
             MainHomeGameCell.self,
             for: indexPath
         )
-        cell.configure(title: games[indexPath.item].title)
+        let game = games[indexPath.item]
+        cell.configure(game: game)
+        cell.tapHandler = { [weak self] in
+            self?.gameTapHandler?(game)
+        }
         return cell
     }
 }
@@ -157,9 +166,17 @@ extension MainHomeGameListCell: UICollectionViewDelegateFlowLayout {
 @MainActor
 final class MainHomeGameCell: MainBaseCollectionViewCell {
 
+    // MARK: - Callback
+
+    var tapHandler: (() -> Void)?
+
     // MARK: - UI Elements
 
-    private let actionButton = ViewFactory.makeButton()
+    private let actionButton: UIButton = {
+        let button = ViewFactory.makeButton()
+        button.isUserInteractionEnabled = true
+        return button
+    }()
 
     // MARK: - Overridable
 
@@ -176,17 +193,24 @@ final class MainHomeGameCell: MainBaseCollectionViewCell {
     override func setAppearance() {
         super.setAppearance()
         contentView.backgroundColor = .clear
+        actionButton.addAction(
+            UIAction { [weak self] _ in
+                self?.tapHandler?()
+            },
+            for: .primaryActionTriggered
+        )
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        tapHandler = nil
         applyTitle(nil)
     }
 
     // MARK: - Configuration
 
-    func configure(title: String) {
-        applyTitle(title)
+    func configure(game: Game) {
+        applyTitle(game.title)
     }
 
     // MARK: - Private
