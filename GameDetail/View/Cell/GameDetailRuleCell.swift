@@ -17,55 +17,48 @@ final class GameDetailRuleCell: DetailBaseCollectionViewCell {
         static let horizontalInset: CGFloat = 16
         static let glassVerticalInset: CGFloat = 4
         static let contentSpacing: CGFloat = 12
-        static let stepSize: CGFloat = 32
-        static let stepCornerRadius: CGFloat = stepSize / 2
+        static let stepSize: CGFloat = 44
     }
 
     // MARK: - UI Elements
 
-    private let stepContainerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
-        view.layer.cornerRadius = Metrics.stepCornerRadius
-        view.layer.cornerCurve = .continuous
-        return view
-    }()
-
-    private let stepLabel: UILabel = {
-        let label = UILabel()
+    private let stepLabelView: GlassLabelView = {
         let baseFont = UIFont.monospacedDigitSystemFont(
-            ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize,
-            weight: .semibold
+            ofSize: UIFont.preferredFont(forTextStyle: .title3).pointSize,
+            weight: .regular
         )
-        label.font = baseFont
-        label.textColor = .systemBlue
-        label.textAlignment = .center
-        return label
+        return ViewFactory.makeGlassLabel(
+            font: baseFont,
+            textColor: ThemeColor.primary,
+            textAlignment: .center,
+            numberOfLines: 1,
+            contentInsets: NSDirectionalEdgeInsets(
+                top: 0,
+                leading: 0,
+                bottom: 0,
+                trailing: 0
+            )
+        )
     }()
 
-    private let ruleLabelView = ViewFactory.makeGlassLabel()
+    private let ruleLabelView = ViewFactory.makeGlassLabel(textStyle: .body)
 
     // MARK: - Overridable
 
     override func setHierarchy() {
-        contentView.addSubview(stepContainerView)
-        stepContainerView.addSubview(stepLabel)
+        contentView.addSubview(stepLabelView)
         contentView.addSubview(ruleLabelView)
     }
 
     override func setLayout() {
-        stepContainerView.snp.makeConstraints { make in
+        stepLabelView.snp.makeConstraints { make in
             make.left.equalToSuperview().inset(Metrics.horizontalInset)
             make.centerY.equalToSuperview()
             make.size.equalTo(Metrics.stepSize)
         }
 
-        stepLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-
         ruleLabelView.snp.makeConstraints { make in
-            make.left.equalTo(stepContainerView.snp.right).offset(Metrics.contentSpacing)
+            make.left.equalTo(stepLabelView.snp.right).offset(Metrics.contentSpacing)
             make.right.equalToSuperview().inset(Metrics.horizontalInset)
             make.top.bottom.equalToSuperview().inset(Metrics.glassVerticalInset)
         }
@@ -78,14 +71,14 @@ final class GameDetailRuleCell: DetailBaseCollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        stepLabel.text = nil
+        stepLabelView.configure(text: nil)
         ruleLabelView.configure(text: nil)
     }
 
     // MARK: - Configuration
 
     func configure(rule: GameDetailRule) {
-        stepLabel.text = String(rule.step)
+        stepLabelView.configure(text: String(rule.step))
         ruleLabelView.configure(text: rule.text)
     }
 }

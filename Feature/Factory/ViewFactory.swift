@@ -13,13 +13,6 @@ import UIKit
 @MainActor
 final class GlassLabelView: UIView {
 
-    // MARK: - Metrics
-
-    private enum Metrics {
-        static let horizontalInset: CGFloat = 12
-        static let verticalInset: CGFloat = 8
-    }
-
     // MARK: - UI Elements
 
     private let glassView: UIVisualEffectView = {
@@ -30,18 +23,27 @@ final class GlassLabelView: UIView {
         return view
     }()
 
-    private let textLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .body)
-        label.textColor = ThemeColor.primary
-        label.numberOfLines = 0
-        return label
-    }()
+    private let textLabel = UILabel()
+
+    // MARK: - Properties
+
+    private let contentInsets: NSDirectionalEdgeInsets
 
     // MARK: - Lifecycle
 
-    fileprivate override init(frame: CGRect) {
-        super.init(frame: frame)
+    fileprivate init(
+        font: UIFont,
+        textColor: UIColor,
+        textAlignment: NSTextAlignment,
+        numberOfLines: Int,
+        contentInsets: NSDirectionalEdgeInsets
+    ) {
+        self.contentInsets = contentInsets
+        super.init(frame: .zero)
+        textLabel.font = font
+        textLabel.textColor = textColor
+        textLabel.textAlignment = textAlignment
+        textLabel.numberOfLines = numberOfLines
         isUserInteractionEnabled = false
         setupHierarchy()
         setupLayout()
@@ -76,19 +78,19 @@ final class GlassLabelView: UIView {
             glassView.trailingAnchor.constraint(equalTo: trailingAnchor),
             textLabel.topAnchor.constraint(
                 equalTo: glassView.contentView.topAnchor,
-                constant: Metrics.verticalInset
+                constant: contentInsets.top
             ),
             textLabel.leadingAnchor.constraint(
                 equalTo: glassView.contentView.leadingAnchor,
-                constant: Metrics.horizontalInset
+                constant: contentInsets.leading
             ),
             textLabel.bottomAnchor.constraint(
                 equalTo: glassView.contentView.bottomAnchor,
-                constant: -Metrics.verticalInset
+                constant: -contentInsets.bottom
             ),
             textLabel.trailingAnchor.constraint(
                 equalTo: glassView.contentView.trailingAnchor,
-                constant: -Metrics.horizontalInset
+                constant: -contentInsets.trailing
             ),
         ])
     }
@@ -99,8 +101,46 @@ final class GlassLabelView: UIView {
 @MainActor
 enum ViewFactory {
 
-    static func makeGlassLabel() -> GlassLabelView {
-        GlassLabelView()
+    static func makeGlassLabel(
+        textStyle: UIFont.TextStyle = .body,
+        textColor: UIColor = ThemeColor.primary,
+        textAlignment: NSTextAlignment = .natural,
+        numberOfLines: Int = 0,
+        contentInsets: NSDirectionalEdgeInsets = NSDirectionalEdgeInsets(
+            top: 8,
+            leading: 12,
+            bottom: 8,
+            trailing: 12
+        )
+    ) -> GlassLabelView {
+        makeGlassLabel(
+            font: .preferredFont(forTextStyle: textStyle),
+            textColor: textColor,
+            textAlignment: textAlignment,
+            numberOfLines: numberOfLines,
+            contentInsets: contentInsets
+        )
+    }
+
+    static func makeGlassLabel(
+        font: UIFont,
+        textColor: UIColor = ThemeColor.primary,
+        textAlignment: NSTextAlignment = .natural,
+        numberOfLines: Int = 0,
+        contentInsets: NSDirectionalEdgeInsets = NSDirectionalEdgeInsets(
+            top: 8,
+            leading: 12,
+            bottom: 8,
+            trailing: 12
+        )
+    ) -> GlassLabelView {
+        GlassLabelView(
+            font: font,
+            textColor: textColor,
+            textAlignment: textAlignment,
+            numberOfLines: numberOfLines,
+            contentInsets: contentInsets
+        )
     }
 
     static func makeButton() -> UIButton {
