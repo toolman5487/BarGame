@@ -145,6 +145,22 @@ enum ViewFactory {
 
     static func makeButton() -> UIButton {
         let button = UIButton(type: .system)
+        button.configuration = makeButtonConfiguration()
+        button.isUserInteractionEnabled = false
+        return button
+    }
+
+    static func makeIconButton(systemName: String) -> UIButton {
+        let button = UIButton(type: .system)
+        var configuration = makeButtonConfiguration()
+        configuration.image = UIImage(systemName: systemName)
+        configuration.contentInsets = .zero
+        configuration.cornerStyle = .capsule
+        button.configuration = configuration
+        return button
+    }
+
+    private static func makeButtonConfiguration() -> UIButton.Configuration {
         var configuration = UIButton.Configuration.prominentGlass()
         configuration.baseBackgroundColor = .clear
         configuration.cornerStyle = .large
@@ -154,8 +170,6 @@ enum ViewFactory {
             outgoing.font = .preferredFont(forTextStyle: .subheadline)
             return outgoing
         }
-        button.configuration = configuration
-        button.isUserInteractionEnabled = false
-        return button
+        return configuration
     }
 }
