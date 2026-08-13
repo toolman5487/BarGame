@@ -35,10 +35,12 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
     private func showGame(using launchConfiguration: GameLaunchConfiguration) {
         switch launchConfiguration {
         case .dice(let gameID, let settings):
+            let standardConfiguration = DiceGameConfiguration.standard
             let configuration = DiceGameConfiguration(
                 title: gameID.title,
                 initialDiceCount: settings.initialDiceCount,
-                maximumDiceCount: settings.maximumDiceCount
+                maximumDiceCount: settings.maximumDiceCount,
+                hintText: standardConfiguration.hintText
             )
             let destination = DiceGameViewController(configuration: configuration)
             show(destination, using: .fullScreen)

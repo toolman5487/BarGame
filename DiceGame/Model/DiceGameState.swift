@@ -30,12 +30,14 @@ nonisolated struct DiceGameConfiguration: Sendable {
     static let standard = DiceGameConfiguration(
         title: "骰子",
         initialDiceCount: 1,
-        maximumDiceCount: 8
+        maximumDiceCount: 8,
+        hintText: "搖晃手機讓骰子晃動"
     )
 
     let title: String
     let initialDiceCount: Int
     let maximumDiceCount: Int
+    let hintText: String
 
     var initialState: DiceGameState {
         DiceGameState(

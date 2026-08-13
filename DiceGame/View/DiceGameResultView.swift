@@ -37,21 +37,36 @@ final class DiceGameResultView: UIView {
     }
 
     private enum Metrics {
+        static let itemsPerRow = 3
         static let itemSpacing: CGFloat = 8
+        static let animationDuration: TimeInterval = 0.25
+
+        static var itemHeight: CGFloat {
+            UIFont.preferredFont(forTextStyle: .title2).lineHeight +
+                UIFont.preferredFont(forTextStyle: .caption1).lineHeight +
+                DiceGameResultItemCell.Metrics.contentSpacing +
+                DiceGameResultItemCell.Metrics.verticalInset * 2
+        }
+
+        static var collapsedHeight: CGFloat {
+            UIFont.preferredFont(forTextStyle: .subheadline).lineHeight + 16
+        }
     }
 
     // MARK: - State
 
     private var items: [Item] = []
+    private var result: DiceRollResult?
+    private var isExpanded = false
+    private var previousLayoutWidth: CGFloat = 0
 
     // MARK: - UI Elements
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
+        layout.scrollDirection = .vertical
         layout.minimumLineSpacing = Metrics.itemSpacing
         layout.minimumInteritemSpacing = Metrics.itemSpacing
-        layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
 
         let collectionView = UICollectionView(
             frame: .zero,
@@ -59,23 +74,54 @@ final class DiceGameResultView: UIView {
         )
         collectionView.backgroundColor = .clear
         collectionView.contentInsetAdjustmentBehavior = .never
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.alwaysBounceHorizontal = false
+        collectionView.isScrollEnabled = false
+        collectionView.showsVerticalScrollIndicator = false
         collectionView.allowsSelection = false
         collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.backgroundView = collectionGlassView
         collectionView.register(DiceGameResultItemCell.self)
         return collectionView
     }()
 
+    private let collectionGlassView: UIVisualEffectView = {
+        let view = UIVisualEffectView(effect: UIGlassEffect(style: .regular))
+        view.cornerConfiguration = .uniformCorners(radius: 16)
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    private let hintLabel = ViewFactory.makeGlassLabel(
+        textStyle: .subheadline,
+        textColor: .label,
+        textAlignment: .center,
+        numberOfLines: 1
+    )
+
     // MARK: - Lifecycle
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        isHidden = true
+    init(hintText: String) {
+        super.init(frame: .zero)
+        backgroundColor = .clear
+        hintLabel.configure(text: hintText)
         addSubview(collectionView)
+        addSubview(hintLabel)
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        hintLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.left.greaterThanOrEqualToSuperview()
+            make.right.lessThanOrEqualToSuperview()
+        }
+
+        let tapGestureRecognizer = UITapGestureRecognizer(
+            target: self,
+            action: #selector(toggleExpansion)
+        )
+        tapGestureRecognizer.cancelsTouchesInView = false
+        addGestureRecognizer(tapGestureRecognizer)
+        updatePresentation(animated: false)
     }
 
     @available(*, unavailable)
@@ -83,23 +129,74 @@ final class DiceGameResultView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override var intrinsicContentSize: CGSize {
+        let height: CGFloat
+
+        if isExpanded, result != nil {
+            let rowCount = Int(
+                ceil(Double(items.count) / Double(Metrics.itemsPerRow))
+            )
+            height = CGFloat(rowCount) * Metrics.itemHeight +
+                CGFloat(max(rowCount - 1, 0)) * Metrics.itemSpacing
+        } else {
+            height = Metrics.collapsedHeight
+        }
+
+        return CGSize(width: UIView.noIntrinsicMetric, height: height)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard previousLayoutWidth != bounds.width else { return }
+        previousLayoutWidth = bounds.width
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+
     // MARK: - Configuration
 
     func configure(result: DiceRollResult?) {
         guard let result else {
+            self.result = nil
             items = []
-            isHidden = true
+            isExpanded = false
             collectionView.reloadData()
+            updatePresentation(animated: false)
             return
         }
 
+        let isNewResult = self.result != result
+        self.result = result
         items = (1...6).compactMap { value in
             let count = result.count(of: value)
             guard count > 0 else { return nil }
             return .face(value: value, count: count)
         } + [.total(result.total)]
-        isHidden = false
+        if isNewResult {
+            isExpanded = true
+        }
         collectionView.reloadData()
+        updatePresentation(animated: isNewResult)
+    }
+
+    // MARK: - Actions
+
+    @objc
+    private func toggleExpansion() {
+        guard result != nil else { return }
+        isExpanded.toggle()
+        updatePresentation(animated: true)
+    }
+
+    private func updatePresentation(animated: Bool) {
+        collectionView.isHidden = !isExpanded || result == nil
+        hintLabel.isHidden = isExpanded && result != nil
+        invalidateIntrinsicContentSize()
+        collectionView.collectionViewLayout.invalidateLayout()
+
+        guard animated else { return }
+        UIView.animate(withDuration: Metrics.animationDuration) {
+            self.superview?.layoutIfNeeded()
+        }
     }
 }
 
@@ -132,22 +229,34 @@ extension DiceGameResultView: UICollectionViewDataSource {
     }
 }
 
+// MARK: - UICollectionViewDelegateFlowLayout
+
+extension DiceGameResultView: UICollectionViewDelegateFlowLayout {
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
+        let totalSpacing = Metrics.itemSpacing * CGFloat(Metrics.itemsPerRow - 1)
+        let availableWidth = max(collectionView.bounds.width - totalSpacing, 0)
+        return CGSize(
+            width: availableWidth / CGFloat(Metrics.itemsPerRow),
+            height: Metrics.itemHeight
+        )
+    }
+}
+
 // MARK: - Result Item Cell
 
 @MainActor
 private final class DiceGameResultItemCell: StandardBaseCollectionViewCell {
 
-    private enum Metrics {
+    fileprivate enum Metrics {
         static let contentSpacing: CGFloat = 4
         static let horizontalInset: CGFloat = 16
         static let verticalInset: CGFloat = 8
     }
-
-    private let backgroundButton: UIButton = {
-        let button = ViewFactory.makeButton()
-        button.isUserInteractionEnabled = false
-        return button
-    }()
 
     private let valueLabel: UILabel = {
         let label = UILabel()
@@ -178,19 +287,20 @@ private final class DiceGameResultItemCell: StandardBaseCollectionViewCell {
     }()
 
     override func setHierarchy() {
-        contentView.addSubview(backgroundButton)
         contentView.addSubview(contentStackView)
     }
 
     override func setLayout() {
-        backgroundButton.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-
         contentStackView.snp.makeConstraints { make in
             make.left.right.equalToSuperview().inset(Metrics.horizontalInset)
             make.top.bottom.equalToSuperview().inset(Metrics.verticalInset)
         }
+    }
+
+    override func setAppearance() {
+        super.setAppearance()
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
     }
 
     override func prepareForReuse() {

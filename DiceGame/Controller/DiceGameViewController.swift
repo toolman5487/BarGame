@@ -17,6 +17,7 @@ final class DiceGameViewController: StandardBaseViewController {
     struct Configuration {
 
         let title: String
+        let hintText: String
         let contentView: DiceGameView.Configuration
     }
 
@@ -30,7 +31,6 @@ final class DiceGameViewController: StandardBaseViewController {
         static let controlButtonSize: CGFloat = 56
         static let controlButtonSpacing: CGFloat = 16
         static let edgeInset: CGFloat = 16
-        static let resultViewHeight: CGFloat = 88
     }
 
     // MARK: - Dependencies
@@ -49,7 +49,7 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - UI Elements
 
     private let diceGameView: DiceGameView
-    private let resultView = DiceGameResultView()
+    private let resultView: DiceGameResultView
 
     private lazy var controlButtons = DiceGameControl.allCases.map { control in
         ControlButtonItem(
@@ -80,6 +80,7 @@ final class DiceGameViewController: StandardBaseViewController {
         self.configuration = configuration
         self.viewModel = viewModel
         diceGameView = DiceGameView(configuration: configuration.contentView)
+        resultView = DiceGameResultView(hintText: configuration.hintText)
         renderedState = configuration.contentView.initialState
         super.init()
     }
@@ -120,7 +121,6 @@ final class DiceGameViewController: StandardBaseViewController {
         resultView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
             make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
-            make.height.equalTo(Metrics.resultViewHeight)
         }
 
         controlStackView.snp.makeConstraints { make in
@@ -269,6 +269,7 @@ extension DiceGameViewController {
         self.init(
             configuration: Configuration(
                 title: configuration.title,
+                hintText: configuration.hintText,
                 contentView: DiceGameView.Configuration(
                     initialState: initialState,
                     gameDiceView: GameDiceView.Configuration(
