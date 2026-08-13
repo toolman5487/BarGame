@@ -17,7 +17,7 @@ final class DiceGameViewController: StandardBaseViewController {
     struct Configuration {
 
         let title: String
-        let hintText: String
+        let initialState: DiceGameViewState
         let contentView: DiceGameView.Configuration
     }
 
@@ -42,9 +42,10 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - State
 
     private let confirmedResultSubject = PassthroughSubject<DiceRollResult, Never>()
+    private let resultExpansionToggleSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
-    private var renderedState: DiceGameState
+    private var renderedState: DiceGameViewState
 
     // MARK: - UI Elements
 
@@ -80,8 +81,8 @@ final class DiceGameViewController: StandardBaseViewController {
         self.configuration = configuration
         self.viewModel = viewModel
         diceGameView = DiceGameView(configuration: configuration.contentView)
-        resultView = DiceGameResultView(hintText: configuration.hintText)
-        renderedState = configuration.contentView.initialState
+        resultView = DiceGameResultView()
+        renderedState = configuration.initialState
         super.init()
     }
 
@@ -111,6 +112,7 @@ final class DiceGameViewController: StandardBaseViewController {
         view.addSubview(resultView)
         view.addSubview(controlStackView)
         setupControlActions()
+        setupResultViewActions()
     }
 
     override func setLayout() {
@@ -147,6 +149,8 @@ final class DiceGameViewController: StandardBaseViewController {
     override func bind() {
         let input = DiceGameViewModelInput(
             confirmedResult: confirmedResultSubject.eraseToAnyPublisher(),
+            resultExpansionToggle: resultExpansionToggleSubject
+                .eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
@@ -178,10 +182,16 @@ final class DiceGameViewController: StandardBaseViewController {
         }
     }
 
+    private func setupResultViewActions() {
+        resultView.onExpansionToggle = { [weak self] in
+            self?.resultExpansionToggleSubject.send()
+        }
+    }
+
     // MARK: - State Updates
 
-    private func apply(_ state: DiceGameState) {
-        diceGameView.configure(with: state)
+    private func apply(_ state: DiceGameViewState) {
+        diceGameView.configure(with: state.game)
 
         if renderedState != state {
             renderedState = state
@@ -193,7 +203,7 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - UI Configuration
 
     private func configureResultView() {
-        resultView.configure(result: renderedState.result)
+        resultView.configure(with: renderedState.result)
     }
 
     private func configureControlButtons() {
@@ -220,7 +230,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
         switch control {
         case .action:
-            button.isEnabled = !renderedState.isDiceLocked
+            button.isEnabled = !renderedState.game.isDiceLocked
         case .exit:
             button.isEnabled = true
         }
@@ -263,15 +273,24 @@ final class DiceGameViewController: StandardBaseViewController {
 extension DiceGameViewController {
 
     convenience init(configuration: DiceGameConfiguration = .standard) {
-        let initialState = configuration.initialState
+        let initialGameState = configuration.initialState
+        let initialState = DiceGameViewState(
+            game: initialGameState,
+            result: DiceGameResultViewState(
+                hintText: configuration.hintText,
+                totalText: nil,
+                items: [],
+                presentation: .collapsed
+            )
+        )
         let viewModel = DiceGameViewModel(initialState: initialState)
 
         self.init(
             configuration: Configuration(
                 title: configuration.title,
-                hintText: configuration.hintText,
+                initialState: initialState,
                 contentView: DiceGameView.Configuration(
-                    initialState: initialState,
+                    initialState: initialGameState,
                     gameDiceView: GameDiceView.Configuration(
                         initialDiceCount: configuration.initialDiceCount,
                         maximumDiceCount: configuration.maximumDiceCount
