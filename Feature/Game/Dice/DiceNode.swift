@@ -40,10 +40,19 @@ nonisolated final class DiceNode: SCNNode {
         static let clearCoatRoughness: CGFloat = 0.24
     }
 
+    private struct FaceTextures {
+        let diffuse: UIImage
+        let normal: UIImage
+    }
+
+    @MainActor
+    private static var faceTextureCache: [Int: FaceTextures] = [:]
+
     private var edgeLength: CGFloat
 
     // MARK: - Lifecycle
 
+    @MainActor
     init(edgeLength: CGFloat) {
         self.edgeLength = max(edgeLength, Metrics.minimumEdgeLength)
         super.init()
@@ -56,6 +65,7 @@ nonisolated final class DiceNode: SCNNode {
 
     // MARK: - Public
 
+    @MainActor
     func resize(to edgeLength: CGFloat) {
         let updatedEdgeLength = max(edgeLength, Metrics.minimumEdgeLength)
         guard abs(self.edgeLength - updatedEdgeLength) > .ulpOfOne else { return }
@@ -150,12 +160,14 @@ nonisolated final class DiceNode: SCNNode {
 
     // MARK: - Setup
 
+    @MainActor
     private func setupDice() {
         let visibleBox = makeVisibleGeometry()
         geometry = visibleBox
         physicsBody = makePhysicsBody()
     }
 
+    @MainActor
     private func makeVisibleGeometry() -> SCNBox {
         let visibleBox = SCNBox(
             width: edgeLength,
@@ -174,6 +186,7 @@ nonisolated final class DiceNode: SCNNode {
         return visibleBox
     }
 
+    @MainActor
     private func updateVisibleGeometry() {
         guard let visibleBox = geometry as? SCNBox else {
             geometry = makeVisibleGeometry()
@@ -234,10 +247,12 @@ nonisolated final class DiceNode: SCNNode {
 
     // MARK: - Materials
 
+    @MainActor
     private func makePipMaterial(pips: Int) -> SCNMaterial {
+        let textures = faceTextures(for: pips)
         let material = SCNMaterial()
-        material.diffuse.contents = makeDiceFaceImage(pips: pips)
-        material.normal.contents = makeDiceFaceNormalImage(pips: pips)
+        material.diffuse.contents = textures.diffuse
+        material.normal.contents = textures.normal
         material.normal.intensity = 0.45
         material.roughness.contents = Appearance.materialRoughness
         material.metalness.contents = 0.0
@@ -250,6 +265,21 @@ nonisolated final class DiceNode: SCNNode {
         return material
     }
 
+    @MainActor
+    private func faceTextures(for pips: Int) -> FaceTextures {
+        if let cachedTextures = Self.faceTextureCache[pips] {
+            return cachedTextures
+        }
+
+        let textures = FaceTextures(
+            diffuse: makeDiceFaceImage(pips: pips),
+            normal: makeDiceFaceNormalImage(pips: pips)
+        )
+        Self.faceTextureCache[pips] = textures
+        return textures
+    }
+
+    @MainActor
     private func makeDiceFaceImage(pips: Int) -> UIImage {
         let dimension = CGFloat(Appearance.textureDimension)
         let size = CGSize(width: dimension, height: dimension)
@@ -291,6 +321,7 @@ nonisolated final class DiceNode: SCNNode {
         }
     }
 
+    @MainActor
     private func drawSurfaceGrain(
         in rect: CGRect,
         seed: Int,
@@ -306,6 +337,7 @@ nonisolated final class DiceNode: SCNNode {
         }
     }
 
+    @MainActor
     private func drawPip(at point: CGPoint, context: CGContext) {
         let radius = Appearance.pipRadius
         let pipRect = CGRect(
@@ -348,6 +380,7 @@ nonisolated final class DiceNode: SCNNode {
         context.strokeEllipse(in: pipRect.insetBy(dx: 1, dy: 1))
     }
 
+    @MainActor
     private func makeDiceFaceNormalImage(pips: Int) -> UIImage {
         let dimension = Appearance.textureDimension
         let size = CGSize(width: dimension, height: dimension)
@@ -413,6 +446,7 @@ nonisolated final class DiceNode: SCNNode {
         return UInt8(normalizedValue * 255)
     }
 
+    @MainActor
     private func makeNeutralNormalImage() -> UIImage {
         let dimension = CGFloat(Appearance.textureDimension)
         let size = CGSize(width: dimension, height: dimension)
