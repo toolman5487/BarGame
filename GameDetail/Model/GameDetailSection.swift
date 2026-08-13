@@ -11,16 +11,26 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
 
     case rules([GameDetailRule])
     case settings([GameDetailSetting])
+    case statistics(GameDetailStatisticsState)
+    case recentRecords(GameDetailRecentRecordsState)
 
     static func standard(for gameID: DiceGameID) -> [GameDetailSection] {
-        var sections: [GameDetailSection] = [
-            .rules(GameDetailRuleCatalog.rules(for: gameID)),
-        ]
+        var sections: [GameDetailSection] = []
         let settings = GameDetailSetting.standard(for: gameID)
+        let recentRecordsState = GameDetailRecentRecordsState.sample()
+
+        sections.append(
+            .statistics(
+                GameDetailStatisticsState(recentRecordsState: recentRecordsState)
+            )
+        )
 
         if !settings.isEmpty {
             sections.append(.settings(settings))
         }
+
+        sections.append(.recentRecords(recentRecordsState))
+        sections.append(.rules(GameDetailRuleCatalog.rules(for: gameID)))
 
         return sections
     }
@@ -32,6 +42,12 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
 
         case .settings:
             return "遊戲設定"
+
+        case .statistics:
+            return "戰績摘要"
+
+        case .recentRecords:
+            return "近十場紀錄"
         }
     }
 }

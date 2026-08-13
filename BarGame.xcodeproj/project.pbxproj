@@ -68,6 +68,10 @@
 		15D50006302D200100000006 /* DetailBaseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D50005302D200100000005 /* DetailBaseCollectionViewCell.swift */; };
 		15D50008302D200100000008 /* DetailBaseTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D50007302D200100000007 /* DetailBaseTitleHeader.swift */; };
 		15FA77A6302D6B0A0097077D /* BottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77A5302D6B0A0097077D /* BottomBar.swift */; };
+		15FA77B1302D80010097077D /* GameDetailRecentRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77B0302D80010097077D /* GameDetailRecentRecord.swift */; };
+		15FA77B3302D80010097077D /* GameDetailRecentRecordsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77B2302D80010097077D /* GameDetailRecentRecordsCell.swift */; };
+		15FA77B5302D90010097077D /* GameDetailStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77B4302D90010097077D /* GameDetailStatistics.swift */; };
+		15FA77B7302D90010097077D /* GameDetailStatisticsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77B6302D90010097077D /* GameDetailStatisticsCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -130,6 +134,10 @@
 		15D50005302D200100000005 /* DetailBaseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailBaseCollectionViewCell.swift; sourceTree = "<group>"; };
 		15D50007302D200100000007 /* DetailBaseTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailBaseTitleHeader.swift; sourceTree = "<group>"; };
 		15FA77A5302D6B0A0097077D /* BottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBar.swift; sourceTree = "<group>"; };
+		15FA77B0302D80010097077D /* GameDetailRecentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRecentRecord.swift; sourceTree = "<group>"; };
+		15FA77B2302D80010097077D /* GameDetailRecentRecordsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRecentRecordsCell.swift; sourceTree = "<group>"; };
+		15FA77B4302D90010097077D /* GameDetailStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailStatistics.swift; sourceTree = "<group>"; };
+		15FA77B6302D90010097077D /* GameDetailStatisticsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailStatisticsCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -262,8 +270,10 @@
 		153512A8302C5D8500F367B8 /* Cell */ = {
 			isa = PBXGroup;
 			children = (
+				15FA77B2302D80010097077D /* GameDetailRecentRecordsCell.swift */,
 				15351306302C720100F367B8 /* GameDetailRuleCell.swift */,
 				15351316302D300100F367B8 /* GameDetailSettingCell.swift */,
+				15FA77B6302D90010097077D /* GameDetailStatisticsCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -279,11 +289,13 @@
 		153512AA302C5DA300F367B8 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				15FA77B0302D80010097077D /* GameDetailRecentRecord.swift */,
 				15351304302C720100F367B8 /* GameDetailRule.swift */,
 				15351308302C730100F367B8 /* GameDetailRuleCatalog.swift */,
 				15351300302C700100F367B8 /* GameDetailSection.swift */,
 				15351310302D300100F367B8 /* GameDetailSetting.swift */,
 				15351312302D300100F367B8 /* GameDetailState.swift */,
+				15FA77B4302D90010097077D /* GameDetailStatistics.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -828,6 +840,10 @@
 				15351313302D300100F367B8 /* GameDetailState.swift in Sources */,
 				15351315302D300100F367B8 /* GameDetailViewModel.swift in Sources */,
 				15351317302D300100F367B8 /* GameDetailSettingCell.swift in Sources */,
+				15FA77B1302D80010097077D /* GameDetailRecentRecord.swift in Sources */,
+				15FA77B3302D80010097077D /* GameDetailRecentRecordsCell.swift in Sources */,
+				15FA77B5302D90010097077D /* GameDetailStatistics.swift in Sources */,
+				15FA77B7302D90010097077D /* GameDetailStatisticsCell.swift in Sources */,
 				15D20001302C100100000001 /* DiceGame.swift in Sources */,
 				15D20002302C100100000002 /* GameStatistics.swift in Sources */,
 				15D20003302C100100000003 /* MainHomeSnapshot.swift in Sources */,

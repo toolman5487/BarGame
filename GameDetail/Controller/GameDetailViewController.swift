@@ -66,8 +66,58 @@ final class GameDetailViewController: DetailBaseViewController {
         collectionView.dataSource = self
         collectionView.register(GameDetailRuleCell.self)
         collectionView.register(GameDetailSettingCell.self)
+        collectionView.register(GameDetailStatisticsCell.self)
+        collectionView.register(GameDetailRecentRecordsCell.self)
         collectionView.register(GameDetailTitleHeader.self)
         view.addSubview(bottomBar)
+    }
+
+    override func collectionViewItemSize(
+        in collectionView: UICollectionView,
+        at indexPath: IndexPath
+    ) -> CGSize {
+        guard sections.indices.contains(indexPath.section) else {
+            return super.collectionViewItemSize(in: collectionView, at: indexPath)
+        }
+
+        switch sections[indexPath.section] {
+        case .statistics:
+            let standardSize = super.collectionViewItemSize(
+                in: collectionView,
+                at: indexPath
+            )
+            return CGSize(
+                width: standardSize.width,
+                height: GameDetailStatisticsCell.Metrics.preferredHeight
+            )
+
+        case .recentRecords:
+            return CGSize(
+                width: collectionView.bounds.width,
+                height: GameDetailRecentRecordsCell.Metrics.preferredHeight
+            )
+
+        case .rules, .settings:
+            return super.collectionViewItemSize(in: collectionView, at: indexPath)
+        }
+    }
+
+    override func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        insetForSectionAt section: Int
+    ) -> UIEdgeInsets {
+        guard sections.indices.contains(section) else {
+            return collectionViewSectionInset
+        }
+
+        switch sections[section] {
+        case .recentRecords:
+            return .zero
+
+        case .rules, .settings, .statistics:
+            return collectionViewSectionInset
+        }
     }
 
     override func setLayout() {
@@ -155,6 +205,12 @@ extension GameDetailViewController: UICollectionViewDataSource {
 
         case .settings(let settings):
             return settings.count
+
+        case .statistics:
+            return 1
+
+        case .recentRecords:
+            return 1
         }
     }
 
@@ -192,6 +248,22 @@ extension GameDetailViewController: UICollectionViewDataSource {
             cell.valueChanged = { [weak self] value in
                 self?.settingChangeSubject.send(.diceCount(value))
             }
+            return cell
+
+        case .statistics(let state):
+            let cell = collectionView.dequeueReusableCell(
+                GameDetailStatisticsCell.self,
+                for: indexPath
+            )
+            cell.configure(state: state)
+            return cell
+
+        case .recentRecords(let state):
+            let cell = collectionView.dequeueReusableCell(
+                GameDetailRecentRecordsCell.self,
+                for: indexPath
+            )
+            cell.configure(state: state)
             return cell
         }
     }
