@@ -116,6 +116,22 @@ nonisolated final class DiceNode: SCNNode {
         body.angularVelocity = SCNVector4Zero
     }
 
+    var topFaceValue: Int {
+        let faces: [(value: Int, normal: SCNVector3)] = [
+            (1, SCNVector3(0, 0, 1)),
+            (2, SCNVector3(1, 0, 0)),
+            (6, SCNVector3(0, 0, -1)),
+            (5, SCNVector3(-1, 0, 0)),
+            (3, SCNVector3(0, 1, 0)),
+            (4, SCNVector3(0, -1, 0)),
+        ]
+
+        return faces.max { first, second in
+            presentation.convertVector(first.normal, to: nil).y <
+                presentation.convertVector(second.normal, to: nil).y
+        }?.value ?? 1
+    }
+
     nonisolated static func impactSpeed(for contact: SCNPhysicsContact) -> Float {
         let diceBody: SCNPhysicsBody?
         if contact.nodeA.physicsBody?.categoryBitMask == DicePhysicsCategory.dice {

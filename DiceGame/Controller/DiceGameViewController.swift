@@ -17,8 +17,6 @@ final class DiceGameViewController: StandardBaseViewController {
     struct Configuration {
 
         let title: String
-        let unlockedHintText: String
-        let lockedHintText: String
         let contentView: DiceGameView.Configuration
     }
 
@@ -32,6 +30,7 @@ final class DiceGameViewController: StandardBaseViewController {
         static let controlButtonSize: CGFloat = 56
         static let controlButtonSpacing: CGFloat = 16
         static let edgeInset: CGFloat = 16
+        static let resultViewHeight: CGFloat = 88
     }
 
     // MARK: - Dependencies
@@ -42,7 +41,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
     // MARK: - State
 
-    private let selectedControlSubject = PassthroughSubject<DiceGameControl, Never>()
+    private let confirmedResultSubject = PassthroughSubject<DiceRollResult, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedState: DiceGameState
@@ -50,13 +49,7 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - UI Elements
 
     private let diceGameView: DiceGameView
-
-    private let hintLabel = ViewFactory.makeGlassLabel(
-        textStyle: .subheadline,
-        textColor: .label,
-        textAlignment: .center,
-        numberOfLines: 1
-    )
+    private let resultView = DiceGameResultView()
 
     private lazy var controlButtons = DiceGameControl.allCases.map { control in
         ControlButtonItem(
@@ -114,7 +107,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
     override func setHierarchy() {
         view.addSubview(diceGameView)
-        view.addSubview(hintLabel)
+        view.addSubview(resultView)
         view.addSubview(controlStackView)
         setupControlActions()
     }
@@ -124,9 +117,10 @@ final class DiceGameViewController: StandardBaseViewController {
             make.edges.equalToSuperview()
         }
 
-        hintLabel.snp.makeConstraints { make in
+        resultView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
-            make.centerX.equalToSuperview()
+            make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.height.equalTo(Metrics.resultViewHeight)
         }
 
         controlStackView.snp.makeConstraints { make in
@@ -142,7 +136,7 @@ final class DiceGameViewController: StandardBaseViewController {
     }
 
     override func setAppearance() {
-        configureHintLabel()
+        configureResultView()
         configureControlButtons()
     }
 
@@ -152,7 +146,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
     override func bind() {
         let input = DiceGameViewModelInput(
-            selectedControl: selectedControlSubject.eraseToAnyPublisher(),
+            confirmedResult: confirmedResultSubject.eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
@@ -191,19 +185,15 @@ final class DiceGameViewController: StandardBaseViewController {
 
         if renderedState != state {
             renderedState = state
-            configureHintLabel()
+            configureResultView()
             configureControlButtons()
         }
     }
 
     // MARK: - UI Configuration
 
-    private func configureHintLabel() {
-        hintLabel.configure(
-            text: renderedState.isDiceLocked
-                ? configuration.lockedHintText
-                : configuration.unlockedHintText
-        )
+    private func configureResultView() {
+        resultView.configure(result: renderedState.result)
     }
 
     private func configureControlButtons() {
@@ -216,40 +206,32 @@ final class DiceGameViewController: StandardBaseViewController {
         let foregroundColor: UIColor
 
         switch control {
-        case .lock:
-            foregroundColor = renderedState.isDiceLocked ? .systemOrange : .label
-
         case .action:
             foregroundColor = .label
 
         case .exit:
-            foregroundColor = .systemRed
+            foregroundColor = .label
         }
 
         var configuration = button.configuration
         configuration?.image = UIImage(systemName: systemName(for: control))
         configuration?.baseForegroundColor = foregroundColor
         button.configuration = configuration
-        button.isEnabled = renderedState.isEnabled(control)
+
+        switch control {
+        case .action:
+            button.isEnabled = !renderedState.isDiceLocked
+        case .exit:
+            button.isEnabled = true
+        }
     }
 
     private func systemName(for control: DiceGameControl) -> String {
         switch control {
-        case .lock:
-            return renderedState.isDiceLocked ? "lock.fill" : "lock.open"
         case .action:
-            return actionImageName
-        case .exit:
-            return "xmark"
-        }
-    }
-
-    private var actionImageName: String {
-        switch renderedState.viewMode {
-        case .perspective:
             return "checkmark"
-        case .topDown:
-            return "arrow.backward"
+        case .exit:
+            return "arrow.down.right.and.arrow.up.left"
         }
     }
 
@@ -257,8 +239,9 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private func didSelectControl(_ control: DiceGameControl) {
         switch control {
-        case .lock, .action:
-            selectedControlSubject.send(control)
+        case .action:
+            let result = diceGameView.lockAndCaptureResult()
+            confirmedResultSubject.send(result)
         case .exit:
             showExitConfirmation()
         }
@@ -286,8 +269,6 @@ extension DiceGameViewController {
         self.init(
             configuration: Configuration(
                 title: configuration.title,
-                unlockedHintText: configuration.unlockedHintText,
-                lockedHintText: configuration.lockedHintText,
                 contentView: DiceGameView.Configuration(
                     initialState: initialState,
                     gameDiceView: GameDiceView.Configuration(

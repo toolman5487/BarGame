@@ -211,6 +211,10 @@ final class GameDiceView: UIView {
         diceNodes.forEach { $0.setLocked(isLocked) }
     }
 
+    func currentValues() -> [Int] {
+        diceNodes.map(\.topFaceValue)
+    }
+
     func showTopDownView() {
         arena.showTopDownView()
     }

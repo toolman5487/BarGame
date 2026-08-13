@@ -70,6 +70,11 @@ final class DiceGameView: UIView {
         }
     }
 
+    func lockAndCaptureResult() -> DiceRollResult {
+        gameDiceView.setInteractionLocked(true)
+        return DiceRollResult(values: gameDiceView.currentValues())
+    }
+
     // MARK: - Setup
 
     private func setupViewHierarchy() {

@@ -12,7 +12,7 @@ import Foundation
 
 struct DiceGameViewModelInput {
 
-    let selectedControl: AnyPublisher<DiceGameControl, Never>
+    let confirmedResult: AnyPublisher<DiceRollResult, Never>
     let shakeMotion: AnyPublisher<Void, Never>
 }
 
@@ -65,9 +65,9 @@ final class DiceGameViewModel: DiceGameViewModeling {
     func transform(input: DiceGameViewModelInput) -> DiceGameViewModelOutput {
         cancellables.removeAll()
 
-        input.selectedControl
-            .sink { [weak self] control in
-                self?.handleSelectedControl(control)
+        input.confirmedResult
+            .sink { [weak self] result in
+                self?.confirmDiceResult(result)
             }
             .store(in: &cancellables)
 
@@ -87,25 +87,6 @@ final class DiceGameViewModel: DiceGameViewModeling {
 
     // MARK: - Actions
 
-    private func handleSelectedControl(_ control: DiceGameControl) {
-        switch control {
-        case .lock:
-            guard state.viewMode == .perspective else { return }
-            updateState(
-                DiceGameState(
-                    viewMode: state.viewMode,
-                    isDiceLocked: !state.isDiceLocked
-                )
-            )
-
-        case .action:
-            updateViewMode()
-
-        case .exit:
-            break
-        }
-    }
-
     private func handleShakeMotion() {
         guard !state.isDiceLocked else { return }
         commandSubject.send(.shakeDice)
@@ -113,24 +94,15 @@ final class DiceGameViewModel: DiceGameViewModeling {
 
     // MARK: - State Updates
 
-    private func updateViewMode() {
-        let updatedState: DiceGameState
-
-        switch state.viewMode {
-        case .perspective:
-            updatedState = DiceGameState(
+    private func confirmDiceResult(_ result: DiceRollResult) {
+        guard !state.isDiceLocked else { return }
+        updateState(
+            DiceGameState(
                 viewMode: .topDown,
-                isDiceLocked: true
+                isDiceLocked: true,
+                result: result
             )
-
-        case .topDown:
-            updatedState = DiceGameState(
-                viewMode: .perspective,
-                isDiceLocked: false
-            )
-        }
-
-        updateState(updatedState)
+        )
     }
 
     private func updateState(_ updatedState: DiceGameState) {
