@@ -10,13 +10,19 @@ import Foundation
 nonisolated enum GameDetailSection: Equatable, Sendable {
 
     case rules([GameDetailRule])
-    case start
+    case settings([GameDetailSetting])
 
     static func standard(for gameID: DiceGameID) -> [GameDetailSection] {
-        [
+        var sections: [GameDetailSection] = [
             .rules(GameDetailRuleCatalog.rules(for: gameID)),
-            .start,
         ]
+        let settings = GameDetailSetting.standard(for: gameID)
+
+        if !settings.isEmpty {
+            sections.append(.settings(settings))
+        }
+
+        return sections
     }
 
     var headerTitle: String? {
@@ -24,8 +30,8 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
         case .rules:
             return "遊戲規則"
 
-        case .start:
-            return nil
+        case .settings:
+            return "遊戲設定"
         }
     }
 }

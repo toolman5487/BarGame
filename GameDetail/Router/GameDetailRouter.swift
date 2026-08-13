@@ -10,7 +10,7 @@ import UIKit
 // MARK: - GameDetailRoute
 
 nonisolated enum GameDetailRoute: Equatable, Sendable {
-    case startGame(DiceGameID)
+    case startGame(GameLaunchConfiguration)
 }
 
 // MARK: - GameDetailRouting
@@ -27,31 +27,26 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
 
     func route(to route: GameDetailRoute) {
         switch route {
-        case .startGame(let gameID):
-            showGame(for: gameID)
+        case .startGame(let configuration):
+            showGame(using: configuration)
         }
     }
 
-    private func showGame(for gameID: DiceGameID) {
-        switch gameID {
-        case .dice:
-            let destination = DiceGameViewController()
-            destination.hidesBottomBarWhenPushed = true
-            show(destination, using: .push)
+    private func showGame(using launchConfiguration: GameLaunchConfiguration) {
+        switch launchConfiguration {
+        case .dice(let settings):
+            let standardConfiguration = DiceGameConfiguration.standard
+            let configuration = DiceGameConfiguration(
+                title: standardConfiguration.title,
+                initialDiceCount: settings.initialDiceCount,
+                maximumDiceCount: settings.maximumDiceCount,
+                unlockedHintText: standardConfiguration.unlockedHintText,
+                lockedHintText: standardConfiguration.lockedHintText
+            )
+            let destination = DiceGameViewController(configuration: configuration)
+            show(destination, using: .fullScreen)
 
-        case .playingCards:
-            showUnavailableGameAlert()
-
-        case .roulette:
-            showUnavailableGameAlert()
-
-        case .sicBo:
-            showUnavailableGameAlert()
-
-        case .blackjack:
-            showUnavailableGameAlert()
-
-        case .bingo:
+        case .unavailable:
             showUnavailableGameAlert()
         }
     }

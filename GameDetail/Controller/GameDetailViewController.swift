@@ -5,6 +5,8 @@
 //  Created by Willy Hsu on 2026/8/12.
 //
 
+import Combine
+import SnapKit
 import UIKit
 
 @MainActor
@@ -12,14 +14,28 @@ final class GameDetailViewController: DetailBaseViewController {
 
     // MARK: - Dependencies
 
-    private let game: DiceGame
+    private let viewModel: any GameDetailViewModeling
     private lazy var router: any GameDetailRouting = GameDetailRouter(
         sourceViewController: self
     )
 
     // MARK: - State
 
-    private let sections: [GameDetailSection]
+    private let settingChangeSubject = PassthroughSubject<
+        GameDetailSettingChange,
+        Never
+    >()
+    private let startGameSubject = PassthroughSubject<Void, Never>()
+    private var cancellables = Set<AnyCancellable>()
+    private var renderedState: GameDetailState
+
+    private var sections: [GameDetailSection] {
+        renderedState.sections
+    }
+
+    // MARK: - UI Elements
+
+    private let bottomBar = BottomBar(title: "進入遊戲")
 
     // MARK: - Lifecycle
 
@@ -27,8 +43,14 @@ final class GameDetailViewController: DetailBaseViewController {
         game: DiceGame,
         sections: [GameDetailSection]? = nil
     ) {
-        self.game = game
-        self.sections = sections ?? GameDetailSection.standard(for: game.id)
+        let initialState = GameDetailState(
+            sections: sections ?? GameDetailSection.standard(for: game.id)
+        )
+        viewModel = GameDetailViewModel(
+            gameID: game.id,
+            initialState: initialState
+        )
+        renderedState = initialState
         super.init(title: game.title)
     }
 
@@ -43,8 +65,26 @@ final class GameDetailViewController: DetailBaseViewController {
         super.setHierarchy()
         collectionView.dataSource = self
         collectionView.register(GameDetailRuleCell.self)
-        collectionView.register(GameDetailStartCell.self)
+        collectionView.register(GameDetailSettingCell.self)
         collectionView.register(GameDetailTitleHeader.self)
+        view.addSubview(bottomBar)
+    }
+
+    override func setLayout() {
+        super.setLayout()
+
+        bottomBar.snp.makeConstraints { make in
+            make.left.right.bottom.equalToSuperview()
+        }
+    }
+
+    override func setAppearance() {
+        super.setAppearance()
+        collectionView.contentInset.bottom = BottomBar.contentHeight
+        collectionView.verticalScrollIndicatorInsets.bottom = BottomBar.contentHeight
+        bottomBar.tapHandler = { [weak self] in
+            self?.startGame()
+        }
     }
 
     override func collectionViewHeaderSize(
@@ -61,10 +101,37 @@ final class GameDetailViewController: DetailBaseViewController {
         )
     }
 
+    override func bind() {
+        let input = GameDetailViewModelInput(
+            settingChange: settingChangeSubject.eraseToAnyPublisher(),
+            startGame: startGameSubject.eraseToAnyPublisher()
+        )
+        let output = viewModel.transform(input: input)
+
+        output.state
+            .sink { [weak self] state in
+                self?.apply(state)
+            }
+            .store(in: &cancellables)
+
+        output.launchConfiguration
+            .sink { [weak self] configuration in
+                self?.router.route(to: .startGame(configuration))
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - State Updates
+
+    private func apply(_ state: GameDetailState) {
+        renderedState = state
+        collectionView.reloadData()
+    }
+
     // MARK: - Actions
 
     private func startGame() {
-        router.route(to: .startGame(game.id))
+        startGameSubject.send()
     }
 }
 
@@ -86,8 +153,8 @@ extension GameDetailViewController: UICollectionViewDataSource {
         case .rules(let rules):
             return rules.count
 
-        case .start:
-            return 1
+        case .settings(let settings):
+            return settings.count
         }
     }
 
@@ -112,14 +179,18 @@ extension GameDetailViewController: UICollectionViewDataSource {
             cell.configure(rule: rules[indexPath.item])
             return cell
 
-        case .start:
+        case .settings(let settings):
+            guard settings.indices.contains(indexPath.item) else {
+                preconditionFailure("Invalid GameDetail setting index: \(indexPath.item)")
+            }
+
             let cell = collectionView.dequeueReusableCell(
-                GameDetailStartCell.self,
+                GameDetailSettingCell.self,
                 for: indexPath
             )
-            cell.configure(title: "進入遊戲")
-            cell.tapHandler = { [weak self] in
-                self?.startGame()
+            cell.configure(setting: settings[indexPath.item])
+            cell.valueChanged = { [weak self] value in
+                self?.settingChangeSubject.send(.diceCount(value))
             }
             return cell
         }

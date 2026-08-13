@@ -1,0 +1,58 @@
+//
+//  GameDetailState.swift
+//  BarGame
+//
+//  Created by Willy Hsu on 2026/8/13.
+//
+
+import Foundation
+
+nonisolated struct GameDetailState: Equatable, Sendable {
+
+    let sections: [GameDetailSection]
+
+    func applying(_ change: GameDetailSettingChange) -> GameDetailState {
+        GameDetailState(
+            sections: sections.map { section in
+                switch section {
+                case .rules:
+                    return section
+
+                case .settings(let settings):
+                    return .settings(
+                        settings.map { $0.applying(change) }
+                    )
+                }
+            }
+        )
+    }
+
+    func launchConfiguration(for gameID: DiceGameID) -> GameLaunchConfiguration {
+        switch gameID {
+        case .dice:
+            return .dice(diceGameSettings ?? .standard)
+
+        case .playingCards, .roulette, .sicBo, .blackjack, .bingo:
+            return .unavailable(gameID)
+        }
+    }
+
+    private var diceGameSettings: DiceGameSettings? {
+        for section in sections {
+            guard case .settings(let settings) = section else { continue }
+
+            for setting in settings {
+                guard case .diceCount(let value, let allowedRange) = setting else {
+                    continue
+                }
+
+                return DiceGameSettings(
+                    initialDiceCount: value,
+                    maximumDiceCount: allowedRange.upperBound
+                )
+            }
+        }
+
+        return nil
+    }
+}

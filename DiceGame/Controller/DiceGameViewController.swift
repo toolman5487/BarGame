@@ -25,7 +25,6 @@ final class DiceGameViewController: StandardBaseViewController {
     private enum Metrics {
         static let controlButtonSize: CGFloat = 56
         static let controlButtonSpacing: CGFloat = 16
-        static let controlStackCenterYOffset: CGFloat = 80
         static let edgeInset: CGFloat = 16
     }
 
@@ -57,8 +56,19 @@ final class DiceGameViewController: StandardBaseViewController {
         DiceControlButton(control: control)
     }
 
+    private let exitButton: UIButton = {
+        let button = UIButton(type: .system)
+        var configuration = UIButton.Configuration.glass()
+        configuration.cornerStyle = .capsule
+        configuration.image = UIImage(systemName: "xmark")
+        configuration.baseForegroundColor = .systemRed
+        button.configuration = configuration
+        return button
+    }()
+
     private lazy var controlStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: controlButtons)
+        let arrangedSubviews = controlButtons.map { $0 as UIView } + [exitButton]
+        let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.distribution = .fillProportionally
@@ -115,23 +125,26 @@ final class DiceGameViewController: StandardBaseViewController {
         }
 
         hintLabel.snp.makeConstraints { make in
-            make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.left.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.right
+                .lessThanOrEqualTo(controlStackView.snp.left)
+                .offset(-Metrics.edgeInset)
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
         }
 
         controlStackView.snp.makeConstraints { make in
             make.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
-            make.centerY
-                .equalTo(view.safeAreaLayoutGuide)
-                .offset(Metrics.controlStackCenterYOffset)
-                .priority(.high)
-            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
         }
 
         controlButtons.forEach { button in
             button.snp.makeConstraints { make in
                 make.size.equalTo(Metrics.controlButtonSize)
             }
+        }
+
+        exitButton.snp.makeConstraints { make in
+            make.size.equalTo(Metrics.controlButtonSize)
         }
     }
 
@@ -174,6 +187,11 @@ final class DiceGameViewController: StandardBaseViewController {
                 for: .touchUpInside
             )
         }
+        exitButton.addTarget(
+            self,
+            action: #selector(didTapExitButton),
+            for: .touchUpInside
+        )
     }
 
     // MARK: - State Updates
@@ -247,6 +265,11 @@ final class DiceGameViewController: StandardBaseViewController {
     @objc
     private func didSelectControl(_ button: DiceControlButton) {
         selectedControlSubject.send(button.control)
+    }
+
+    @objc
+    private func didTapExitButton() {
+        dismiss(animated: true)
     }
 }
 
