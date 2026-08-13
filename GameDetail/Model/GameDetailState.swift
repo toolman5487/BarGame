@@ -28,13 +28,15 @@ nonisolated struct GameDetailState: Equatable, Sendable {
     }
 
     func launchConfiguration(for gameID: DiceGameID) -> GameLaunchConfiguration {
-        switch gameID {
-        case .dice:
-            return .dice(diceGameSettings ?? .standard)
-
-        case .playingCards, .roulette, .sicBo, .blackjack, .bingo:
-            return .unavailable(gameID)
-        }
+        let preset = gameID.dicePreset
+        let presetSettings = DiceGameSettings(
+            initialDiceCount: preset.defaultDiceCount,
+            maximumDiceCount: preset.allowedDiceCount.upperBound
+        )
+        return .dice(
+            gameID: gameID,
+            settings: diceGameSettings ?? presetSettings
+        )
     }
 
     private var diceGameSettings: DiceGameSettings? {

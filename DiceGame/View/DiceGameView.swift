@@ -65,8 +65,6 @@ final class DiceGameView: UIView {
 
     func execute(_ command: DiceGameViewCommand) {
         switch command {
-        case .addDice:
-            gameDiceView.addDice()
         case .shakeDice:
             gameDiceView.shake()
         }

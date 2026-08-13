@@ -20,8 +20,8 @@ nonisolated enum DiceGameViewMode: Sendable {
 nonisolated enum DiceGameControl: Int, CaseIterable, Sendable {
 
     case lock
-    case add
     case action
+    case exit
 }
 
 // MARK: - Configuration
@@ -45,9 +45,7 @@ nonisolated struct DiceGameConfiguration: Sendable {
     var initialState: DiceGameState {
         DiceGameState(
             viewMode: .perspective,
-            isDiceLocked: false,
-            diceCount: initialDiceCount,
-            maximumDiceCount: maximumDiceCount
+            isDiceLocked: false
         )
     }
 }
@@ -58,20 +56,14 @@ nonisolated struct DiceGameState: Equatable, Sendable {
 
     let viewMode: DiceGameViewMode
     let isDiceLocked: Bool
-    let diceCount: Int
-    let maximumDiceCount: Int
-
-    var canAddDice: Bool {
-        !isDiceLocked && diceCount < maximumDiceCount
-    }
 
     func isEnabled(_ control: DiceGameControl) -> Bool {
         switch control {
         case .lock:
             return viewMode == .perspective
-        case .add:
-            return canAddDice
         case .action:
+            return true
+        case .exit:
             return true
         }
     }

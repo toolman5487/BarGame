@@ -81,6 +81,19 @@ final class GameDetailViewController: DetailBaseViewController {
         }
 
         switch sections[indexPath.section] {
+        case .rules(let rules):
+            let standardSize = super.collectionViewItemSize(
+                in: collectionView,
+                at: indexPath
+            )
+            return CGSize(
+                width: standardSize.width,
+                height: GameDetailRuleCell.preferredHeight(
+                    for: rules,
+                    width: standardSize.width
+                )
+            )
+
         case .statistics:
             let standardSize = super.collectionViewItemSize(
                 in: collectionView,
@@ -97,7 +110,7 @@ final class GameDetailViewController: DetailBaseViewController {
                 height: GameDetailRecentRecordsCell.Metrics.preferredHeight
             )
 
-        case .rules, .settings:
+        case .settings:
             return super.collectionViewItemSize(in: collectionView, at: indexPath)
         }
     }
@@ -201,7 +214,7 @@ extension GameDetailViewController: UICollectionViewDataSource {
 
         switch sections[section] {
         case .rules(let rules):
-            return rules.count
+            return rules.isEmpty ? 0 : 1
 
         case .settings(let settings):
             return settings.count
@@ -224,15 +237,11 @@ extension GameDetailViewController: UICollectionViewDataSource {
 
         switch sections[indexPath.section] {
         case .rules(let rules):
-            guard rules.indices.contains(indexPath.item) else {
-                preconditionFailure("Invalid GameDetail rule index: \(indexPath.item)")
-            }
-
             let cell = collectionView.dequeueReusableCell(
                 GameDetailRuleCell.self,
                 for: indexPath
             )
-            cell.configure(rule: rules[indexPath.item])
+            cell.configure(rules: rules)
             return cell
 
         case .settings(let settings):

@@ -44,6 +44,9 @@ final class GlassLabelView: UIView {
         textLabel.textColor = textColor
         textLabel.textAlignment = textAlignment
         textLabel.numberOfLines = numberOfLines
+        textLabel.lineBreakMode = numberOfLines == 1
+            ? .byTruncatingTail
+            : .byWordWrapping
         isUserInteractionEnabled = false
         setupHierarchy()
         setupLayout()

@@ -39,24 +39,6 @@ final class MainHomeRouter: BaseRouter, MainHomeRouting {
     // MARK: - Private
 
     private func makeGameViewController(for game: DiceGame) -> UIViewController {
-        switch game.id {
-        case .dice:
-            return GameDetailViewController(game: game)
-
-        case .playingCards:
-            return GameDetailViewController(game: game)
-
-        case .roulette:
-            return GameDetailViewController(game: game)
-
-        case .sicBo:
-            return GameDetailViewController(game: game)
-
-        case .blackjack:
-            return GameDetailViewController(game: game)
-
-        case .bingo:
-            return GameDetailViewController(game: game)
-        }
+        GameDetailViewController(game: game)
     }
 }

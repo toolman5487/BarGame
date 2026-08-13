@@ -22,6 +22,12 @@ final class DiceGameViewController: StandardBaseViewController {
         let contentView: DiceGameView.Configuration
     }
 
+    private struct ControlButtonItem {
+
+        let control: DiceGameControl
+        let button: UIButton
+    }
+
     private enum Metrics {
         static let controlButtonSize: CGFloat = 56
         static let controlButtonSpacing: CGFloat = 16
@@ -32,6 +38,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private let configuration: Configuration
     private let viewModel: any DiceGameViewModeling
+    private lazy var router = BaseRouter(sourceViewController: self)
 
     // MARK: - State
 
@@ -44,31 +51,24 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private let diceGameView: DiceGameView
 
-    private let hintLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .label
-        label.font = .preferredFont(forTextStyle: .subheadline)
-        label.textAlignment = .center
-        return label
-    }()
+    private let hintLabel = ViewFactory.makeGlassLabel(
+        textStyle: .subheadline,
+        textColor: .label,
+        textAlignment: .center,
+        numberOfLines: 1
+    )
 
     private lazy var controlButtons = DiceGameControl.allCases.map { control in
-        DiceControlButton(control: control)
+        ControlButtonItem(
+            control: control,
+            button: ViewFactory.makeIconButton(systemName: systemName(for: control))
+        )
     }
 
-    private let exitButton: UIButton = {
-        let button = UIButton(type: .system)
-        var configuration = UIButton.Configuration.glass()
-        configuration.cornerStyle = .capsule
-        configuration.image = UIImage(systemName: "xmark")
-        configuration.baseForegroundColor = .systemRed
-        button.configuration = configuration
-        return button
-    }()
-
     private lazy var controlStackView: UIStackView = {
-        let arrangedSubviews = controlButtons.map { $0 as UIView } + [exitButton]
-        let stackView = UIStackView(arrangedSubviews: arrangedSubviews)
+        let stackView = UIStackView(
+            arrangedSubviews: controlButtons.map(\.button)
+        )
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.distribution = .fillProportionally
@@ -125,11 +125,8 @@ final class DiceGameViewController: StandardBaseViewController {
         }
 
         hintLabel.snp.makeConstraints { make in
-            make.left.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
-            make.right
-                .lessThanOrEqualTo(controlStackView.snp.left)
-                .offset(-Metrics.edgeInset)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.top.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.centerX.equalToSuperview()
         }
 
         controlStackView.snp.makeConstraints { make in
@@ -137,14 +134,10 @@ final class DiceGameViewController: StandardBaseViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
         }
 
-        controlButtons.forEach { button in
-            button.snp.makeConstraints { make in
+        controlButtons.forEach { item in
+            item.button.snp.makeConstraints { make in
                 make.size.equalTo(Metrics.controlButtonSize)
             }
-        }
-
-        exitButton.snp.makeConstraints { make in
-            make.size.equalTo(Metrics.controlButtonSize)
         }
     }
 
@@ -180,18 +173,15 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - Setup
 
     private func setupControlActions() {
-        controlButtons.forEach { button in
-            button.addTarget(
-                self,
-                action: #selector(didSelectControl(_:)),
-                for: .touchUpInside
+        controlButtons.forEach { item in
+            let control = item.control
+            item.button.addAction(
+                UIAction { [weak self] _ in
+                    self?.didSelectControl(control)
+                },
+                for: .primaryActionTriggered
             )
         }
-        exitButton.addTarget(
-            self,
-            action: #selector(didTapExitButton),
-            for: .touchUpInside
-        )
     }
 
     // MARK: - State Updates
@@ -209,46 +199,49 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - UI Configuration
 
     private func configureHintLabel() {
-        hintLabel.text = renderedState.isDiceLocked
-            ? configuration.lockedHintText
-            : configuration.unlockedHintText
+        hintLabel.configure(
+            text: renderedState.isDiceLocked
+                ? configuration.lockedHintText
+                : configuration.unlockedHintText
+        )
     }
 
     private func configureControlButtons() {
-        controlButtons.forEach { button in
-            configure(button, for: button.control)
+        controlButtons.forEach { item in
+            configure(item.button, for: item.control)
         }
     }
 
-    private func configure(_ button: DiceControlButton, for control: DiceGameControl) {
-        let configuration: DiceControlButton.Configuration
+    private func configure(_ button: UIButton, for control: DiceGameControl) {
+        let foregroundColor: UIColor
 
         switch control {
         case .lock:
-            configuration = DiceControlButton.Configuration(
-                image: UIImage(
-                    systemName: renderedState.isDiceLocked ? "lock.fill" : "lock.open"
-                ),
-                foregroundColor: renderedState.isDiceLocked ? .systemOrange : .label,
-                isEnabled: renderedState.isEnabled(.lock)
-            )
-
-        case .add:
-            configuration = DiceControlButton.Configuration(
-                image: UIImage(systemName: "plus"),
-                foregroundColor: .label,
-                isEnabled: renderedState.isEnabled(.add)
-            )
+            foregroundColor = renderedState.isDiceLocked ? .systemOrange : .label
 
         case .action:
-            configuration = DiceControlButton.Configuration(
-                image: UIImage(systemName: actionImageName),
-                foregroundColor: .label,
-                isEnabled: renderedState.isEnabled(.action)
-            )
+            foregroundColor = .label
+
+        case .exit:
+            foregroundColor = .systemRed
         }
 
-        button.configure(with: configuration)
+        var configuration = button.configuration
+        configuration?.image = UIImage(systemName: systemName(for: control))
+        configuration?.baseForegroundColor = foregroundColor
+        button.configuration = configuration
+        button.isEnabled = renderedState.isEnabled(control)
+    }
+
+    private func systemName(for control: DiceGameControl) -> String {
+        switch control {
+        case .lock:
+            return renderedState.isDiceLocked ? "lock.fill" : "lock.open"
+        case .action:
+            return actionImageName
+        case .exit:
+            return "xmark"
+        }
     }
 
     private var actionImageName: String {
@@ -262,14 +255,23 @@ final class DiceGameViewController: StandardBaseViewController {
 
     // MARK: - Actions
 
-    @objc
-    private func didSelectControl(_ button: DiceControlButton) {
-        selectedControlSubject.send(button.control)
+    private func didSelectControl(_ control: DiceGameControl) {
+        switch control {
+        case .lock, .action:
+            selectedControlSubject.send(control)
+        case .exit:
+            showExitConfirmation()
+        }
     }
 
-    @objc
-    private func didTapExitButton() {
-        dismiss(animated: true)
+    private func showExitConfirmation() {
+        router.showConfirmationAlert(
+            title: "結束賽局？",
+            message: "確定要結束目前的賽局並離開嗎？",
+            actionTitle: "結束賽局"
+        ) { [weak self] in
+            self?.dismiss(animated: true)
+        }
     }
 }
 

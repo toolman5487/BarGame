@@ -44,7 +44,7 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
             return "遊戲設定"
 
         case .statistics:
-            return "戰績摘要"
+            return nil
 
         case .recentRecords:
             return "近十場紀錄"

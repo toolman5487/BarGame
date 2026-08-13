@@ -14,15 +14,14 @@ nonisolated enum GameDetailSetting: Equatable, Sendable {
     case diceCount(value: Int, allowedRange: ClosedRange<Int>)
 
     static func standard(for gameID: DiceGameID) -> [GameDetailSetting] {
-        switch gameID {
-        case .dice:
-            return [
-                .diceCount(value: 1, allowedRange: 1...8),
-            ]
+        let preset = gameID.dicePreset
 
-        case .playingCards, .roulette, .sicBo, .blackjack, .bingo:
-            return []
-        }
+        return [
+            .diceCount(
+                value: preset.defaultDiceCount,
+                allowedRange: preset.allowedDiceCount
+            ),
+        ]
     }
 
     func applying(_ change: GameDetailSettingChange) -> GameDetailSetting {
@@ -69,6 +68,5 @@ nonisolated struct DiceGameSettings: Equatable, Sendable {
 
 nonisolated enum GameLaunchConfiguration: Equatable, Sendable {
 
-    case dice(DiceGameSettings)
-    case unavailable(DiceGameID)
+    case dice(gameID: DiceGameID, settings: DiceGameSettings)
 }

@@ -34,10 +34,10 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
 
     private func showGame(using launchConfiguration: GameLaunchConfiguration) {
         switch launchConfiguration {
-        case .dice(let settings):
+        case .dice(let gameID, let settings):
             let standardConfiguration = DiceGameConfiguration.standard
             let configuration = DiceGameConfiguration(
-                title: standardConfiguration.title,
+                title: gameID.title,
                 initialDiceCount: settings.initialDiceCount,
                 maximumDiceCount: settings.maximumDiceCount,
                 unlockedHintText: standardConfiguration.unlockedHintText,
@@ -45,16 +45,6 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
             )
             let destination = DiceGameViewController(configuration: configuration)
             show(destination, using: .fullScreen)
-
-        case .unavailable:
-            showUnavailableGameAlert()
         }
-    }
-
-    private func showUnavailableGameAlert() {
-        showAlert(
-            title: "即將推出",
-            message: "這款遊戲還在準備中。"
-        )
     }
 }

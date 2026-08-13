@@ -201,22 +201,9 @@ final class GameDiceView: UIView {
 
     // MARK: - Public
 
-    var canAddDice: Bool {
-        !isInteractionLocked && diceNodes.count < configuration.maximumDiceCount
-    }
-
     func shake(intensity: Double = 1.2) {
         guard !isInteractionLocked else { return }
         diceNodes.forEach { $0.applyShake(intensity: intensity) }
-    }
-
-    @discardableResult
-    func addDice() -> Bool {
-        guard canAddDice else { return false }
-
-        let diceNode = makeDiceNode()
-        diceNode.applyShake(intensity: 0.7)
-        return true
     }
 
     func setInteractionLocked(_ isLocked: Bool) {

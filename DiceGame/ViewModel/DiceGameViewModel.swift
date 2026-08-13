@@ -28,7 +28,6 @@ struct DiceGameViewModelOutput {
 
 enum DiceGameViewCommand {
 
-    case addDice
     case shakeDice
 }
 
@@ -95,26 +94,15 @@ final class DiceGameViewModel: DiceGameViewModeling {
             updateState(
                 DiceGameState(
                     viewMode: state.viewMode,
-                    isDiceLocked: !state.isDiceLocked,
-                    diceCount: state.diceCount,
-                    maximumDiceCount: state.maximumDiceCount
+                    isDiceLocked: !state.isDiceLocked
                 )
             )
-
-        case .add:
-            guard state.canAddDice else { return }
-            updateState(
-                DiceGameState(
-                    viewMode: state.viewMode,
-                    isDiceLocked: state.isDiceLocked,
-                    diceCount: state.diceCount + 1,
-                    maximumDiceCount: state.maximumDiceCount
-                )
-            )
-            commandSubject.send(.addDice)
 
         case .action:
             updateViewMode()
+
+        case .exit:
+            break
         }
     }
 
@@ -132,17 +120,13 @@ final class DiceGameViewModel: DiceGameViewModeling {
         case .perspective:
             updatedState = DiceGameState(
                 viewMode: .topDown,
-                isDiceLocked: true,
-                diceCount: state.diceCount,
-                maximumDiceCount: state.maximumDiceCount
+                isDiceLocked: true
             )
 
         case .topDown:
             updatedState = DiceGameState(
                 viewMode: .perspective,
-                isDiceLocked: false,
-                diceCount: state.diceCount,
-                maximumDiceCount: state.maximumDiceCount
+                isDiceLocked: false
             )
         }
 
