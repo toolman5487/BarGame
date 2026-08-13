@@ -39,7 +39,11 @@ final class DiceGameResultView: UIView {
     private enum Metrics {
         static let itemsPerRow = 3
         static let itemSpacing: CGFloat = 8
-        static let animationDuration: TimeInterval = 0.25
+        static let animationDuration: TimeInterval = 0.42
+        static let animationDampingRatio: CGFloat = 0.82
+        static let minimumCollapsedScale: CGFloat = 0.2
+        static let hiddenContentAlpha: CGFloat = 0.2
+        static let hintContractedScale: CGFloat = 0.86
 
         static var itemHeight: CGFloat {
             UIFont.preferredFont(forTextStyle: .title2).lineHeight +
@@ -59,6 +63,7 @@ final class DiceGameResultView: UIView {
     private var result: DiceRollResult?
     private var isExpanded = false
     private var previousLayoutWidth: CGFloat = 0
+    private var transitionAnimator: UIViewPropertyAnimator?
 
     // MARK: - UI Elements
 
@@ -110,7 +115,8 @@ final class DiceGameResultView: UIView {
             make.edges.equalToSuperview()
         }
         hintLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.top.equalToSuperview()
+            make.centerX.equalToSuperview()
             make.left.greaterThanOrEqualToSuperview()
             make.right.lessThanOrEqualToSuperview()
         }
@@ -188,15 +194,91 @@ final class DiceGameResultView: UIView {
     }
 
     private func updatePresentation(animated: Bool) {
-        collectionView.isHidden = !isExpanded || result == nil
-        hintLabel.isHidden = isExpanded && result != nil
+        let shouldExpand = isExpanded && result != nil
+        transitionAnimator?.stopAnimation(true)
+
+        guard animated else {
+            collectionView.isHidden = !shouldExpand
+            collectionView.alpha = 1
+            collectionView.transform = .identity
+            hintLabel.isHidden = shouldExpand
+            hintLabel.alpha = 1
+            hintLabel.transform = .identity
+            invalidateIntrinsicContentSize()
+            collectionView.collectionViewLayout.invalidateLayout()
+            return
+        }
+
+        superview?.layoutIfNeeded()
+
+        collectionView.isHidden = false
+        hintLabel.isHidden = false
+
+        if shouldExpand {
+            collectionView.alpha = Metrics.hiddenContentAlpha
+            collectionView.transform = collapsedCollectionTransform
+            hintLabel.alpha = 1
+            hintLabel.transform = .identity
+        } else {
+            collectionView.alpha = 1
+            collectionView.transform = .identity
+            hintLabel.alpha = 0
+            hintLabel.transform = CGAffineTransform(
+                scaleX: Metrics.hintContractedScale,
+                y: Metrics.hintContractedScale
+            )
+        }
+
         invalidateIntrinsicContentSize()
         collectionView.collectionViewLayout.invalidateLayout()
 
-        guard animated else { return }
-        UIView.animate(withDuration: Metrics.animationDuration) {
+        let animator = UIViewPropertyAnimator(
+            duration: Metrics.animationDuration,
+            dampingRatio: Metrics.animationDampingRatio
+        ) {
             self.superview?.layoutIfNeeded()
+
+            if shouldExpand {
+                self.collectionView.alpha = 1
+                self.collectionView.transform = .identity
+                self.hintLabel.alpha = 0
+                self.hintLabel.transform = CGAffineTransform(
+                    scaleX: Metrics.hintContractedScale,
+                    y: Metrics.hintContractedScale
+                )
+            } else {
+                self.collectionView.alpha = Metrics.hiddenContentAlpha
+                self.collectionView.transform = self.collapsedCollectionTransform
+                self.hintLabel.alpha = 1
+                self.hintLabel.transform = .identity
+            }
         }
+
+        animator.addCompletion { [weak self] position in
+            guard let self, position == .end else { return }
+            self.collectionView.isHidden = !shouldExpand
+            self.collectionView.alpha = 1
+            self.collectionView.transform = .identity
+            self.hintLabel.isHidden = shouldExpand
+            self.hintLabel.alpha = 1
+            self.hintLabel.transform = .identity
+            self.transitionAnimator = nil
+        }
+        transitionAnimator = animator
+        animator.startAnimation()
+    }
+
+    private var collapsedCollectionTransform: CGAffineTransform {
+        let collectionWidth = max(collectionView.bounds.width, 1)
+        let fittingHintWidth = hintLabel.systemLayoutSizeFitting(
+            UIView.layoutFittingCompressedSize
+        ).width
+        let hintWidth = min(fittingHintWidth, collectionWidth)
+        let scale = max(
+            hintWidth / collectionWidth,
+            Metrics.minimumCollapsedScale
+        )
+        return CGAffineTransform(scaleX: scale, y: 1)
     }
 }
 
