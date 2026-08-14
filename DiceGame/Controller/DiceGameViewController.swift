@@ -21,15 +21,7 @@ final class DiceGameViewController: StandardBaseViewController {
         let contentView: DiceGameView.Configuration
     }
 
-    private struct ControlButtonItem {
-
-        let control: DiceGameControl
-        let button: UIButton
-    }
-
     private enum Metrics {
-        static let controlButtonSize: CGFloat = 56
-        static let controlButtonSpacing: CGFloat = 16
         static let edgeInset: CGFloat = 16
     }
 
@@ -51,26 +43,13 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private let diceGameView: DiceGameView
     private let resultView: DiceGameResultView
-
-    private lazy var controlButtons = DiceGameControl.allCases.map { control in
-        ControlButtonItem(
-            control: control,
-            button: ViewFactory.makeIconButton(systemName: systemName(for: control))
-        )
-    }
-
-    private lazy var controlStackView: UIStackView = {
-        let stackView = UIStackView(
-            arrangedSubviews: controlButtons.map(\.button)
-        )
-        stackView.axis = .vertical
-        stackView.alignment = .center
-        stackView.distribution = .fillProportionally
-        stackView.spacing = Metrics.controlButtonSpacing
-        stackView.isOpaque = false
-        stackView.clipsToBounds = false
-        return stackView
-    }()
+    private let confirmBottomBar = DiceGameBottomBar()
+    private lazy var exitBarButtonItem = UIBarButtonItem(
+        image: UIImage(systemName: "arrow.down.right.and.arrow.up.left"),
+        primaryAction: UIAction { [weak self] _ in
+            self?.showExitConfirmation()
+        }
+    )
 
     // MARK: - Lifecycle
 
@@ -110,8 +89,8 @@ final class DiceGameViewController: StandardBaseViewController {
     override func setHierarchy() {
         view.addSubview(diceGameView)
         view.addSubview(resultView)
-        view.addSubview(controlStackView)
-        setupControlActions()
+        view.addSubview(confirmBottomBar)
+        setupConfirmAction()
         setupResultViewActions()
     }
 
@@ -123,27 +102,24 @@ final class DiceGameViewController: StandardBaseViewController {
         resultView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
             make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
+            make.bottom
+                .lessThanOrEqualTo(confirmBottomBar.snp.top)
+                .offset(-Metrics.edgeInset)
         }
 
-        controlStackView.snp.makeConstraints { make in
-            make.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
-        }
-
-        controlButtons.forEach { item in
-            item.button.snp.makeConstraints { make in
-                make.size.equalTo(Metrics.controlButtonSize)
-            }
+        confirmBottomBar.snp.makeConstraints { make in
+            make.left.right.bottom.equalToSuperview()
         }
     }
 
     override func setAppearance() {
         configureResultView()
-        configureControlButtons()
+        configureConfirmButton()
     }
 
     override func setNavigation() {
         title = configuration.title
+        navigationItem.rightBarButtonItem = exitBarButtonItem
     }
 
     override func bind() {
@@ -170,15 +146,9 @@ final class DiceGameViewController: StandardBaseViewController {
 
     // MARK: - Setup
 
-    private func setupControlActions() {
-        controlButtons.forEach { item in
-            let control = item.control
-            item.button.addAction(
-                UIAction { [weak self] _ in
-                    self?.didSelectControl(control)
-                },
-                for: .primaryActionTriggered
-            )
+    private func setupConfirmAction() {
+        confirmBottomBar.tapHandler = { [weak self] in
+            self?.confirmDiceResult()
         }
     }
 
@@ -196,7 +166,7 @@ final class DiceGameViewController: StandardBaseViewController {
         if renderedState != state {
             renderedState = state
             configureResultView()
-            configureControlButtons()
+            configureConfirmButton()
         }
     }
 
@@ -206,55 +176,15 @@ final class DiceGameViewController: StandardBaseViewController {
         resultView.configure(with: renderedState.result)
     }
 
-    private func configureControlButtons() {
-        controlButtons.forEach { item in
-            configure(item.button, for: item.control)
-        }
-    }
-
-    private func configure(_ button: UIButton, for control: DiceGameControl) {
-        let foregroundColor: UIColor
-
-        switch control {
-        case .action:
-            foregroundColor = .label
-
-        case .exit:
-            foregroundColor = .label
-        }
-
-        var configuration = button.configuration
-        configuration?.image = UIImage(systemName: systemName(for: control))
-        configuration?.baseForegroundColor = foregroundColor
-        button.configuration = configuration
-
-        switch control {
-        case .action:
-            button.isEnabled = !renderedState.game.isDiceLocked
-        case .exit:
-            button.isEnabled = true
-        }
-    }
-
-    private func systemName(for control: DiceGameControl) -> String {
-        switch control {
-        case .action:
-            return "checkmark"
-        case .exit:
-            return "arrow.down.right.and.arrow.up.left"
-        }
+    private func configureConfirmButton() {
+        confirmBottomBar.isEnabled = !renderedState.game.isDiceLocked
     }
 
     // MARK: - Actions
 
-    private func didSelectControl(_ control: DiceGameControl) {
-        switch control {
-        case .action:
-            let result = diceGameView.lockAndCaptureResult()
-            confirmedResultSubject.send(result)
-        case .exit:
-            showExitConfirmation()
-        }
+    private func confirmDiceResult() {
+        let result = diceGameView.lockAndCaptureResult()
+        confirmedResultSubject.send(result)
     }
 
     private func showExitConfirmation() {

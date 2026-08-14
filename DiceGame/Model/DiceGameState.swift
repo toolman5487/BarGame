@@ -15,14 +15,6 @@ nonisolated enum DiceGameViewMode: Sendable {
     case topDown
 }
 
-// MARK: - Control
-
-nonisolated enum DiceGameControl: Int, CaseIterable, Sendable {
-
-    case action
-    case exit
-}
-
 // MARK: - Configuration
 
 nonisolated enum DiceCountState: Equatable, Sendable {

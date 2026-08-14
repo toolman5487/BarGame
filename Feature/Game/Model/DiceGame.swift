@@ -69,7 +69,7 @@ extension DiceGameID {
         case .oddEven:
             return "猜單雙"
         case .sevenElevenDouble:
-            return "7／11／Double"
+            return "7-11-Doubles"
         }
     }
 

@@ -43,7 +43,10 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
                 hintText: standardConfiguration.hintText
             )
             let destination = DiceGameViewController(configuration: configuration)
-            show(destination, using: .fullScreen)
+            let navigationController = UINavigationController(
+                rootViewController: destination
+            )
+            show(navigationController, using: .fullScreen)
         }
     }
 }
