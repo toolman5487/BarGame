@@ -14,11 +14,11 @@ final class DiceGameViewController: StandardBaseViewController {
 
     // MARK: - Types
 
-    struct Configuration {
+    struct ScreenContent {
 
         let title: String
         let initialState: DiceGameViewState
-        let contentView: DiceGameView.Configuration
+        let diceGameViewConfiguration: DiceGameView.Configuration
     }
 
     private enum Metrics {
@@ -27,13 +27,16 @@ final class DiceGameViewController: StandardBaseViewController {
 
     // MARK: - Dependencies
 
-    private let configuration: Configuration
+    private let screenContent: ScreenContent
     private let viewModel: any DiceGameViewModeling
     private lazy var router = BaseRouter(sourceViewController: self)
 
     // MARK: - State
 
-    private let confirmedResultSubject = PassthroughSubject<DiceRollResult, Never>()
+    private let primaryActionTappedSubject = PassthroughSubject<Void, Never>()
+    private let capturedResultSubject = PassthroughSubject<DiceRollResult, Never>()
+    private let outcomeSelectedSubject = PassthroughSubject<GameOutcome, Never>()
+    private let outcomeSelectionCancelledSubject = PassthroughSubject<Void, Never>()
     private let resultExpansionToggleSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
@@ -43,7 +46,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private let diceGameView: DiceGameView
     private let resultView: DiceGameResultView
-    private let confirmBottomBar = DiceGameBottomBar()
+    private let primaryActionBottomBar = DiceGameBottomBar()
     private lazy var exitBarButtonItem = UIBarButtonItem(
         image: UIImage(systemName: "arrow.down.right.and.arrow.up.left"),
         primaryAction: UIAction { [weak self] _ in
@@ -54,14 +57,16 @@ final class DiceGameViewController: StandardBaseViewController {
     // MARK: - Lifecycle
 
     init(
-        configuration: Configuration,
+        screenContent: ScreenContent,
         viewModel: any DiceGameViewModeling
     ) {
-        self.configuration = configuration
+        self.screenContent = screenContent
         self.viewModel = viewModel
-        diceGameView = DiceGameView(configuration: configuration.contentView)
+        diceGameView = DiceGameView(
+            configuration: screenContent.diceGameViewConfiguration
+        )
         resultView = DiceGameResultView()
-        renderedState = configuration.initialState
+        renderedState = screenContent.initialState
         super.init()
     }
 
@@ -89,8 +94,8 @@ final class DiceGameViewController: StandardBaseViewController {
     override func setHierarchy() {
         view.addSubview(diceGameView)
         view.addSubview(resultView)
-        view.addSubview(confirmBottomBar)
-        setupConfirmAction()
+        view.addSubview(primaryActionBottomBar)
+        setupPrimaryAction()
         setupResultViewActions()
     }
 
@@ -103,28 +108,32 @@ final class DiceGameViewController: StandardBaseViewController {
             make.top.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
             make.left.right.equalTo(view.safeAreaLayoutGuide).inset(Metrics.edgeInset)
             make.bottom
-                .lessThanOrEqualTo(confirmBottomBar.snp.top)
+                .lessThanOrEqualTo(primaryActionBottomBar.snp.top)
                 .offset(-Metrics.edgeInset)
         }
 
-        confirmBottomBar.snp.makeConstraints { make in
+        primaryActionBottomBar.snp.makeConstraints { make in
             make.left.right.bottom.equalToSuperview()
         }
     }
 
     override func setAppearance() {
         configureResultView()
-        configureConfirmButton()
+        configureBottomBar()
     }
 
     override func setNavigation() {
-        title = configuration.title
+        title = screenContent.title
         navigationItem.rightBarButtonItem = exitBarButtonItem
     }
 
     override func bind() {
         let input = DiceGameViewModelInput(
-            confirmedResult: confirmedResultSubject.eraseToAnyPublisher(),
+            primaryActionTapped: primaryActionTappedSubject.eraseToAnyPublisher(),
+            capturedResult: capturedResultSubject.eraseToAnyPublisher(),
+            outcomeSelected: outcomeSelectedSubject.eraseToAnyPublisher(),
+            outcomeSelectionCancelled: outcomeSelectionCancelledSubject
+                .eraseToAnyPublisher(),
             resultExpansionToggle: resultExpansionToggleSubject
                 .eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
@@ -138,17 +147,17 @@ final class DiceGameViewController: StandardBaseViewController {
             .store(in: &cancellables)
 
         output.command
-            .sink { [weak diceGameView] command in
-                diceGameView?.execute(command)
+            .sink { [weak self] command in
+                self?.execute(command)
             }
             .store(in: &cancellables)
     }
 
     // MARK: - Setup
 
-    private func setupConfirmAction() {
-        confirmBottomBar.tapHandler = { [weak self] in
-            self?.confirmDiceResult()
+    private func setupPrimaryAction() {
+        primaryActionBottomBar.tapHandler = { [weak self] in
+            self?.primaryActionTappedSubject.send()
         }
     }
 
@@ -166,7 +175,7 @@ final class DiceGameViewController: StandardBaseViewController {
         if renderedState != state {
             renderedState = state
             configureResultView()
-            configureConfirmButton()
+            configureBottomBar()
         }
     }
 
@@ -176,15 +185,55 @@ final class DiceGameViewController: StandardBaseViewController {
         resultView.configure(with: renderedState.result)
     }
 
-    private func configureConfirmButton() {
-        confirmBottomBar.isEnabled = !renderedState.game.isDiceLocked
+    private func configureBottomBar() {
+        primaryActionBottomBar.configure(with: renderedState.primaryAction)
     }
 
     // MARK: - Actions
 
-    private func confirmDiceResult() {
+    private func captureDiceResult() {
         let result = diceGameView.lockAndCaptureResult()
-        confirmedResultSubject.send(result)
+        capturedResultSubject.send(result)
+    }
+
+    private func showOutcomeSelection() {
+        let alert = UIAlertController(
+            title: "這場比賽結果",
+            message: "請選擇這場比賽的勝負",
+            preferredStyle: .alert
+        )
+        alert.addAction(
+            UIAlertAction(title: "勝利", style: .default) { [weak self] _ in
+                self?.outcomeSelectedSubject.send(.win)
+            }
+        )
+        alert.addAction(
+            UIAlertAction(title: "失敗", style: .default) { [weak self] _ in
+                self?.outcomeSelectedSubject.send(.loss)
+            }
+        )
+        alert.addAction(
+            UIAlertAction(title: "取消", style: .cancel) { [weak self] _ in
+                self?.outcomeSelectionCancelledSubject.send()
+            }
+        )
+        router.show(alert, using: .present)
+    }
+
+    private func execute(_ command: DiceGameViewCommand) {
+        switch command {
+        case .captureDiceResult:
+            captureDiceResult()
+
+        case .presentOutcomeSelection:
+            showOutcomeSelection()
+
+        case .updateScene(let sceneCommand):
+            diceGameView.execute(sceneCommand)
+
+        case .showError(let error):
+            router.showAlert(title: error.title, message: error.message)
+        }
     }
 
     private func showExitConfirmation() {
@@ -202,19 +251,27 @@ final class DiceGameViewController: StandardBaseViewController {
 
 extension DiceGameViewController {
 
-    convenience init(configuration: DiceGameConfiguration = .standard) {
+    convenience init(
+        configuration: DiceGameConfiguration = .standard,
+        recordStore: any DiceGameRecordStoring = DiceGameRecordStore.shared
+    ) {
         let initialGameState = configuration.initialState
         let initialState = DiceGameViewState(
             game: initialGameState,
             result: .awaitingResult(hintText: configuration.hintText)
         )
-        let viewModel = DiceGameViewModel(initialState: initialState)
+        let viewModel = DiceGameViewModel(
+            gameID: configuration.gameID,
+            hintText: configuration.hintText,
+            initialState: initialState,
+            recordStore: recordStore
+        )
 
         self.init(
-            configuration: Configuration(
+            screenContent: ScreenContent(
                 title: configuration.title,
                 initialState: initialState,
-                contentView: DiceGameView.Configuration(
+                diceGameViewConfiguration: DiceGameView.Configuration(
                     initialState: initialGameState,
                     gameDiceView: GameDiceView.Configuration(
                         initialDiceCountState: configuration.initialDiceCountState,

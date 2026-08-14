@@ -72,18 +72,21 @@ nonisolated enum DiceCountState: Equatable, Sendable {
 nonisolated struct DiceGameConfiguration: Sendable {
 
     static let standard = DiceGameConfiguration(
+        gameID: .dice,
         title: "骰子",
         initialDiceCount: 1,
         maximumDiceCount: 8,
         hintText: "搖晃手機讓骰子晃動"
     )
 
+    let gameID: DiceGameID
     let title: String
     let initialDiceCountState: DiceCountState
     let maximumDiceCount: Int
     let hintText: String
 
     init(
+        gameID: DiceGameID,
         title: String,
         initialDiceCount: Int?,
         maximumDiceCount: Int,
@@ -91,6 +94,7 @@ nonisolated struct DiceGameConfiguration: Sendable {
     ) {
         let validatedMaximumDiceCount = max(maximumDiceCount, 1)
         self.init(
+            gameID: gameID,
             title: title,
             initialDiceCountState: DiceCountState(
                 resolving: initialDiceCount,
@@ -103,12 +107,14 @@ nonisolated struct DiceGameConfiguration: Sendable {
     }
 
     init(
+        gameID: DiceGameID,
         title: String,
         initialDiceCountState: DiceCountState,
         maximumDiceCount: Int,
         hintText: String
     ) {
         let validatedMaximumDiceCount = max(maximumDiceCount, 1)
+        self.gameID = gameID
         self.title = title
         self.initialDiceCountState = initialDiceCountState.limited(
             to: 1...validatedMaximumDiceCount
@@ -120,8 +126,7 @@ nonisolated struct DiceGameConfiguration: Sendable {
     var initialState: DiceGameState {
         DiceGameState(
             viewMode: .perspective,
-            isDiceLocked: false,
-            result: nil
+            roundPhase: .ready
         )
     }
 }
@@ -143,9 +148,35 @@ nonisolated struct DiceRollResult: Equatable, Sendable {
 
 // MARK: - State
 
+nonisolated enum DiceGameRoundPhase: Equatable, Sendable {
+
+    case ready
+    case capturingResult
+    case showingResult(DiceRollResult)
+    case selectingOutcome(DiceRollResult)
+    case savingOutcome(result: DiceRollResult, outcome: GameOutcome)
+
+    var isDiceLocked: Bool {
+        switch self {
+        case .ready:
+            return false
+
+        case .capturingResult,
+             .showingResult,
+             .selectingOutcome,
+             .savingOutcome:
+            return true
+        }
+    }
+
+}
+
 nonisolated struct DiceGameState: Equatable, Sendable {
 
     let viewMode: DiceGameViewMode
-    let isDiceLocked: Bool
-    let result: DiceRollResult?
+    let roundPhase: DiceGameRoundPhase
+
+    var isDiceLocked: Bool {
+        roundPhase.isDiceLocked
+    }
 }

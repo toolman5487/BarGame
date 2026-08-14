@@ -256,6 +256,11 @@ final class GameDiceView: UIView {
         arena.showPerspectiveView()
     }
 
+    func prepareForNextRound() {
+        diceNodes.forEach { $0.stopMotion() }
+        setInteractionLocked(false)
+    }
+
     // MARK: - Setup
 
     private func setup() {

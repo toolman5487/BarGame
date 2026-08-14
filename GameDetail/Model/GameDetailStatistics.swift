@@ -12,16 +12,12 @@ import Foundation
 nonisolated enum GameDetailStreak: Equatable, Sendable {
 
     case win(Int)
-    case draw(Int)
     case loss(Int)
 
     var displayText: String {
         switch self {
         case .win(let count):
             return "\(count) 連勝"
-
-        case .draw(let count):
-            return "\(count) 連和"
 
         case .loss(let count):
             return "\(count) 連敗"
@@ -34,7 +30,6 @@ nonisolated enum GameDetailStreak: Equatable, Sendable {
 nonisolated struct GameDetailStatistics: Equatable, Sendable {
 
     let wins: Int
-    let draws: Int
     let losses: Int
     let scoredPoints: Int
     let concededPoints: Int
@@ -44,7 +39,6 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
         precondition(!records.isEmpty, "Statistics require at least one record")
 
         var wins = 0
-        var draws = 0
         var losses = 0
         var scoredPoints = 0
         var concededPoints = 0
@@ -53,9 +47,6 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
             switch record.outcome {
             case .win:
                 wins += 1
-
-            case .draw:
-                draws += 1
 
             case .loss:
                 losses += 1
@@ -66,7 +57,6 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
         }
 
         self.wins = wins
-        self.draws = draws
         self.losses = losses
         self.scoredPoints = scoredPoints
         self.concededPoints = concededPoints
@@ -74,7 +64,7 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
     }
 
     var completedGames: Int {
-        wins + draws + losses
+        wins + losses
     }
 
     var winRate: Double {
@@ -95,9 +85,6 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
         switch outcome {
         case .win:
             return .win(count)
-
-        case .draw:
-            return .draw(count)
 
         case .loss:
             return .loss(count)

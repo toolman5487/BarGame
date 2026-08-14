@@ -54,7 +54,7 @@ class BaseBottomBar: UIView {
 
     init(title: String) {
         super.init(frame: .zero)
-        configureButton(title: title)
+        setActionTitle(title)
         setupHierarchy()
         setupLayout()
         setupAppearance()
@@ -100,7 +100,7 @@ class BaseBottomBar: UIView {
         )
     }
 
-    private func configureButton(title: String) {
+    final func setActionTitle(_ title: String) {
         var configuration = actionButton.configuration ?? .prominentGlass()
         configuration.title = title
         actionButton.configuration = configuration

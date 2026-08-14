@@ -22,27 +22,27 @@ nonisolated enum MainHomeSampleData {
     private static let gameOverviews: [GameOverview] = [
         GameOverview(
             game: DiceGame(id: .liarsDice),
-            statistics: GameStatistics(wins: 12, draws: 3, losses: 5)
+            statistics: GameStatistics(wins: 15, losses: 5)
         ),
         GameOverview(
             game: DiceGame(id: .mia),
-            statistics: GameStatistics(wins: 8, draws: 1, losses: 3)
+            statistics: GameStatistics(wins: 9, losses: 3)
         ),
         GameOverview(
             game: DiceGame(id: .dicePoker),
-            statistics: GameStatistics(wins: 4, draws: 2, losses: 7)
+            statistics: GameStatistics(wins: 6, losses: 7)
         ),
         GameOverview(
             game: DiceGame(id: .highLow),
-            statistics: GameStatistics(wins: 6, draws: 4, losses: 6)
+            statistics: GameStatistics(wins: 10, losses: 6)
         ),
         GameOverview(
             game: DiceGame(id: .oddEven),
-            statistics: GameStatistics(wins: 15, draws: 0, losses: 9)
+            statistics: GameStatistics(wins: 15, losses: 9)
         ),
         GameOverview(
             game: DiceGame(id: .sevenElevenDouble),
-            statistics: GameStatistics(wins: 3, draws: 5, losses: 2)
+            statistics: GameStatistics(wins: 8, losses: 2)
         ),
     ]
 }

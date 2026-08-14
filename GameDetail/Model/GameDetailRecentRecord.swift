@@ -7,20 +7,12 @@
 
 import Foundation
 
-// MARK: - Outcome
-
-nonisolated enum GameDetailRecentRecordOutcome: Equatable, Sendable {
-    case win
-    case draw
-    case loss
-}
-
 // MARK: - Record
 
 nonisolated struct GameDetailRecentRecord: Equatable, Identifiable, Sendable {
 
     let id: UUID
-    let outcome: GameDetailRecentRecordOutcome
+    let outcome: GameOutcome
     let playerScore: Int
     let opponentScore: Int
     let subtitle: String
@@ -58,8 +50,8 @@ nonisolated enum GameDetailRecentRecordsState: Equatable, Sendable {
             ),
             GameDetailRecentRecord(
                 id: UUID(),
-                outcome: .draw,
-                playerScore: 1,
+                outcome: .win,
+                playerScore: 2,
                 opponentScore: 1,
                 subtitle: "昨天 23:41"
             ),
@@ -86,8 +78,8 @@ nonisolated enum GameDetailRecentRecordsState: Equatable, Sendable {
             ),
             GameDetailRecentRecord(
                 id: UUID(),
-                outcome: .draw,
-                playerScore: 2,
+                outcome: .win,
+                playerScore: 3,
                 opponentScore: 2,
                 subtitle: "8/10 16:27"
             ),

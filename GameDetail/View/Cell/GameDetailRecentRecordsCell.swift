@@ -316,12 +316,6 @@ final class GameDetailRecentRecordItemCell: DetailBaseCollectionViewCell {
             outcomeIconView.image = UIImage(systemName: "trophy.fill")
             outcomeIconView.tintColor = .systemYellow
 
-        case .draw:
-            outcomeIconView.image = UIImage(
-                systemName: "flag.and.flag.filled.crossed"
-            )
-            outcomeIconView.tintColor = .systemGray
-
         case .loss:
             outcomeIconView.image = UIImage(systemName: "flag.fill")
             outcomeIconView.tintColor = .label

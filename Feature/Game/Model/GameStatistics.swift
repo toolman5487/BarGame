@@ -10,11 +10,10 @@ import Foundation
 nonisolated struct GameStatistics: Equatable, Sendable {
 
     let wins: Int
-    let draws: Int
     let losses: Int
 
     var completedGames: Int {
-        wins + draws + losses
+        wins + losses
     }
 
     var winRate: Double {

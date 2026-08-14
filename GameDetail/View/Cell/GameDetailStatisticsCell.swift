@@ -31,10 +31,7 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
         systemName: "trophy.fill",
         tintColor: .systemYellow
     )
-    private let drawsView = GameDetailStatisticsMetricView(
-        systemName: "flag.and.flag.filled.crossed",
-        tintColor: .systemGray
-    )
+    private let completedGamesView = GameDetailStatisticsMetricView(title: "場次")
     private let lossesView = GameDetailStatisticsMetricView(
         systemName: "flag.fill",
         tintColor: .label
@@ -44,7 +41,7 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
     private let streakView = GameDetailStatisticsMetricView(title: "近況")
 
     private lazy var primaryStackView = makeMetricStackView(
-        arrangedSubviews: [winsView, drawsView, lossesView]
+        arrangedSubviews: [winsView, completedGamesView, lossesView]
     )
     private lazy var secondaryStackView = makeMetricStackView(
         arrangedSubviews: [winRateView, scoreDifferenceView, streakView]
@@ -132,7 +129,7 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
             statusLabel.isHidden = true
             statusLabel.text = nil
             winsView.configure(value: String(statistics.wins))
-            drawsView.configure(value: String(statistics.draws))
+            completedGamesView.configure(value: String(statistics.completedGames))
             lossesView.configure(value: String(statistics.losses))
             winRateView.configure(value: formattedWinRate(statistics.winRate))
             scoreDifferenceView.configure(
@@ -151,7 +148,7 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
     private func resetMetrics() {
         [
             winsView,
-            drawsView,
+            completedGamesView,
             lossesView,
             winRateView,
             scoreDifferenceView,

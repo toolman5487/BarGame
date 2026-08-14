@@ -63,10 +63,12 @@ final class DiceGameView: UIView {
         }
     }
 
-    func execute(_ command: DiceGameViewCommand) {
+    func execute(_ command: DiceGameSceneCommand) {
         switch command {
         case .shakeDice:
             gameDiceView.shake()
+        case .prepareNextRound:
+            gameDiceView.prepareForNextRound()
         }
     }
 

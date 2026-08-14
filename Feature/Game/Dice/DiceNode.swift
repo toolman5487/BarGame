@@ -122,6 +122,14 @@ nonisolated final class DiceNode: SCNNode {
         )
     }
 
+    func stopMotion() {
+        guard let body = physicsBody else { return }
+
+        body.clearAllForces()
+        body.velocity = SCNVector3Zero
+        body.angularVelocity = SCNVector4Zero
+    }
+
     private func applyImpulses(
         linearImpulse: SCNVector3,
         angularImpulse: SCNVector4,
