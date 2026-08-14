@@ -15,7 +15,13 @@ nonisolated struct GameDetailState: Equatable, Sendable {
         GameDetailState(
             sections: sections.map { section in
                 switch section {
-                case .rules, .statistics, .recentRecords:
+                case .rules:
+                    return section
+
+                case .statistics:
+                    return section
+
+                case .recentRecords:
                     return section
 
                 case .settings(let settings):

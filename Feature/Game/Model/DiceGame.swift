@@ -87,7 +87,19 @@ extension DiceGameID {
                 allowedDiceCount: 1...5
             )
 
-        case .mia, .oddEven, .sevenElevenDouble:
+        case .mia:
+            return DiceGamePreset(
+                defaultDiceCount: 2,
+                allowedDiceCount: 2...2
+            )
+
+        case .oddEven:
+            return DiceGamePreset(
+                defaultDiceCount: 2,
+                allowedDiceCount: 2...2
+            )
+
+        case .sevenElevenDouble:
             return DiceGamePreset(
                 defaultDiceCount: 2,
                 allowedDiceCount: 2...2

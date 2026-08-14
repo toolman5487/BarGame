@@ -51,14 +51,15 @@ nonisolated struct DiceGameSettings: Equatable, Sendable {
         maximumDiceCount: 8
     )
 
-    let initialDiceCount: Int
+    let initialDiceCountState: DiceCountState
     let maximumDiceCount: Int
 
-    init(initialDiceCount: Int, maximumDiceCount: Int) {
+    init(initialDiceCount: Int?, maximumDiceCount: Int) {
         let validatedMaximumDiceCount = max(maximumDiceCount, 1)
-        self.initialDiceCount = min(
-            max(initialDiceCount, 1),
-            validatedMaximumDiceCount
+        initialDiceCountState = DiceCountState(
+            resolving: initialDiceCount,
+            default: 1,
+            within: 1...validatedMaximumDiceCount
         )
         self.maximumDiceCount = validatedMaximumDiceCount
     }

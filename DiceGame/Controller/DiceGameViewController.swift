@@ -287,7 +287,7 @@ extension DiceGameViewController {
                 contentView: DiceGameView.Configuration(
                     initialState: initialGameState,
                     gameDiceView: GameDiceView.Configuration(
-                        initialDiceCount: configuration.initialDiceCount,
+                        initialDiceCountState: configuration.initialDiceCountState,
                         maximumDiceCount: configuration.maximumDiceCount
                     )
                 )

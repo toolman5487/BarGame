@@ -38,7 +38,7 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
             let standardConfiguration = DiceGameConfiguration.standard
             let configuration = DiceGameConfiguration(
                 title: gameID.title,
-                initialDiceCount: settings.initialDiceCount,
+                initialDiceCountState: settings.initialDiceCountState,
                 maximumDiceCount: settings.maximumDiceCount,
                 hintText: standardConfiguration.hintText
             )

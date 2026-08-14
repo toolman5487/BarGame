@@ -28,7 +28,7 @@ final class GameDiceView: UIView {
 
     nonisolated struct Configuration: Sendable {
 
-        let initialDiceCount: Int
+        let initialDiceCountState: DiceCountState
         let maximumDiceCount: Int
         let preferredEdgeLength: CGFloat?
         let preferredCameraDistance: Float?
@@ -37,7 +37,7 @@ final class GameDiceView: UIView {
         let showsPhysicsShapes: Bool
 
         init(
-            initialDiceCount: Int,
+            initialDiceCount: Int? = nil,
             maximumDiceCount: Int,
             preferredEdgeLength: CGFloat? = nil,
             preferredCameraDistance: Float? = nil,
@@ -45,8 +45,36 @@ final class GameDiceView: UIView {
             cameraViewpoint: DiceCameraViewpoint = .elevated,
             showsPhysicsShapes: Bool = false
         ) {
-            self.initialDiceCount = initialDiceCount
-            self.maximumDiceCount = maximumDiceCount
+            let validatedMaximumDiceCount = max(maximumDiceCount, 1)
+            self.init(
+                initialDiceCountState: DiceCountState(
+                    resolving: initialDiceCount,
+                    default: 1,
+                    within: 1...validatedMaximumDiceCount
+                ),
+                maximumDiceCount: validatedMaximumDiceCount,
+                preferredEdgeLength: preferredEdgeLength,
+                preferredCameraDistance: preferredCameraDistance,
+                sceneAppearance: sceneAppearance,
+                cameraViewpoint: cameraViewpoint,
+                showsPhysicsShapes: showsPhysicsShapes
+            )
+        }
+
+        init(
+            initialDiceCountState: DiceCountState,
+            maximumDiceCount: Int,
+            preferredEdgeLength: CGFloat? = nil,
+            preferredCameraDistance: Float? = nil,
+            sceneAppearance: DiceSceneAppearance = .walnut,
+            cameraViewpoint: DiceCameraViewpoint = .elevated,
+            showsPhysicsShapes: Bool = false
+        ) {
+            let validatedMaximumDiceCount = max(maximumDiceCount, 1)
+            self.initialDiceCountState = initialDiceCountState.limited(
+                to: 1...validatedMaximumDiceCount
+            )
+            self.maximumDiceCount = validatedMaximumDiceCount
             self.preferredEdgeLength = preferredEdgeLength
             self.preferredCameraDistance = preferredCameraDistance
             self.sceneAppearance = sceneAppearance
@@ -80,11 +108,9 @@ final class GameDiceView: UIView {
         static let smallestEdgeLength: CGFloat = 0.44
 
         static func edgeLength(for diceCount: Int, maximumDiceCount: Int) -> CGFloat {
-            let upperBound = max(maximumDiceCount, 1)
-            let boundedCount = min(max(diceCount, 1), upperBound)
-            guard upperBound > 1 else { return largestEdgeLength }
+            guard maximumDiceCount > 1 else { return largestEdgeLength }
 
-            let progress = CGFloat(boundedCount - 1) / CGFloat(upperBound - 1)
+            let progress = CGFloat(diceCount - 1) / CGFloat(maximumDiceCount - 1)
             return largestEdgeLength - (largestEdgeLength - smallestEdgeLength) * progress
         }
     }
@@ -253,10 +279,21 @@ final class GameDiceView: UIView {
 
     private func setupScene() {
         arena.scene.physicsWorld.contactDelegate = self
-        let diceCount = max(configuration.initialDiceCount, 0)
-        let edgeLength = edgeLength(for: diceCount)
-        for position in spawnPositions(for: diceCount) {
-            makeDiceNode(edgeLength: edgeLength, at: position)
+        switch configuration.initialDiceCountState {
+        case .defaulted(let diceCount):
+            let edgeLength = edgeLength(for: diceCount)
+            for position in spawnPositions(for: diceCount) {
+                makeDiceNode(edgeLength: edgeLength, at: position)
+            }
+
+        case .configured(let diceCount):
+            let edgeLength = edgeLength(for: diceCount)
+            for position in spawnPositions(for: diceCount) {
+                makeDiceNode(edgeLength: edgeLength, at: position)
+            }
+
+        case .empty:
+            break
         }
         sceneView.scene = arena.scene
         sceneView.pointOfView = arena.cameraNode
@@ -298,7 +335,6 @@ final class GameDiceView: UIView {
     }
 
     private func spawnPositions(for diceCount: Int) -> [SCNVector3] {
-        guard diceCount > 0 else { return [] }
         guard diceCount > 1 else {
             return [SCNVector3(0, DiceSpawnMetrics.initialHeight, 0)]
         }
@@ -568,10 +604,25 @@ final class GameDiceView: UIView {
             try performImpactHaptic(intensity: intensity)
         } catch let error as HapticError {
             switch error {
-            case .unsupportedHardware, .engineUnavailable:
+            case .unsupportedHardware:
                 AppLogger.ui.notice("\(error.logDescription, privacy: .public)")
-            case .engineCreationFailed, .engineStartFailed,
-                 .patternCreationFailed, .playerCreationFailed, .playbackFailed:
+
+            case .engineUnavailable:
+                AppLogger.ui.notice("\(error.logDescription, privacy: .public)")
+
+            case .engineCreationFailed:
+                AppLogger.ui.error("\(error.logDescription, privacy: .public)")
+
+            case .engineStartFailed:
+                AppLogger.ui.error("\(error.logDescription, privacy: .public)")
+
+            case .patternCreationFailed:
+                AppLogger.ui.error("\(error.logDescription, privacy: .public)")
+
+            case .playerCreationFailed:
+                AppLogger.ui.error("\(error.logDescription, privacy: .public)")
+
+            case .playbackFailed:
                 AppLogger.ui.error("\(error.logDescription, privacy: .public)")
             }
             playFallbackImpact(intensity: intensity)

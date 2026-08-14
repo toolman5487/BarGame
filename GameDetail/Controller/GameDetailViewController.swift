@@ -128,7 +128,13 @@ final class GameDetailViewController: DetailBaseViewController {
         case .recentRecords:
             return .zero
 
-        case .rules, .settings, .statistics:
+        case .rules:
+            return collectionViewSectionInset
+
+        case .settings:
+            return collectionViewSectionInset
+
+        case .statistics:
             return collectionViewSectionInset
         }
     }

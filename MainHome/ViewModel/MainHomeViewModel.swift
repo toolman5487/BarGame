@@ -104,7 +104,13 @@ final class MainHomeViewModel: MainHomeViewModeling {
         case .idle:
             loadContent()
 
-        case .loading, .ready, .failed:
+        case .loading:
+            break
+
+        case .ready:
+            break
+
+        case .failed:
             break
         }
     }
@@ -114,7 +120,16 @@ final class MainHomeViewModel: MainHomeViewModeling {
         case .failed(let failure) where failure.isRetryable:
             loadContent()
 
-        case .idle, .loading, .ready, .failed:
+        case .idle:
+            break
+
+        case .loading:
+            break
+
+        case .ready:
+            break
+
+        case .failed:
             break
         }
     }
@@ -124,7 +139,13 @@ final class MainHomeViewModel: MainHomeViewModeling {
         case .ready:
             commandSubject.send(.shakeDice)
 
-        case .idle, .loading, .failed:
+        case .idle:
+            break
+
+        case .loading:
+            break
+
+        case .failed:
             break
         }
     }

@@ -113,7 +113,13 @@ final class MainTabBarController: UITabBarController {
         case .home:
             return MainHomeViewController(title: item.title)
 
-        case .pageA, .pageB, .pageC:
+        case .pageA:
+            return ViewController(title: item.title)
+
+        case .pageB:
+            return ViewController(title: item.title)
+
+        case .pageC:
             return ViewController(title: item.title)
         }
     }
