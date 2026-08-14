@@ -8,16 +8,14 @@
 import SnapKit
 import UIKit
 
+nonisolated struct DiceGameViewConfiguration: Sendable {
+
+    let initialState: DiceGameState
+    let gameDiceView: GameDiceViewConfiguration
+}
+
 @MainActor
 final class DiceGameView: UIView {
-
-    // MARK: - Types
-
-    nonisolated struct Configuration: Sendable {
-
-        let initialState: DiceGameState
-        let gameDiceView: GameDiceView.Configuration
-    }
 
     // MARK: - UI Elements
 
@@ -29,7 +27,7 @@ final class DiceGameView: UIView {
 
     // MARK: - Lifecycle
 
-    init(configuration: Configuration) {
+    init(configuration: DiceGameViewConfiguration) {
         gameDiceView = GameDiceView(configuration: configuration.gameDiceView)
         renderedState = configuration.initialState
         super.init(frame: .zero)

@@ -20,7 +20,7 @@ nonisolated final class DiceNode: SCNNode {
         static let continuousCollisionThresholdRatio: CGFloat = 0.2
     }
 
-    private enum Physics {
+    private enum PhysicsTuning {
         static let referenceMass: CGFloat = 0.7
         static let friction: CGFloat = 0.44
         static let rollingFriction: CGFloat = 0.02
@@ -29,7 +29,7 @@ nonisolated final class DiceNode: SCNNode {
         static let damping: CGFloat = 0.05
     }
 
-    private enum Appearance {
+    private enum VisualStyle {
         static let textureDimension = 256
         static let faceInset: CGFloat = 16
         static let pipRadius: CGFloat = 18
@@ -248,11 +248,11 @@ nonisolated final class DiceNode: SCNNode {
         ])
         let body = SCNPhysicsBody(type: .dynamic, shape: shape)
         body.mass = mass
-        body.friction = Physics.friction
-        body.rollingFriction = Physics.rollingFriction
-        body.restitution = Physics.restitution
-        body.angularDamping = Physics.angularDamping
-        body.damping = Physics.damping
+        body.friction = PhysicsTuning.friction
+        body.rollingFriction = PhysicsTuning.rollingFriction
+        body.restitution = PhysicsTuning.restitution
+        body.angularDamping = PhysicsTuning.angularDamping
+        body.damping = PhysicsTuning.damping
         body.allowsResting = false
         body.continuousCollisionDetectionThreshold = continuousCollisionThreshold
         body.categoryBitMask = DicePhysicsCategory.dice
@@ -270,15 +270,15 @@ nonisolated final class DiceNode: SCNNode {
     }
 
     private var mass: CGFloat {
-        Physics.referenceMass * pow(edgeLengthScale, 3)
+        PhysicsTuning.referenceMass * pow(edgeLengthScale, 3)
     }
 
     private var linearImpulseScale: Float {
-        Float(mass / Physics.referenceMass)
+        Float(mass / PhysicsTuning.referenceMass)
     }
 
     private var angularImpulseScale: Float {
-        Float(mass / Physics.referenceMass * pow(edgeLengthScale, 2))
+        Float(mass / PhysicsTuning.referenceMass * pow(edgeLengthScale, 2))
     }
 
     private var continuousCollisionThreshold: CGFloat {
@@ -294,10 +294,10 @@ nonisolated final class DiceNode: SCNNode {
         material.diffuse.contents = textures.diffuse
         material.normal.contents = textures.normal
         material.normal.intensity = 0.45
-        material.roughness.contents = Appearance.materialRoughness
+        material.roughness.contents = VisualStyle.materialRoughness
         material.metalness.contents = 0.0
-        material.clearCoat.contents = Appearance.clearCoatIntensity
-        material.clearCoatRoughness.contents = Appearance.clearCoatRoughness
+        material.clearCoat.contents = VisualStyle.clearCoatIntensity
+        material.clearCoatRoughness.contents = VisualStyle.clearCoatRoughness
         material.lightingModel = .physicallyBased
         material.locksAmbientWithDiffuse = true
         material.diffuse.mipFilter = .linear
@@ -321,7 +321,7 @@ nonisolated final class DiceNode: SCNNode {
 
     @MainActor
     private func makeDiceFaceImage(pips: Int) -> UIImage {
-        let dimension = CGFloat(Appearance.textureDimension)
+        let dimension = CGFloat(VisualStyle.textureDimension)
         let size = CGSize(width: dimension, height: dimension)
         let format = UIGraphicsImageRendererFormat()
         format.opaque = true
@@ -351,8 +351,8 @@ nonisolated final class DiceNode: SCNNode {
             drawSurfaceGrain(in: rect, seed: pips, context: context)
 
             let faceRect = rect.insetBy(
-                dx: Appearance.faceInset,
-                dy: Appearance.faceInset
+                dx: VisualStyle.faceInset,
+                dy: VisualStyle.faceInset
             )
             let positions = pipPositions(for: pips, in: faceRect)
             for point in positions {
@@ -368,8 +368,8 @@ nonisolated final class DiceNode: SCNNode {
         context: UIGraphicsImageRendererContext
     ) {
         for index in 0..<48 {
-            let x = CGFloat((index * 73 + seed * 19) % Appearance.textureDimension)
-            let y = CGFloat((index * 47 + seed * 31) % Appearance.textureDimension)
+            let x = CGFloat((index * 73 + seed * 19) % VisualStyle.textureDimension)
+            let y = CGFloat((index * 47 + seed * 31) % VisualStyle.textureDimension)
             let grainRect = CGRect(x: x, y: y, width: 1, height: 1).intersection(rect)
             let brightness = index.isMultiple(of: 2) ? 0.25 : 1
             UIColor(white: brightness, alpha: 0.015).setFill()
@@ -379,7 +379,7 @@ nonisolated final class DiceNode: SCNNode {
 
     @MainActor
     private func drawPip(at point: CGPoint, context: CGContext) {
-        let radius = Appearance.pipRadius
+        let radius = VisualStyle.pipRadius
         let pipRect = CGRect(
             x: point.x - radius,
             y: point.y - radius,
@@ -422,11 +422,11 @@ nonisolated final class DiceNode: SCNNode {
 
     @MainActor
     private func makeDiceFaceNormalImage(pips: Int) -> UIImage {
-        let dimension = Appearance.textureDimension
+        let dimension = VisualStyle.textureDimension
         let size = CGSize(width: dimension, height: dimension)
         let faceRect = CGRect(origin: .zero, size: size).insetBy(
-            dx: Appearance.faceInset,
-            dy: Appearance.faceInset
+            dx: VisualStyle.faceInset,
+            dy: VisualStyle.faceInset
         )
         let pipCenters = pipPositions(for: pips, in: faceRect)
         var pixels = [UInt8](repeating: 0, count: dimension * dimension * 4)
@@ -466,12 +466,12 @@ nonisolated final class DiceNode: SCNNode {
 
     private func pipNormal(at point: CGPoint, pipCenters: [CGPoint]) -> (x: CGFloat, y: CGFloat, z: CGFloat) {
         for center in pipCenters {
-            let normalizedX = (point.x - center.x) / Appearance.pipRadius
-            let normalizedY = (point.y - center.y) / Appearance.pipRadius
+            let normalizedX = (point.x - center.x) / VisualStyle.pipRadius
+            let normalizedY = (point.y - center.y) / VisualStyle.pipRadius
             let distance = sqrt(normalizedX * normalizedX + normalizedY * normalizedY)
             guard distance < 1, distance > 0 else { continue }
 
-            let slope = sin(distance * .pi) * Appearance.normalStrength
+            let slope = sin(distance * .pi) * VisualStyle.normalStrength
             let x = -normalizedX / distance * slope
             let y = normalizedY / distance * slope
             let z = sqrt(max(0, 1 - x * x - y * y))
@@ -488,7 +488,7 @@ nonisolated final class DiceNode: SCNNode {
 
     @MainActor
     private func makeNeutralNormalImage() -> UIImage {
-        let dimension = CGFloat(Appearance.textureDimension)
+        let dimension = CGFloat(VisualStyle.textureDimension)
         let size = CGSize(width: dimension, height: dimension)
         let format = UIGraphicsImageRendererFormat()
         format.opaque = true

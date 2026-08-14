@@ -12,7 +12,7 @@ final class ErrorView: BaseHintView {
 
     // MARK: - Types
 
-    enum Content {
+    private enum Defaults {
         static let defaultTitle = "發生錯誤"
         static let defaultSubtitle = "請稍後再試"
         static let defaultImageSystemName = "exclamationmark.triangle.fill"
@@ -27,15 +27,15 @@ final class ErrorView: BaseHintView {
 
     // MARK: - Configuration
 
-    func configure(message: String, title: String = Content.defaultTitle) {
+    func configure(message: String, title: String = Defaults.defaultTitle) {
         configure(
-            image: UIImage(systemName: Content.defaultImageSystemName),
+            image: UIImage(systemName: Defaults.defaultImageSystemName),
             title: title,
             subtitle: message
         )
     }
 
-    func configure(error: Error, title: String = Content.defaultTitle) {
+    func configure(error: Error, title: String = Defaults.defaultTitle) {
         configure(message: error.localizedDescription, title: title)
     }
 
@@ -45,9 +45,9 @@ final class ErrorView: BaseHintView {
         symbolEffect = .wiggle(.once)
         imageView.tintColor = .systemRed
         configure(
-            image: UIImage(systemName: Content.defaultImageSystemName),
-            title: Content.defaultTitle,
-            subtitle: Content.defaultSubtitle
+            image: UIImage(systemName: Defaults.defaultImageSystemName),
+            title: Defaults.defaultTitle,
+            subtitle: Defaults.defaultSubtitle
         )
     }
 }

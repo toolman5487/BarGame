@@ -14,7 +14,7 @@ final class MainHomeDiceCollectionViewCell: MainBaseCollectionViewCell {
     // MARK: - UI Elements
 
     private let diceView = GameDiceView(
-        configuration: GameDiceView.Configuration(
+        configuration: GameDiceViewConfiguration(
             initialDiceCount: 12,
             maximumDiceCount: 12,
             preferredEdgeLength: 0.62,

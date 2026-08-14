@@ -21,67 +21,67 @@ nonisolated enum DiceCameraViewpoint: Sendable {
     case horizontal
 }
 
+nonisolated struct GameDiceViewConfiguration: Sendable {
+
+    let initialDiceCountState: DiceCountState
+    let maximumDiceCount: Int
+    let preferredEdgeLength: CGFloat?
+    let preferredCameraDistance: Float?
+    let sceneAppearance: DiceSceneAppearance
+    let cameraViewpoint: DiceCameraViewpoint
+    let showsPhysicsShapes: Bool
+
+    init(
+        initialDiceCount: Int? = nil,
+        maximumDiceCount: Int,
+        preferredEdgeLength: CGFloat? = nil,
+        preferredCameraDistance: Float? = nil,
+        sceneAppearance: DiceSceneAppearance = .walnut,
+        cameraViewpoint: DiceCameraViewpoint = .elevated,
+        showsPhysicsShapes: Bool = false
+    ) {
+        let validatedMaximumDiceCount = max(maximumDiceCount, 1)
+        self.init(
+            initialDiceCountState: DiceCountState(
+                resolving: initialDiceCount,
+                default: 1,
+                within: 1...validatedMaximumDiceCount
+            ),
+            maximumDiceCount: validatedMaximumDiceCount,
+            preferredEdgeLength: preferredEdgeLength,
+            preferredCameraDistance: preferredCameraDistance,
+            sceneAppearance: sceneAppearance,
+            cameraViewpoint: cameraViewpoint,
+            showsPhysicsShapes: showsPhysicsShapes
+        )
+    }
+
+    init(
+        initialDiceCountState: DiceCountState,
+        maximumDiceCount: Int,
+        preferredEdgeLength: CGFloat? = nil,
+        preferredCameraDistance: Float? = nil,
+        sceneAppearance: DiceSceneAppearance = .walnut,
+        cameraViewpoint: DiceCameraViewpoint = .elevated,
+        showsPhysicsShapes: Bool = false
+    ) {
+        let validatedMaximumDiceCount = max(maximumDiceCount, 1)
+        self.initialDiceCountState = initialDiceCountState.limited(
+            to: 1...validatedMaximumDiceCount
+        )
+        self.maximumDiceCount = validatedMaximumDiceCount
+        self.preferredEdgeLength = preferredEdgeLength
+        self.preferredCameraDistance = preferredCameraDistance
+        self.sceneAppearance = sceneAppearance
+        self.cameraViewpoint = cameraViewpoint
+        self.showsPhysicsShapes = showsPhysicsShapes
+    }
+}
+
 @MainActor
 final class GameDiceView: UIView {
 
     // MARK: - Types
-
-    nonisolated struct Configuration: Sendable {
-
-        let initialDiceCountState: DiceCountState
-        let maximumDiceCount: Int
-        let preferredEdgeLength: CGFloat?
-        let preferredCameraDistance: Float?
-        let sceneAppearance: DiceSceneAppearance
-        let cameraViewpoint: DiceCameraViewpoint
-        let showsPhysicsShapes: Bool
-
-        init(
-            initialDiceCount: Int? = nil,
-            maximumDiceCount: Int,
-            preferredEdgeLength: CGFloat? = nil,
-            preferredCameraDistance: Float? = nil,
-            sceneAppearance: DiceSceneAppearance = .walnut,
-            cameraViewpoint: DiceCameraViewpoint = .elevated,
-            showsPhysicsShapes: Bool = false
-        ) {
-            let validatedMaximumDiceCount = max(maximumDiceCount, 1)
-            self.init(
-                initialDiceCountState: DiceCountState(
-                    resolving: initialDiceCount,
-                    default: 1,
-                    within: 1...validatedMaximumDiceCount
-                ),
-                maximumDiceCount: validatedMaximumDiceCount,
-                preferredEdgeLength: preferredEdgeLength,
-                preferredCameraDistance: preferredCameraDistance,
-                sceneAppearance: sceneAppearance,
-                cameraViewpoint: cameraViewpoint,
-                showsPhysicsShapes: showsPhysicsShapes
-            )
-        }
-
-        init(
-            initialDiceCountState: DiceCountState,
-            maximumDiceCount: Int,
-            preferredEdgeLength: CGFloat? = nil,
-            preferredCameraDistance: Float? = nil,
-            sceneAppearance: DiceSceneAppearance = .walnut,
-            cameraViewpoint: DiceCameraViewpoint = .elevated,
-            showsPhysicsShapes: Bool = false
-        ) {
-            let validatedMaximumDiceCount = max(maximumDiceCount, 1)
-            self.initialDiceCountState = initialDiceCountState.limited(
-                to: 1...validatedMaximumDiceCount
-            )
-            self.maximumDiceCount = validatedMaximumDiceCount
-            self.preferredEdgeLength = preferredEdgeLength
-            self.preferredCameraDistance = preferredCameraDistance
-            self.sceneAppearance = sceneAppearance
-            self.cameraViewpoint = cameraViewpoint
-            self.showsPhysicsShapes = showsPhysicsShapes
-        }
-    }
 
     private enum MotionTuning {
         static let updateInterval: TimeInterval = 1.0 / 60.0
@@ -165,7 +165,7 @@ final class GameDiceView: UIView {
 
     // MARK: - Dependencies
 
-    private let configuration: Configuration
+    private let configuration: GameDiceViewConfiguration
     private let motionUpdatesProvider: any MotionUpdatesProviding
     private let arena: DiceArena
     private let fallbackImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
@@ -182,7 +182,7 @@ final class GameDiceView: UIView {
 
     // MARK: - Lifecycle
 
-    convenience init(configuration: Configuration) {
+    convenience init(configuration: GameDiceViewConfiguration) {
         self.init(
             configuration: configuration,
             motionUpdatesProvider: CoreMotionUpdatesProvider()
@@ -190,7 +190,7 @@ final class GameDiceView: UIView {
     }
 
     init(
-        configuration: Configuration,
+        configuration: GameDiceViewConfiguration,
         motionUpdatesProvider: any MotionUpdatesProviding
     ) {
         self.configuration = configuration

@@ -12,7 +12,7 @@ final class DiceArena {
 
     // MARK: - Types
 
-    private enum Camera {
+    private enum CameraTuning {
         static let elevatedHeight: Float = 3.4
         static let elevatedFocusHeight: Float = 0.35
         static let horizontalHeight: Float = 0.5
@@ -23,7 +23,7 @@ final class DiceArena {
         static let transitionDuration: TimeInterval = 0.8
     }
 
-    private enum Physics {
+    private enum PhysicsTuning {
         static let gravity: Float = 10.4
         static let lateralGravityScale: Float = 2.4
         static let simulationTimeStep: TimeInterval = 1.0 / 120.0
@@ -35,7 +35,7 @@ final class DiceArena {
         static let wallFriction: CGFloat = 0.42
     }
 
-    private enum Appearance {
+    private enum VisualStyle {
         static let woodTextureScale: Float = 2
         static let floorReflectivity: CGFloat = 0
         static let lightingEnvironmentIntensity: CGFloat = 0.45
@@ -86,36 +86,36 @@ final class DiceArena {
     ) {
         self.sceneAppearance = sceneAppearance
         self.cameraViewpoint = cameraViewpoint
-        cameraDistance = preferredCameraDistance ?? Camera.defaultPerspectiveDistance
+        cameraDistance = preferredCameraDistance ?? CameraTuning.defaultPerspectiveDistance
         leftWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallThickness,
             height: TransparentCup.wallHeight,
             length: TransparentCup.wallLength,
-            restitution: Physics.wallRestitution
+            restitution: PhysicsTuning.wallRestitution
         )
         rightWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallThickness,
             height: TransparentCup.wallHeight,
             length: TransparentCup.wallLength,
-            restitution: Physics.wallRestitution
+            restitution: PhysicsTuning.wallRestitution
         )
         frontWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallLength,
             height: TransparentCup.wallHeight,
             length: TransparentCup.wallThickness,
-            restitution: Physics.wallRestitution
+            restitution: PhysicsTuning.wallRestitution
         )
         backWallNode = Self.makeBoundaryWall(
             width: TransparentCup.wallLength,
             height: TransparentCup.wallHeight,
             length: TransparentCup.wallThickness,
-            restitution: Physics.wallRestitution
+            restitution: PhysicsTuning.wallRestitution
         )
         ceilingNode = Self.makeBoundaryWall(
             width: TransparentCup.wallLength,
             height: TransparentCup.wallThickness,
             length: TransparentCup.wallLength,
-            restitution: Physics.wallRestitution
+            restitution: PhysicsTuning.wallRestitution
         )
         setupScene()
     }
@@ -129,15 +129,15 @@ final class DiceArena {
 
     func setPhysicsSimulationPaused(_ isPaused: Bool) {
         scene.physicsWorld.speed = isPaused
-            ? Physics.pausedSimulationSpeed
-            : Physics.runningSimulationSpeed
+            ? PhysicsTuning.pausedSimulationSpeed
+            : PhysicsTuning.runningSimulationSpeed
     }
 
     func showTopDownView() {
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = Camera.transitionDuration
+        SCNTransaction.animationDuration = CameraTuning.transitionDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        cameraNode.position = SCNVector3(0, Camera.topDownHeight, 0)
+        cameraNode.position = SCNVector3(0, CameraTuning.topDownHeight, 0)
         cameraNode.eulerAngles = SCNVector3(-Float.pi / 2, 0, 0)
         SCNTransaction.commit()
         updateViewportBoundaries(for: viewportSize)
@@ -145,7 +145,7 @@ final class DiceArena {
 
     func showPerspectiveView() {
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = Camera.transitionDuration
+        SCNTransaction.animationDuration = CameraTuning.transitionDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         cameraNode.position = perspectiveCameraPosition
         cameraNode.look(at: focusPoint)
@@ -155,9 +155,9 @@ final class DiceArena {
 
     func updateGravity(deviceTiltX: Double, deviceTiltY: Double) {
         scene.physicsWorld.gravity = SCNVector3(
-            Float(deviceTiltX) * Physics.lateralGravityScale,
-            -Physics.gravity,
-            -Float(deviceTiltY) * Physics.lateralGravityScale
+            Float(deviceTiltX) * PhysicsTuning.lateralGravityScale,
+            -PhysicsTuning.gravity,
+            -Float(deviceTiltY) * PhysicsTuning.lateralGravityScale
         )
     }
 
@@ -221,10 +221,10 @@ final class DiceArena {
 
     private func setupScene() {
         scene.background.contents = sceneAppearance.backgroundColor
-        scene.physicsWorld.timeStep = Physics.simulationTimeStep
+        scene.physicsWorld.timeStep = PhysicsTuning.simulationTimeStep
 
         cameraNode.camera = SCNCamera()
-        cameraNode.camera?.fieldOfView = Camera.fieldOfView
+        cameraNode.camera?.fieldOfView = CameraTuning.fieldOfView
         cameraNode.camera?.wantsHDR = true
         cameraNode.camera?.wantsExposureAdaptation = true
         cameraNode.camera?.exposureOffset = -0.15
@@ -237,7 +237,7 @@ final class DiceArena {
         addLighting()
 
         let floorGeometry = SCNFloor()
-        floorGeometry.reflectivity = Appearance.floorReflectivity
+        floorGeometry.reflectivity = VisualStyle.floorReflectivity
         floorGeometry.firstMaterial = floorMaterial
 
         let floor = SCNNode(geometry: floorGeometry)
@@ -245,8 +245,8 @@ final class DiceArena {
         floor.physicsBody = SCNPhysicsBody(type: .static, shape: nil)
         Self.configureBoundaryPhysics(
             floor.physicsBody,
-            restitution: Physics.floorRestitution,
-            friction: Physics.floorFriction
+            restitution: PhysicsTuning.floorRestitution,
+            friction: PhysicsTuning.floorFriction
         )
         scene.rootNode.addChildNode(floor)
 
@@ -260,7 +260,7 @@ final class DiceArena {
         ) else { return }
 
         scene.lightingEnvironment.contents = environmentURL
-        scene.lightingEnvironment.intensity = Appearance.lightingEnvironmentIntensity
+        scene.lightingEnvironment.intensity = VisualStyle.lightingEnvironmentIntensity
     }
 
     private func addLighting() {
@@ -373,7 +373,7 @@ final class DiceArena {
         configureBoundaryPhysics(
             wall.physicsBody,
             restitution: restitution,
-            friction: Physics.wallFriction
+            friction: PhysicsTuning.wallFriction
         )
         return wall
     }
@@ -429,8 +429,8 @@ final class DiceArena {
         property.maxAnisotropy = 8
         property.intensity = intensity
         property.contentsTransform = SCNMatrix4MakeScale(
-            Appearance.woodTextureScale,
-            Appearance.woodTextureScale,
+            VisualStyle.woodTextureScale,
+            VisualStyle.woodTextureScale,
             1
         )
     }
@@ -480,20 +480,20 @@ final class DiceArena {
     private var cameraHeight: Float {
         switch cameraViewpoint {
         case .elevated:
-            return Camera.elevatedHeight
+            return CameraTuning.elevatedHeight
 
         case .horizontal:
-            return Camera.horizontalHeight
+            return CameraTuning.horizontalHeight
         }
     }
 
     private var cameraFocusHeight: Float {
         switch cameraViewpoint {
         case .elevated:
-            return Camera.elevatedFocusHeight
+            return CameraTuning.elevatedFocusHeight
 
         case .horizontal:
-            return Camera.horizontalFocusHeight
+            return CameraTuning.horizontalFocusHeight
         }
     }
 }

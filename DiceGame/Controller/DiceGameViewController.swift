@@ -18,7 +18,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
         let title: String
         let initialState: DiceGameViewState
-        let diceGameViewConfiguration: DiceGameView.Configuration
+        let diceGameViewConfiguration: DiceGameViewConfiguration
     }
 
     private enum Metrics {
@@ -271,9 +271,9 @@ extension DiceGameViewController {
             screenContent: ScreenContent(
                 title: configuration.title,
                 initialState: initialState,
-                diceGameViewConfiguration: DiceGameView.Configuration(
+                diceGameViewConfiguration: DiceGameViewConfiguration(
                     initialState: initialGameState,
-                    gameDiceView: GameDiceView.Configuration(
+                    gameDiceView: GameDiceViewConfiguration(
                         initialDiceCountState: configuration.initialDiceCountState,
                         maximumDiceCount: configuration.maximumDiceCount
                     )
