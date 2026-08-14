@@ -54,6 +54,44 @@ nonisolated struct DiceGamePreset: Equatable, Sendable {
 
 extension DiceGameID {
 
+    nonisolated var allowedFaceValues: ClosedRange<Int> {
+        1...6
+    }
+
+    nonisolated var currentRulesVersion: Int {
+        1
+    }
+
+    nonisolated var identity: GameIdentity {
+        GameIdentity(
+            categoryID: .dice,
+            typeID: gameTypeID,
+            variantID: rawValue
+        )
+    }
+
+    private nonisolated var gameTypeID: GameTypeID {
+        switch self {
+        case .dice:
+            return .standard
+
+        case .liarsDice, .mia:
+            return .bluffing
+
+        case .dicePoker:
+            return .combination
+
+        case .highLow:
+            return .comparison
+
+        case .oddEven:
+            return .prediction
+
+        case .sevenElevenDouble:
+            return .target
+        }
+    }
+
     nonisolated var title: String {
         switch self {
         case .dice:

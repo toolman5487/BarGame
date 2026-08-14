@@ -31,8 +31,7 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
 
     let wins: Int
     let losses: Int
-    let scoredPoints: Int
-    let concededPoints: Int
+    let totalPoints: Int
     let currentStreak: GameDetailStreak
 
     init(records: [GameDetailRecentRecord]) {
@@ -40,8 +39,7 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
 
         var wins = 0
         var losses = 0
-        var scoredPoints = 0
-        var concededPoints = 0
+        var totalPoints = 0
 
         records.forEach { record in
             switch record.outcome {
@@ -52,14 +50,12 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
                 losses += 1
             }
 
-            scoredPoints += record.playerScore
-            concededPoints += record.opponentScore
+            totalPoints += record.points
         }
 
         self.wins = wins
         self.losses = losses
-        self.scoredPoints = scoredPoints
-        self.concededPoints = concededPoints
+        self.totalPoints = totalPoints
         currentStreak = Self.makeCurrentStreak(from: records)
     }
 
@@ -72,8 +68,9 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
         return Double(wins) / Double(completedGames)
     }
 
-    var scoreDifference: Int {
-        scoredPoints - concededPoints
+    var averagePoints: Double {
+        guard completedGames > 0 else { return 0 }
+        return Double(totalPoints) / Double(completedGames)
     }
 
     private static func makeCurrentStreak(
@@ -96,24 +93,29 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
 
 nonisolated enum GameDetailStatisticsState: Equatable, Sendable {
 
+    case loading
     case empty
     case content(GameDetailStatistics)
     case error(message: String)
 
+    init(records: [GameDetailRecentRecord]) {
+        guard !records.isEmpty else {
+            self = .empty
+            return
+        }
+        self = .content(GameDetailStatistics(records: records))
+    }
+
     init(recentRecordsState: GameDetailRecentRecordsState) {
         switch recentRecordsState {
+        case .loading:
+            self = .loading
+
         case .empty:
             self = .empty
 
         case .content(let records):
-            let recentRecords = Array(
-                records.prefix(GameDetailRecentRecordsState.maximumRecordCount)
-            )
-            guard !recentRecords.isEmpty else {
-                self = .empty
-                return
-            }
-            self = .content(GameDetailStatistics(records: recentRecords))
+            self.init(records: records)
 
         case .error(let message):
             self = .error(message: message)

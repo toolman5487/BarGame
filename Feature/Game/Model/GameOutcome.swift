@@ -7,7 +7,7 @@
 
 import Foundation
 
-nonisolated enum GameOutcome: Equatable, Sendable {
+nonisolated enum GameOutcome: String, Codable, Equatable, Sendable {
 
     case win
     case loss

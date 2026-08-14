@@ -5,6 +5,7 @@
 //  Created by Willy Hsu on 2026/8/13.
 //
 
+import Foundation
 import SnapKit
 import UIKit
 
@@ -37,14 +38,14 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
         tintColor: .label
     )
     private let winRateView = GameDetailStatisticsMetricView(title: "勝率")
-    private let scoreDifferenceView = GameDetailStatisticsMetricView(title: "淨勝分")
+    private let averagePointsView = GameDetailStatisticsMetricView(title: "平均點數")
     private let streakView = GameDetailStatisticsMetricView(title: "近況")
 
     private lazy var primaryStackView = makeMetricStackView(
         arrangedSubviews: [winsView, completedGamesView, lossesView]
     )
     private lazy var secondaryStackView = makeMetricStackView(
-        arrangedSubviews: [winRateView, scoreDifferenceView, streakView]
+        arrangedSubviews: [winRateView, averagePointsView, streakView]
     )
     private lazy var contentStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
@@ -118,6 +119,12 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
 
     private func apply(state: GameDetailStatisticsState) {
         switch state {
+        case .loading:
+            contentStackView.isHidden = true
+            statusLabel.isHidden = false
+            statusLabel.text = "正在載入戰績"
+            resetMetrics()
+
         case .empty:
             contentStackView.isHidden = true
             statusLabel.isHidden = false
@@ -132,8 +139,8 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
             completedGamesView.configure(value: String(statistics.completedGames))
             lossesView.configure(value: String(statistics.losses))
             winRateView.configure(value: formattedWinRate(statistics.winRate))
-            scoreDifferenceView.configure(
-                value: formattedScoreDifference(statistics.scoreDifference)
+            averagePointsView.configure(
+                value: formattedAveragePoints(statistics.averagePoints)
             )
             streakView.configure(value: statistics.currentStreak.displayText)
 
@@ -151,7 +158,7 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
             completedGamesView,
             lossesView,
             winRateView,
-            scoreDifferenceView,
+            averagePointsView,
             streakView,
         ].forEach { $0.configure(value: nil) }
     }
@@ -160,8 +167,8 @@ final class GameDetailStatisticsCell: DetailBaseCollectionViewCell {
         "\(Int((winRate * 100).rounded()))%"
     }
 
-    private func formattedScoreDifference(_ scoreDifference: Int) -> String {
-        scoreDifference > 0 ? "+\(scoreDifference)" : String(scoreDifference)
+    private func formattedAveragePoints(_ averagePoints: Double) -> String {
+        String(format: "%.1f", averagePoints)
     }
 }
 

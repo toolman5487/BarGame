@@ -26,6 +26,19 @@ final class GameDetailRecentRecordsEmptyView: BaseHintView {
             subtitle: "完成一場遊戲後會顯示在這裡"
         )
     }
+
+    func showEmptyState() {
+        applyDefaultContent()
+    }
+
+    func showLoadingState() {
+        symbolEffect = .rotate(.repeating)
+        configure(
+            image: UIImage(systemName: "arrow.trianglehead.2.clockwise.rotate.90"),
+            title: "正在載入戰績",
+            subtitle: nil
+        )
+    }
 }
 
 // MARK: - Error View
@@ -156,11 +169,19 @@ final class GameDetailRecentRecordsCell: DetailBaseCollectionViewCell {
 
     private func apply(state: GameDetailRecentRecordsState) {
         switch state {
+        case .loading:
+            records = []
+            collectionView.isHidden = true
+            emptyView.isHidden = false
+            errorView.isHidden = true
+            emptyView.showLoadingState()
+
         case .empty:
             records = []
             collectionView.isHidden = true
             emptyView.isHidden = false
             errorView.isHidden = true
+            emptyView.showEmptyState()
 
         case .content(let records):
             self.records = Array(records.prefix(GameDetailRecentRecordsState.maximumRecordCount))
@@ -308,7 +329,7 @@ final class GameDetailRecentRecordItemCell: DetailBaseCollectionViewCell {
     // MARK: - Configuration
 
     func configure(record: GameDetailRecentRecord) {
-        titleLabel.text = record.scoreText
+        titleLabel.text = record.resultText
         subtitleLabel.text = record.subtitle
 
         switch record.outcome {

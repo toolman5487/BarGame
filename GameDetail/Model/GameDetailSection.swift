@@ -17,7 +17,7 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
     static func standard(for gameID: DiceGameID) -> [GameDetailSection] {
         var sections: [GameDetailSection] = []
         let settings = GameDetailSetting.standard(for: gameID)
-        let recentRecordsState = GameDetailRecentRecordsState.sample()
+        let recentRecordsState = GameDetailRecentRecordsState.loading
 
         sections.append(
             .statistics(

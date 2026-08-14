@@ -29,6 +29,7 @@ final class MainHomeViewController: MainBaseViewController {
     // MARK: - State
 
     private let viewDidLoadSubject = PassthroughSubject<Void, Never>()
+    private let viewWillAppearSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
     private let didRequestRetrySubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
@@ -61,6 +62,11 @@ final class MainHomeViewController: MainBaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         viewDidLoadSubject.send()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewWillAppearSubject.send()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -164,6 +170,7 @@ final class MainHomeViewController: MainBaseViewController {
     override func bind() {
         let input = MainHomeViewModelInput(
             viewDidLoad: viewDidLoadSubject.eraseToAnyPublisher(),
+            viewWillAppear: viewWillAppearSubject.eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher(),
             didRequestRetry: didRequestRetrySubject.eraseToAnyPublisher()
         )
@@ -350,9 +357,13 @@ extension MainHomeViewController {
 
     convenience init(
         title: String,
-        configuration: MainHomeConfiguration = .standard
+        configuration: MainHomeConfiguration = .standard,
+        statisticsReader: any GameStatisticsReading = GameHistoryStore.shared
     ) {
-        let viewModel = MainHomeViewModel(configuration: configuration)
+        let viewModel = MainHomeViewModel(
+            configuration: configuration,
+            statisticsReader: statisticsReader
+        )
         self.init(title: title, viewModel: viewModel)
     }
 }

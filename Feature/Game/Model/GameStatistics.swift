@@ -9,6 +9,8 @@ import Foundation
 
 nonisolated struct GameStatistics: Equatable, Sendable {
 
+    static let zero = GameStatistics(wins: 0, losses: 0)
+
     let wins: Int
     let losses: Int
 
@@ -20,6 +22,13 @@ nonisolated struct GameStatistics: Equatable, Sendable {
         guard completedGames > 0 else { return 0 }
         return Double(wins) / Double(completedGames)
     }
+}
+
+nonisolated protocol GameStatisticsReading: Sendable {
+
+    func statistics(
+        for gameIDs: [DiceGameID]
+    ) async throws -> [DiceGameID: GameStatistics]
 }
 
 nonisolated struct GameOverview: Identifiable, Equatable, Sendable {

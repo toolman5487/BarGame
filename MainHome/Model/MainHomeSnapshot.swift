@@ -34,4 +34,32 @@ nonisolated enum MainHomeSection: Equatable, Sendable {
 nonisolated struct MainHomeSnapshot: Equatable, Sendable {
 
     let sections: [MainHomeSection]
+
+    var games: [DiceGame] {
+        sections.flatMap { section in
+            switch section {
+            case .gameList(let games):
+                return games
+
+            case .dicePreview, .gameResults:
+                return []
+            }
+        }
+    }
+
+    func updatingGameResults(
+        _ gameOverviews: [GameOverview]
+    ) -> MainHomeSnapshot {
+        MainHomeSnapshot(
+            sections: sections.map { section in
+                switch section {
+                case .gameResults:
+                    return .gameResults(gameOverviews)
+
+                case .dicePreview, .gameList:
+                    return section
+                }
+            }
+        )
+    }
 }

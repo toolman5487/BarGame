@@ -11,6 +11,26 @@ nonisolated struct GameDetailState: Equatable, Sendable {
 
     let sections: [GameDetailSection]
 
+    func updatingRecords(
+        recentRecordsState: GameDetailRecentRecordsState,
+        statisticsState: GameDetailStatisticsState
+    ) -> GameDetailState {
+        GameDetailState(
+            sections: sections.map { section in
+                switch section {
+                case .statistics:
+                    return .statistics(statisticsState)
+
+                case .recentRecords:
+                    return .recentRecords(recentRecordsState)
+
+                case .rules, .settings:
+                    return section
+                }
+            }
+        )
+    }
+
     func applying(_ change: GameDetailSettingChange) -> GameDetailState {
         GameDetailState(
             sections: sections.map { section in

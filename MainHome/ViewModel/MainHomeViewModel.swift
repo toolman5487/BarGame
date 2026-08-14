@@ -14,6 +14,7 @@ import OSLog
 struct MainHomeViewModelInput {
 
     let viewDidLoad: AnyPublisher<Void, Never>
+    let viewWillAppear: AnyPublisher<Void, Never>
     let shakeMotion: AnyPublisher<Void, Never>
     let didRequestRetry: AnyPublisher<Void, Never>
 }
@@ -49,12 +50,14 @@ final class MainHomeViewModel: MainHomeViewModeling {
     // MARK: - Dependencies
 
     private let configuration: MainHomeConfiguration
+    private let statisticsReader: any GameStatisticsReading
 
     // MARK: - State
 
     private let stateSubject = CurrentValueSubject<MainHomeState, Never>(.idle)
     private let commandSubject = PassthroughSubject<MainHomeViewCommand, Never>()
     private var cancellables = Set<AnyCancellable>()
+    private var loadContentTask: Task<Void, Never>?
 
     private var state: MainHomeState {
         stateSubject.value
@@ -62,8 +65,16 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
     // MARK: - Lifecycle
 
-    init(configuration: MainHomeConfiguration) {
+    init(
+        configuration: MainHomeConfiguration,
+        statisticsReader: any GameStatisticsReading
+    ) {
         self.configuration = configuration
+        self.statisticsReader = statisticsReader
+    }
+
+    deinit {
+        loadContentTask?.cancel()
     }
 
     // MARK: - Public
@@ -74,6 +85,12 @@ final class MainHomeViewModel: MainHomeViewModeling {
         input.viewDidLoad
             .sink { [weak self] in
                 self?.handleViewDidLoad()
+            }
+            .store(in: &cancellables)
+
+        input.viewWillAppear
+            .sink { [weak self] in
+                self?.handleViewWillAppear()
             }
             .store(in: &cancellables)
 
@@ -102,7 +119,7 @@ final class MainHomeViewModel: MainHomeViewModeling {
     private func handleViewDidLoad() {
         switch state {
         case .idle:
-            loadContent()
+            loadContent(showsLoadingState: true)
 
         case .loading:
             break
@@ -115,10 +132,20 @@ final class MainHomeViewModel: MainHomeViewModeling {
         }
     }
 
+    private func handleViewWillAppear() {
+        switch state {
+        case .ready:
+            loadContent(showsLoadingState: false)
+
+        case .idle, .loading, .failed:
+            break
+        }
+    }
+
     private func handleRetry() {
         switch state {
         case .failed(let failure) where failure.isRetryable:
-            loadContent()
+            loadContent(showsLoadingState: true)
 
         case .idle:
             break
@@ -152,18 +179,67 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
     // MARK: - Load
 
-    private func loadContent() {
-        updateState(.loading)
-
+    private func loadContent(showsLoadingState: Bool) {
         switch Self.resolveSnapshot(from: configuration) {
-        case .success(let snapshot):
-            updateState(.ready(snapshot))
-
         case .failure(let failure):
             AppLogger.configuration.error(
                 "\(failure.logDescription, privacy: .public)"
             )
             updateState(.failed(failure))
+
+        case .success(let snapshot):
+            loadStatistics(
+                for: snapshot,
+                showsLoadingState: showsLoadingState
+            )
+        }
+    }
+
+    private func loadStatistics(
+        for snapshot: MainHomeSnapshot,
+        showsLoadingState: Bool
+    ) {
+        loadContentTask?.cancel()
+        if showsLoadingState {
+            updateState(.loading)
+        }
+
+        let games = snapshot.games
+        loadContentTask = Task { [weak self, statisticsReader] in
+            do {
+                let statisticsByGameID = try await statisticsReader.statistics(
+                    for: games.map(\.id)
+                )
+                try Task.checkCancellation()
+
+                let gameOverviews = games.map { game in
+                    GameOverview(
+                        game: game,
+                        statistics: statisticsByGameID[game.id] ?? .zero
+                    )
+                }
+                self?.updateState(
+                    .ready(snapshot.updatingGameResults(gameOverviews))
+                )
+            } catch is CancellationError {
+                return
+            } catch {
+                self?.handleStatisticsLoadFailure(error)
+            }
+        }
+    }
+
+    private func handleStatisticsLoadFailure(_ error: any Error) {
+        AppLogger.persistence.error(
+            "MainHome statistics loading failed: \(String(describing: error), privacy: .public)"
+        )
+
+        switch state {
+        case .ready:
+            break
+
+        case .idle, .loading, .failed:
+            updateState(.failed(.loadFailed))
         }
     }
 

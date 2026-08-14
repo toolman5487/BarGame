@@ -142,6 +142,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
     // MARK: - Properties
 
     private let gameID: DiceGameID
+    private let sessionContext: GameSessionContext
     private let hintText: String
     private let recordStore: any DiceGameRecordStoring
     private let stateSubject: CurrentValueSubject<DiceGameViewState, Never>
@@ -157,11 +158,13 @@ final class DiceGameViewModel: DiceGameViewModeling {
 
     init(
         gameID: DiceGameID,
+        sessionContext: GameSessionContext,
         hintText: String,
         initialState: DiceGameViewState,
         recordStore: any DiceGameRecordStoring
     ) {
         self.gameID = gameID
+        self.sessionContext = sessionContext
         self.hintText = hintText
         self.recordStore = recordStore
         stateSubject = CurrentValueSubject(initialState)
@@ -321,6 +324,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
         saveRecordTask?.cancel()
         let record = DiceGameMatchRecord(
             id: UUID(),
+            sessionContext: sessionContext,
             gameID: gameID,
             outcome: outcome,
             diceResult: result,
@@ -328,7 +332,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
         )
         saveRecordTask = Task { [weak self, recordStore] in
             do {
-                try await recordStore.save(record)
+                try await recordStore.insert(record)
                 try Task.checkCancellation()
                 self?.startNextRound()
             } catch is CancellationError {

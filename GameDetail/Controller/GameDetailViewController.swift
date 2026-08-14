@@ -25,6 +25,7 @@ final class GameDetailViewController: DetailBaseViewController {
         GameDetailSettingChange,
         Never
     >()
+    private let viewWillAppearSubject = PassthroughSubject<Void, Never>()
     private let startGameSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedState: GameDetailState
@@ -41,14 +42,16 @@ final class GameDetailViewController: DetailBaseViewController {
 
     init(
         game: DiceGame,
-        sections: [GameDetailSection]? = nil
+        sections: [GameDetailSection]? = nil,
+        recordStore: any DiceGameRecordStoring = GameHistoryStore.shared
     ) {
         let initialState = GameDetailState(
             sections: sections ?? GameDetailSection.standard(for: game.id)
         )
         viewModel = GameDetailViewModel(
             gameID: game.id,
-            initialState: initialState
+            initialState: initialState,
+            recordStore: recordStore
         )
         renderedState = initialState
         super.init(title: game.title)
@@ -57,6 +60,11 @@ final class GameDetailViewController: DetailBaseViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewWillAppearSubject.send()
     }
 
     // MARK: - Overridable
@@ -172,6 +180,7 @@ final class GameDetailViewController: DetailBaseViewController {
 
     override func bind() {
         let input = GameDetailViewModelInput(
+            viewWillAppear: viewWillAppearSubject.eraseToAnyPublisher(),
             settingChange: settingChangeSubject.eraseToAnyPublisher(),
             startGame: startGameSubject.eraseToAnyPublisher()
         )

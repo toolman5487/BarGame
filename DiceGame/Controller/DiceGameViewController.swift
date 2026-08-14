@@ -253,8 +253,17 @@ extension DiceGameViewController {
 
     convenience init(
         configuration: DiceGameConfiguration = .standard,
-        recordStore: any DiceGameRecordStoring = DiceGameRecordStore.shared
+        eventContext: GameEventContext? = nil,
+        recordStore: any DiceGameRecordStoring = GameHistoryStore.shared
     ) {
+        let startedAt = Date()
+        let resolvedEventContext = eventContext ?? GameEventContext(startedAt: startedAt)
+        let sessionContext = GameSessionContext(
+            event: resolvedEventContext,
+            identity: configuration.gameID.identity,
+            rulesVersion: configuration.gameID.currentRulesVersion,
+            startedAt: startedAt
+        )
         let initialGameState = configuration.initialState
         let initialState = DiceGameViewState(
             game: initialGameState,
@@ -262,6 +271,7 @@ extension DiceGameViewController {
         )
         let viewModel = DiceGameViewModel(
             gameID: configuration.gameID,
+            sessionContext: sessionContext,
             hintText: configuration.hintText,
             initialState: initialState,
             recordStore: recordStore
