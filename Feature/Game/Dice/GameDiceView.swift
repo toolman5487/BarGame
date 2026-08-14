@@ -34,6 +34,7 @@ final class GameDiceView: UIView {
         let preferredCameraDistance: Float?
         let sceneAppearance: DiceSceneAppearance
         let cameraViewpoint: DiceCameraViewpoint
+        let showsPhysicsShapes: Bool
 
         init(
             initialDiceCount: Int,
@@ -41,7 +42,8 @@ final class GameDiceView: UIView {
             preferredEdgeLength: CGFloat? = nil,
             preferredCameraDistance: Float? = nil,
             sceneAppearance: DiceSceneAppearance = .walnut,
-            cameraViewpoint: DiceCameraViewpoint = .elevated
+            cameraViewpoint: DiceCameraViewpoint = .elevated,
+            showsPhysicsShapes: Bool = false
         ) {
             self.initialDiceCount = initialDiceCount
             self.maximumDiceCount = maximumDiceCount
@@ -49,6 +51,7 @@ final class GameDiceView: UIView {
             self.preferredCameraDistance = preferredCameraDistance
             self.sceneAppearance = sceneAppearance
             self.cameraViewpoint = cameraViewpoint
+            self.showsPhysicsShapes = showsPhysicsShapes
         }
     }
 
@@ -56,10 +59,12 @@ final class GameDiceView: UIView {
         static let updateInterval: TimeInterval = 1.0 / 60.0
         static let minimumImpulseMagnitude = 0.22
         static let impulseCooldown: CFTimeInterval = 0.09
-        static let horizontalForceScale: Float = 5.6
-        static let verticalForceScale: Float = 4.4
-        static let rotationScale: Float = 0.55
-        static let forceJitterRatio: Float = 0.14
+        static let horizontalImpulseScale: Float = 4.8
+        static let verticalImpulseScale: Float = 4
+        static let angularImpulseScale: Float = 0.72
+        static let minimumTumblingImpulse: Float = 0.75
+        static let linearImpulseJitterRatio: Float = 0.16
+        static let angularImpulseJitterRatio: Float = 0.1
     }
 
     private enum ImpactFeedback {
@@ -86,9 +91,9 @@ final class GameDiceView: UIView {
 
     private enum DiceSpawnMetrics {
         static let ringRadius: Float = 0.82
-        static let positionsPerRing = 7
-        static let baseHeight: Float = 1.4
-        static let layerHeight: Float = 0.7
+        static let maximumDiceCountPerLayer = 8
+        static let initialHeight: Float = 1.4
+        static let verticalLayerSpacing: Float = 0.7
     }
 
     private enum HapticError: Error {
@@ -207,8 +212,10 @@ final class GameDiceView: UIView {
     }
 
     func setInteractionLocked(_ isLocked: Bool) {
+        guard isInteractionLocked != isLocked else { return }
+
         isInteractionLocked = isLocked
-        diceNodes.forEach { $0.setLocked(isLocked) }
+        arena.setPhysicsSimulationPaused(isLocked)
     }
 
     func currentValues() -> [Int] {
@@ -228,6 +235,7 @@ final class GameDiceView: UIView {
     private func setup() {
         setupViewHierarchy()
         setupViewLayout()
+        configurePhysicsShapeDebugging()
         setupScene()
         setupHaptics()
         observeApplicationLifecycle()
@@ -245,24 +253,33 @@ final class GameDiceView: UIView {
 
     private func setupScene() {
         arena.scene.physicsWorld.contactDelegate = self
-        for _ in 0..<configuration.initialDiceCount {
-            makeDiceNode()
+        let diceCount = max(configuration.initialDiceCount, 0)
+        let edgeLength = edgeLength(for: diceCount)
+        for position in spawnPositions(for: diceCount) {
+            makeDiceNode(edgeLength: edgeLength, at: position)
         }
         sceneView.scene = arena.scene
         sceneView.pointOfView = arena.cameraNode
     }
 
-    @discardableResult
-    private func makeDiceNode() -> DiceNode {
-        let updatedDiceCount = diceNodes.count + 1
-        let edgeLength = edgeLength(for: updatedDiceCount)
-        diceNodes.forEach { $0.resize(to: edgeLength) }
+    private func configurePhysicsShapeDebugging() {
+        #if DEBUG
+        if configuration.showsPhysicsShapes {
+            sceneView.debugOptions.insert(.showPhysicsShapes)
+        }
+        #endif
+    }
 
-        let diceNode = DiceNode(edgeLength: edgeLength)
-        let position = spawnPosition(for: diceNodes.count)
+    private func makeDiceNode(
+        edgeLength: CGFloat,
+        at position: SCNVector3
+    ) {
+        let diceNode = DiceNode(
+            edgeLength: edgeLength,
+            referenceEdgeLength: referenceEdgeLength
+        )
         diceNodes.append(diceNode)
         arena.attach(dice: diceNode, at: position)
-        return diceNode
     }
 
     private func edgeLength(for diceCount: Int) -> CGFloat {
@@ -276,20 +293,43 @@ final class GameDiceView: UIView {
         )
     }
 
-    private func spawnPosition(for index: Int) -> SCNVector3 {
-        guard index > 0 else {
-            return SCNVector3(0, DiceSpawnMetrics.baseHeight, 0)
+    private var referenceEdgeLength: CGFloat {
+        configuration.preferredEdgeLength ?? DiceSizing.largestEdgeLength
+    }
+
+    private func spawnPositions(for diceCount: Int) -> [SCNVector3] {
+        guard diceCount > 0 else { return [] }
+        guard diceCount > 1 else {
+            return [SCNVector3(0, DiceSpawnMetrics.initialHeight, 0)]
         }
 
-        let adjustedIndex = index - 1
-        let ringIndex = adjustedIndex % DiceSpawnMetrics.positionsPerRing
-        let verticalLayer = adjustedIndex / DiceSpawnMetrics.positionsPerRing
-        let angle = Float(ringIndex) * 2 * .pi / Float(DiceSpawnMetrics.positionsPerRing)
-        return SCNVector3(
-            cos(angle) * DiceSpawnMetrics.ringRadius,
-            DiceSpawnMetrics.baseHeight + Float(verticalLayer) * DiceSpawnMetrics.layerHeight,
-            sin(angle) * DiceSpawnMetrics.ringRadius
-        )
+        let maximumDiceCountPerLayer = DiceSpawnMetrics.maximumDiceCountPerLayer
+        let layerCount = (
+            diceCount + maximumDiceCountPerLayer - 1
+        ) / maximumDiceCountPerLayer
+        let minimumDiceCountPerLayer = diceCount / layerCount
+        let layersWithAdditionalDie = diceCount % layerCount
+
+        return (0..<layerCount).flatMap { layerIndex in
+            let diceCountInLayer = minimumDiceCountPerLayer + (
+                layerIndex < layersWithAdditionalDie ? 1 : 0
+            )
+            let angleBetweenDice = 2 * Float.pi / Float(diceCountInLayer)
+            let layerAngleOffset = layerIndex.isMultiple(of: 2)
+                ? 0
+                : angleBetweenDice / 2
+            let height = DiceSpawnMetrics.initialHeight +
+                Float(layerIndex) * DiceSpawnMetrics.verticalLayerSpacing
+
+            return (0..<diceCountInLayer).map { diceIndex in
+                let angle = Float(diceIndex) * angleBetweenDice + layerAngleOffset
+                return SCNVector3(
+                    cos(angle) * DiceSpawnMetrics.ringRadius,
+                    height,
+                    sin(angle) * DiceSpawnMetrics.ringRadius
+                )
+            }
+        }
     }
 
     // MARK: - Motion
@@ -344,23 +384,25 @@ final class GameDiceView: UIView {
         guard now - lastImpulseTime > MotionTuning.impulseCooldown else { return }
         lastImpulseTime = now
 
-        let force = SCNVector3(
-            Float(acceleration.x) * MotionTuning.horizontalForceScale,
-            Float(magnitude) * MotionTuning.verticalForceScale,
-            -Float(acceleration.y) * MotionTuning.horizontalForceScale
+        let linearImpulse = SCNVector3(
+            Float(acceleration.x) * MotionTuning.horizontalImpulseScale,
+            Float(magnitude) * MotionTuning.verticalImpulseScale,
+            -Float(acceleration.y) * MotionTuning.horizontalImpulseScale
         )
-        let torque = makeTorque(
+        let angularImpulse = makeAngularImpulse(
             rotationRate: sample.rotationRate,
             fallbackIntensity: Float(magnitude)
         )
 
         diceNodes.forEach { diceNode in
             diceNode.applyMotionImpulse(
-                force: force.addingRandomJitter(
-                    ratio: MotionTuning.forceJitterRatio,
+                linearImpulse: linearImpulse.addingRandomJitter(
+                    ratio: MotionTuning.linearImpulseJitterRatio,
                     intensity: Float(magnitude)
                 ),
-                torque: torque
+                angularImpulse: angularImpulse.addingRandomJitter(
+                    ratio: MotionTuning.angularImpulseJitterRatio
+                )
             )
         }
     }
@@ -380,21 +422,37 @@ final class GameDiceView: UIView {
         shake(intensity: shakeIntensity)
     }
 
-    private func makeTorque(
+    private func makeAngularImpulse(
         rotationRate: MotionVector,
         fallbackIntensity: Float
     ) -> SCNVector4 {
         let x = Float(rotationRate.x)
         let y = Float(rotationRate.z)
         let z = -Float(rotationRate.y)
-        let magnitude = sqrt(x * x + y * y + z * z)
+        let rotationMagnitude = sqrt(x * x + y * y + z * z)
+        let horizontalAxisMagnitude = sqrt(x * x + z * z)
+        let impulseMagnitude = max(
+            rotationMagnitude * MotionTuning.angularImpulseScale,
+            fallbackIntensity,
+            MotionTuning.minimumTumblingImpulse
+        )
 
-        guard magnitude > 0.01 else {
-            return SCNVector4(1, 0, 0, fallbackIntensity)
+        guard horizontalAxisMagnitude > 0.01 else {
+            let fallbackAxisAngle = Float.random(in: 0...(2 * .pi))
+            return SCNVector4(
+                cos(fallbackAxisAngle),
+                0,
+                sin(fallbackAxisAngle),
+                impulseMagnitude
+            )
         }
 
-        let angle = max(magnitude * MotionTuning.rotationScale, fallbackIntensity)
-        return SCNVector4(x / magnitude, y / magnitude, z / magnitude, angle)
+        return SCNVector4(
+            x / horizontalAxisMagnitude,
+            0,
+            z / horizontalAxisMagnitude,
+            impulseMagnitude
+        )
     }
 
     // MARK: - Haptics
@@ -645,6 +703,35 @@ private extension SCNVector3 {
             x + Float.random(in: -jitter...jitter),
             y + Float.random(in: -jitter...jitter),
             z + Float.random(in: -jitter...jitter)
+        )
+    }
+}
+
+private extension SCNVector4 {
+
+    func addingRandomJitter(ratio: Float) -> SCNVector4 {
+        let clampedRatio = min(max(ratio, 0), 0.5)
+        let jitteredX = x + Float.random(in: -clampedRatio...clampedRatio)
+        let jitteredY = y + Float.random(in: -clampedRatio...clampedRatio)
+        let jitteredZ = z + Float.random(in: -clampedRatio...clampedRatio)
+        let axisMagnitude = sqrt(
+            jitteredX * jitteredX +
+                jitteredY * jitteredY +
+                jitteredZ * jitteredZ
+        )
+
+        guard axisMagnitude > .ulpOfOne else {
+            return SCNVector4(1, 0, 0, w)
+        }
+
+        let magnitudeScale = Float.random(
+            in: (1 - clampedRatio)...(1 + clampedRatio)
+        )
+        return SCNVector4(
+            jitteredX / axisMagnitude,
+            jitteredY / axisMagnitude,
+            jitteredZ / axisMagnitude,
+            w * magnitudeScale
         )
     }
 }

@@ -14,20 +14,19 @@ nonisolated final class DiceNode: SCNNode {
 
     private enum Metrics {
         static let minimumEdgeLength: CGFloat = 0.1
-        static let chamferRatio: CGFloat = 0.08
-        static let collisionChamferRatio: CGFloat = 0.02
-        static let collisionInsetRatio: CGFloat = 0.003
+        static let chamferRatio: CGFloat = 0.06
+        static let chamferSegmentCount = 5
         static let collisionMargin: CGFloat = 0
         static let continuousCollisionThresholdRatio: CGFloat = 0.2
     }
 
     private enum Physics {
-        static let mass: CGFloat = 0.7
+        static let referenceMass: CGFloat = 0.7
         static let friction: CGFloat = 0.44
-        static let rollingFriction: CGFloat = 0.06
-        static let restitution: CGFloat = 0.42
+        static let rollingFriction: CGFloat = 0.02
+        static let restitution: CGFloat = 0.3
         static let angularDamping: CGFloat = 0.08
-        static let damping: CGFloat = 0.035
+        static let damping: CGFloat = 0.05
     }
 
     private enum Appearance {
@@ -49,12 +48,17 @@ nonisolated final class DiceNode: SCNNode {
     private static var faceTextureCache: [Int: FaceTextures] = [:]
 
     private var edgeLength: CGFloat
+    private let referenceEdgeLength: CGFloat
 
     // MARK: - Lifecycle
 
     @MainActor
-    init(edgeLength: CGFloat) {
+    init(edgeLength: CGFloat, referenceEdgeLength: CGFloat) {
         self.edgeLength = max(edgeLength, Metrics.minimumEdgeLength)
+        self.referenceEdgeLength = max(
+            referenceEdgeLength,
+            Metrics.minimumEdgeLength
+        )
         super.init()
         setupDice()
     }
@@ -75,7 +79,6 @@ nonisolated final class DiceNode: SCNNode {
         updateVisibleGeometry()
 
         let updatedBody = makePhysicsBody()
-        updatedBody.isAffectedByGravity = previousBody?.isAffectedByGravity ?? true
         updatedBody.velocity = previousBody?.velocity ?? SCNVector3Zero
         updatedBody.angularVelocity = previousBody?.angularVelocity ?? SCNVector4Zero
         physicsBody = updatedBody
@@ -85,47 +88,69 @@ nonisolated final class DiceNode: SCNNode {
         guard let body = physicsBody else { return }
 
         let clamped = min(max(intensity, 0.3), 2.8)
-        let forceScale = Float(clamped) * 6.2
-        let force = SCNVector3(
-            Float.random(in: -1...1) * forceScale,
-            Float.random(in: 0.5...1.4) * forceScale,
-            Float.random(in: -1...1) * forceScale
+        let impulseScale = Float(clamped) * 5.2
+        let linearImpulse = SCNVector3(
+            Float.random(in: -1...1) * impulseScale,
+            Float.random(in: 0.5...1.3) * impulseScale,
+            Float.random(in: -1...1) * impulseScale
         )
-        let torque = SCNVector4(
-            Float.random(in: -1...1),
-            Float.random(in: -1...1),
-            Float.random(in: -1...1),
-            Float(clamped) * 3.8
+        let tumblingAxisAngle = Float.random(in: 0...(2 * .pi))
+        let angularImpulse = SCNVector4(
+            cos(tumblingAxisAngle),
+            0,
+            sin(tumblingAxisAngle),
+            Float(clamped) * 3
         )
 
+        applyImpulses(
+            linearImpulse: linearImpulse,
+            angularImpulse: angularImpulse,
+            to: body
+        )
+    }
+
+    func applyMotionImpulse(
+        linearImpulse: SCNVector3,
+        angularImpulse: SCNVector4
+    ) {
+        guard let body = physicsBody else { return }
+
+        applyImpulses(
+            linearImpulse: linearImpulse,
+            angularImpulse: angularImpulse,
+            to: body
+        )
+    }
+
+    private func applyImpulses(
+        linearImpulse: SCNVector3,
+        angularImpulse: SCNVector4,
+        to body: SCNPhysicsBody
+    ) {
         if body.isResting {
             body.velocity = SCNVector3(0, 0.1, 0)
         }
-        body.applyForce(force, asImpulse: true)
-        body.applyTorque(torque, asImpulse: true)
+
+        body.applyForce(
+            SCNVector3(
+                linearImpulse.x * linearImpulseScale,
+                linearImpulse.y * linearImpulseScale,
+                linearImpulse.z * linearImpulseScale
+            ),
+            asImpulse: true
+        )
+        body.applyTorque(
+            SCNVector4(
+                angularImpulse.x,
+                angularImpulse.y,
+                angularImpulse.z,
+                angularImpulse.w * angularImpulseScale
+            ),
+            asImpulse: true
+        )
     }
 
-    func applyMotionImpulse(force: SCNVector3, torque: SCNVector4) {
-        guard let body = physicsBody else { return }
-
-        if body.isResting {
-            body.velocity = SCNVector3(0, 0.1, 0)
-        }
-        body.applyForce(force, asImpulse: true)
-        body.applyTorque(torque, asImpulse: true)
-    }
-
-    func setLocked(_ isLocked: Bool) {
-        guard let body = physicsBody else { return }
-
-        body.isAffectedByGravity = !isLocked
-        guard isLocked else { return }
-
-        body.clearAllForces()
-        body.velocity = SCNVector3Zero
-        body.angularVelocity = SCNVector4Zero
-    }
-
+    @MainActor
     var topFaceValue: Int {
         let faces: [(value: Int, normal: SCNVector3)] = [
             (1, SCNVector3(0, 0, 1)),
@@ -175,6 +200,7 @@ nonisolated final class DiceNode: SCNNode {
             length: edgeLength,
             chamferRadius: chamferRadius
         )
+        visibleBox.chamferSegmentCount = Metrics.chamferSegmentCount
         visibleBox.materials = [
             makePipMaterial(pips: 1),
             makePipMaterial(pips: 2),
@@ -197,27 +223,29 @@ nonisolated final class DiceNode: SCNNode {
         visibleBox.height = edgeLength
         visibleBox.length = edgeLength
         visibleBox.chamferRadius = chamferRadius
+        visibleBox.chamferSegmentCount = Metrics.chamferSegmentCount
     }
 
     private func makePhysicsBody() -> SCNPhysicsBody {
         let collisionBox = SCNBox(
-            width: collisionEdgeLength,
-            height: collisionEdgeLength,
-            length: collisionEdgeLength,
-            chamferRadius: collisionChamferRadius
+            width: edgeLength,
+            height: edgeLength,
+            length: edgeLength,
+            chamferRadius: chamferRadius
         )
+        collisionBox.chamferSegmentCount = Metrics.chamferSegmentCount
         let shape = SCNPhysicsShape(geometry: collisionBox, options: [
             SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.convexHull,
             SCNPhysicsShape.Option.collisionMargin: Metrics.collisionMargin,
         ])
         let body = SCNPhysicsBody(type: .dynamic, shape: shape)
-        body.mass = Physics.mass
+        body.mass = mass
         body.friction = Physics.friction
         body.rollingFriction = Physics.rollingFriction
         body.restitution = Physics.restitution
         body.angularDamping = Physics.angularDamping
         body.damping = Physics.damping
-        body.allowsResting = true
+        body.allowsResting = false
         body.continuousCollisionDetectionThreshold = continuousCollisionThreshold
         body.categoryBitMask = DicePhysicsCategory.dice
         body.contactTestBitMask = DicePhysicsCategory.dice | DicePhysicsCategory.boundary
@@ -229,16 +257,20 @@ nonisolated final class DiceNode: SCNNode {
         edgeLength * Metrics.chamferRatio
     }
 
-    private var collisionInset: CGFloat {
-        edgeLength * Metrics.collisionInsetRatio
+    private var edgeLengthScale: CGFloat {
+        edgeLength / referenceEdgeLength
     }
 
-    private var collisionEdgeLength: CGFloat {
-        edgeLength - collisionInset * 2
+    private var mass: CGFloat {
+        Physics.referenceMass * pow(edgeLengthScale, 3)
     }
 
-    private var collisionChamferRadius: CGFloat {
-        max(edgeLength * Metrics.collisionChamferRatio - collisionInset, 0)
+    private var linearImpulseScale: Float {
+        Float(mass / Physics.referenceMass)
+    }
+
+    private var angularImpulseScale: Float {
+        Float(mass / Physics.referenceMass * pow(edgeLengthScale, 2))
     }
 
     private var continuousCollisionThreshold: CGFloat {

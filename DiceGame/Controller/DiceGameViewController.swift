@@ -276,12 +276,7 @@ extension DiceGameViewController {
         let initialGameState = configuration.initialState
         let initialState = DiceGameViewState(
             game: initialGameState,
-            result: DiceGameResultViewState(
-                hintText: configuration.hintText,
-                totalText: nil,
-                items: [],
-                presentation: .collapsed
-            )
+            result: .awaitingResult(hintText: configuration.hintText)
         )
         let viewModel = DiceGameViewModel(initialState: initialState)
 

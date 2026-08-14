@@ -25,12 +25,14 @@ final class DiceArena {
 
     private enum Physics {
         static let gravity: Float = 10.4
-        static let lateralGravityScale: Float = 4.2
+        static let lateralGravityScale: Float = 2.4
         static let simulationTimeStep: TimeInterval = 1.0 / 120.0
-        static let floorRestitution: CGFloat = 0.4
-        static let floorFriction: CGFloat = 0.52
-        static let wallRestitution: CGFloat = 0.4
-        static let wallFriction: CGFloat = 0.38
+        static let runningSimulationSpeed: CGFloat = 1
+        static let pausedSimulationSpeed: CGFloat = 0
+        static let floorRestitution: CGFloat = 0.22
+        static let floorFriction: CGFloat = 0.5
+        static let wallRestitution: CGFloat = 0.3
+        static let wallFriction: CGFloat = 0.42
     }
 
     private enum Appearance {
@@ -123,6 +125,12 @@ final class DiceArena {
     func attach(dice: SCNNode, at position: SCNVector3) {
         dice.position = position
         scene.rootNode.addChildNode(dice)
+    }
+
+    func setPhysicsSimulationPaused(_ isPaused: Bool) {
+        scene.physicsWorld.speed = isPaused
+            ? Physics.pausedSimulationSpeed
+            : Physics.runningSimulationSpeed
     }
 
     func showTopDownView() {

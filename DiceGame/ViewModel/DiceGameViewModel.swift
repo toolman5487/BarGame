@@ -16,7 +16,7 @@ nonisolated struct DiceGameViewState: Equatable, Sendable {
     let result: DiceGameResultViewState
 }
 
-nonisolated struct DiceGameResultViewState: Equatable, Sendable {
+nonisolated enum DiceGameResultViewState: Equatable, Sendable {
 
     enum Presentation: Equatable, Sendable {
         case collapsed
@@ -29,10 +29,24 @@ nonisolated struct DiceGameResultViewState: Equatable, Sendable {
         let countText: String
     }
 
-    let hintText: String
-    let totalText: String?
-    let items: [Item]
-    let presentation: Presentation
+    struct ResultContent: Equatable, Sendable {
+
+        let collapsedText: String
+        let totalText: String
+        let items: [Item]
+    }
+
+    case awaitingResult(hintText: String)
+    case showingResult(content: ResultContent, presentation: Presentation)
+
+    var presentation: Presentation {
+        switch self {
+        case .awaitingResult:
+            return .collapsed
+        case .showingResult(_, let presentation):
+            return presentation
+        }
+    }
 }
 
 // MARK: - Input
@@ -127,11 +141,15 @@ final class DiceGameViewModel: DiceGameViewModeling {
     }
 
     private func toggleResultExpansion() {
-        guard state.game.result != nil else { return }
+        guard
+            case .showingResult(let content, let presentation) = state.result
+        else {
+            return
+        }
 
         let updatedPresentation: DiceGameResultViewState.Presentation
 
-        switch state.result.presentation {
+        switch presentation {
         case .collapsed:
             updatedPresentation = .expanded
         case .expanded:
@@ -141,10 +159,8 @@ final class DiceGameViewModel: DiceGameViewModeling {
         updateState(
             DiceGameViewState(
                 game: state.game,
-                result: DiceGameResultViewState(
-                    hintText: state.result.hintText,
-                    totalText: state.result.totalText,
-                    items: state.result.items,
+                result: .showingResult(
+                    content: content,
                     presentation: updatedPresentation
                 )
             )
@@ -162,17 +178,13 @@ final class DiceGameViewModel: DiceGameViewModeling {
                     isDiceLocked: true,
                     result: result
                 ),
-                result: makeExpandedResultState(
-                    from: result,
-                    hintText: state.result.hintText
-                )
+                result: makeExpandedResultState(from: result)
             )
         )
     }
 
     private func makeExpandedResultState(
-        from result: DiceRollResult,
-        hintText: String
+        from result: DiceRollResult
     ) -> DiceGameResultViewState {
         let items = (1...6).map { faceValue in
             DiceGameResultViewState.Item(
@@ -180,10 +192,12 @@ final class DiceGameViewModel: DiceGameViewModeling {
                 countText: "\(result.count(of: faceValue)) 顆"
             )
         }
-        return DiceGameResultViewState(
-            hintText: hintText,
-            totalText: "總和點數：\(result.total)",
-            items: items,
+        return .showingResult(
+            content: DiceGameResultViewState.ResultContent(
+                collapsedText: "點擊查看骰子結果",
+                totalText: "總和點數：\(result.total)",
+                items: items
+            ),
             presentation: .expanded
         )
     }

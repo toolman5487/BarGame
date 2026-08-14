@@ -22,15 +22,15 @@ final class DiceGameResultView: UIView {
     // MARK: - Types
 
     fileprivate enum Metrics {
-        static let itemCount = 6
-        static let itemsPerRow = 3
+        static let defaultItemsPerRow = 3
+        static let accessibilityItemsPerRow = 2
         static let itemSpacing: CGFloat = 8
         static let itemContentSpacing: CGFloat = 4
         static let itemHorizontalInset: CGFloat = 16
         static let itemVerticalInset: CGFloat = 8
         static let contentSpacing: CGFloat = 8
         static let contentInset: CGFloat = 8
-        static let hintHorizontalInset: CGFloat = 12
+        static let hintHorizontalInset: CGFloat = 8
         static let animationDuration: TimeInterval = 0.42
         static let animationDampingRatio: CGFloat = 0.82
 
@@ -41,17 +41,18 @@ final class DiceGameResultView: UIView {
                 itemVerticalInset * 2
         }
 
-        static var collectionHeight: CGFloat {
+        static func collectionHeight(
+            itemCount: Int,
+            itemsPerRow: Int
+        ) -> CGFloat {
             let rowCount = Int(ceil(Double(itemCount) / Double(itemsPerRow)))
             return CGFloat(rowCount) * itemHeight +
                 CGFloat(max(rowCount - 1, 0)) * itemSpacing
         }
 
-        static var expandedHeight: CGFloat {
-            makeDiceResultValueFont().lineHeight +
-                contentInset * 2 +
-                contentSpacing +
-                collectionHeight
+        static func expandedHeight(collectionHeight: CGFloat) -> CGFloat {
+            makeDiceResultValueFont().lineHeight + contentInset * 2 +
+                contentSpacing + collectionHeight
         }
 
         static var collapsedHeight: CGFloat {
@@ -132,6 +133,7 @@ final class DiceGameResultView: UIView {
         label.textColor = .label
         label.textAlignment = .center
         label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         label.adjustsFontForContentSizeCategory = true
         return label
     }()
@@ -155,7 +157,7 @@ final class DiceGameResultView: UIView {
 
     override var intrinsicContentSize: CGSize {
         let height = presentationState == .expanded
-            ? Metrics.expandedHeight
+            ? Metrics.expandedHeight(collectionHeight: collectionHeight)
             : Metrics.collapsedHeight
         return CGSize(width: UIView.noIntrinsicMetric, height: height)
     }
@@ -183,6 +185,7 @@ final class DiceGameResultView: UIView {
             expandedWidthConstraint = make.width.equalToSuperview().constraint
             collapsedWidthConstraint = make.width
                 .equalTo(collapsedContainerWidth)
+                .priority(.high)
                 .constraint
         }
         expandedWidthConstraint?.deactivate()
@@ -191,13 +194,17 @@ final class DiceGameResultView: UIView {
         }
         collectionView.snp.makeConstraints { make in
             collectionHeightConstraint = make.height
-                .equalTo(Metrics.collectionHeight)
+                .equalTo(collectionHeight)
                 .constraint
         }
         hintLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.left.greaterThanOrEqualToSuperview().inset(Metrics.contentInset)
-            make.right.lessThanOrEqualToSuperview().inset(Metrics.contentInset)
+            make.left.greaterThanOrEqualToSuperview().inset(
+                Metrics.hintHorizontalInset
+            )
+            make.right.lessThanOrEqualToSuperview().inset(
+                Metrics.hintHorizontalInset
+            )
         }
     }
 
@@ -222,8 +229,18 @@ final class DiceGameResultView: UIView {
     func configure(with state: DiceGameResultViewState) {
         let previousPresentation = renderedState?.presentation
         renderedState = state
-        hintLabel.text = state.hintText
-        totalLabel.text = state.totalText
+
+        switch state {
+        case .awaitingResult(let hintText):
+            hintLabel.text = hintText
+            totalLabel.text = nil
+
+        case .showingResult(let content, _):
+            hintLabel.text = content.collapsedText
+            totalLabel.text = content.totalText
+        }
+
+        collectionHeightConstraint?.update(offset: collectionHeight)
         collapsedWidthConstraint?.update(offset: collapsedContainerWidth)
         collectionView.reloadData()
         updatePresentation(
@@ -237,6 +254,7 @@ final class DiceGameResultView: UIView {
 
     @objc
     private func toggleExpansion() {
+        guard case .showingResult? = renderedState else { return }
         onExpansionToggle?()
     }
 
@@ -296,10 +314,30 @@ final class DiceGameResultView: UIView {
         ).width + Metrics.hintHorizontalInset * 2
     }
 
+    private var itemsPerRow: Int {
+        traitCollection.preferredContentSizeCategory.isAccessibilityCategory
+            ? Metrics.accessibilityItemsPerRow
+            : Metrics.defaultItemsPerRow
+    }
+
+    private var renderedItems: [DiceGameResultViewState.Item] {
+        guard case .showingResult(let content, _)? = renderedState else {
+            return []
+        }
+        return content.items
+    }
+
+    private var collectionHeight: CGFloat {
+        Metrics.collectionHeight(
+            itemCount: renderedItems.count,
+            itemsPerRow: itemsPerRow
+        )
+    }
+
     private func updateFontsAndLayoutMetrics() {
         totalLabel.font = makeDiceResultValueFont()
         hintLabel.font = .preferredFont(forTextStyle: .subheadline)
-        collectionHeightConstraint?.update(offset: Metrics.collectionHeight)
+        collectionHeightConstraint?.update(offset: collectionHeight)
         collapsedWidthConstraint?.update(offset: collapsedContainerWidth)
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
@@ -348,17 +386,15 @@ extension DiceGameResultView: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        renderedState?.items.count ?? 0
+        renderedItems.count
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        guard
-            let items = renderedState?.items,
-            items.indices.contains(indexPath.item)
-        else {
+        let items = renderedItems
+        guard items.indices.contains(indexPath.item) else {
             preconditionFailure("Invalid dice result index: \(indexPath.item)")
         }
 
@@ -384,10 +420,10 @@ extension DiceGameResultView: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-        let totalSpacing = Metrics.itemSpacing * CGFloat(Metrics.itemsPerRow - 1)
+        let totalSpacing = Metrics.itemSpacing * CGFloat(itemsPerRow - 1)
         let availableWidth = max(collectionView.bounds.width - totalSpacing, 0)
         return CGSize(
-            width: availableWidth / CGFloat(Metrics.itemsPerRow),
+            width: availableWidth / CGFloat(itemsPerRow),
             height: Metrics.itemHeight
         )
     }
