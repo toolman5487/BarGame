@@ -16,6 +16,7 @@ struct MainHomeViewModelInput {
     let viewDidLoad: AnyPublisher<Void, Never>
     let viewWillAppear: AnyPublisher<Void, Never>
     let shakeMotion: AnyPublisher<Void, Never>
+    let locationRequest: AnyPublisher<Void, Never>
     let didRequestRetry: AnyPublisher<Void, Never>
 }
 
@@ -24,6 +25,7 @@ struct MainHomeViewModelInput {
 struct MainHomeViewModelOutput {
 
     let state: AnyPublisher<MainHomeState, Never>
+    let locationState: AnyPublisher<MainHomeLocationState, Never>
     let command: AnyPublisher<MainHomeViewCommand, Never>
 }
 
@@ -51,13 +53,16 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
     private let configuration: MainHomeConfiguration
     private let statisticsReader: any GameStatisticsReading
+    private let locationRefresher: any GameLocationRefreshing
 
     // MARK: - State
 
     private let stateSubject = CurrentValueSubject<MainHomeState, Never>(.idle)
+    private let locationStateSubject = CurrentValueSubject<MainHomeLocationState, Never>(.idle)
     private let commandSubject = PassthroughSubject<MainHomeViewCommand, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var loadContentTask: Task<Void, Never>?
+    private var locationRefreshTask: Task<Void, Never>?
 
     private var state: MainHomeState {
         stateSubject.value
@@ -67,14 +72,17 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
     init(
         configuration: MainHomeConfiguration,
-        statisticsReader: any GameStatisticsReading
+        statisticsReader: any GameStatisticsReading,
+        locationRefresher: any GameLocationRefreshing
     ) {
         self.configuration = configuration
         self.statisticsReader = statisticsReader
+        self.locationRefresher = locationRefresher
     }
 
     deinit {
         loadContentTask?.cancel()
+        locationRefreshTask?.cancel()
     }
 
     // MARK: - Public
@@ -100,6 +108,12 @@ final class MainHomeViewModel: MainHomeViewModeling {
             }
             .store(in: &cancellables)
 
+        input.locationRequest
+            .sink { [weak self] in
+                self?.handleLocationRequest()
+            }
+            .store(in: &cancellables)
+
         input.didRequestRetry
             .sink { [weak self] in
                 self?.handleRetry()
@@ -108,6 +122,9 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
         return MainHomeViewModelOutput(
             state: stateSubject
+                .removeDuplicates()
+                .eraseToAnyPublisher(),
+            locationState: locationStateSubject
                 .removeDuplicates()
                 .eraseToAnyPublisher(),
             command: commandSubject.eraseToAnyPublisher()
@@ -174,6 +191,23 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
         case .failed:
             break
+        }
+    }
+
+    private func handleLocationRequest() {
+        guard locationStateSubject.value == .idle else { return }
+
+        locationStateSubject.send(.refreshing)
+        locationRefreshTask = Task { [weak self, locationRefresher] in
+            do {
+                try await locationRefresher.refreshLocation()
+                try Task.checkCancellation()
+                self?.locationStateSubject.send(.idle)
+            } catch is CancellationError {
+                self?.locationStateSubject.send(.idle)
+            } catch {
+                self?.locationStateSubject.send(.failed)
+            }
         }
     }
 

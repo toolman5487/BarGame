@@ -83,3 +83,12 @@ nonisolated enum MainHomeState: Equatable, Sendable {
         return nil
     }
 }
+
+// MARK: - Location State
+
+nonisolated enum MainHomeLocationState: Equatable, Sendable {
+
+    case idle
+    case refreshing
+    case failed
+}

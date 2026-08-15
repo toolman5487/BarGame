@@ -69,5 +69,9 @@ nonisolated struct DiceGameSettings: Equatable, Sendable {
 
 nonisolated enum GameLaunchConfiguration: Equatable, Sendable {
 
-    case dice(gameID: DiceGameID, settings: DiceGameSettings)
+    case dice(
+        gameID: DiceGameID,
+        settings: DiceGameSettings,
+        location: GameLocationSnapshot?
+    )
 }

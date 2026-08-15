@@ -85,9 +85,21 @@ final class GameDetailRecentRecordsCell: DetailBaseCollectionViewCell {
             bottom: 8,
             right: 16
         )
-        static let preferredHeight = itemSize.height
+        private static let recordsPreferredHeight = itemSize.height
             + contentInset.top
             + contentInset.bottom
+
+        static func preferredHeight(
+            for state: GameDetailRecentRecordsState
+        ) -> CGFloat {
+            switch state {
+            case .content:
+                return recordsPreferredHeight
+
+            case .loading, .empty, .error:
+                return BaseHintView.Metrics.preferredHeight
+            }
+        }
     }
 
     // MARK: - UI Elements

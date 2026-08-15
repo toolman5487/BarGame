@@ -29,12 +29,6 @@ nonisolated struct GameIdentity: Codable, Equatable, Hashable, Sendable {
     let variantID: String
 }
 
-nonisolated struct GameLocationSnapshot: Codable, Equatable, Sendable {
-
-    let name: String
-    let locality: String?
-}
-
 nonisolated struct GameEventContext: Equatable, Sendable {
 
     let id: UUID

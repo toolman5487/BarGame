@@ -33,6 +33,7 @@ final class MainHomeViewController: MainBaseViewController {
     private let viewDidLoadSubject = PassthroughSubject<Void, Never>()
     private let viewWillAppearSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
+    private let locationRequestSubject = PassthroughSubject<Void, Never>()
     private let didRequestRetrySubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedSnapshot: MainHomeSnapshot?
@@ -41,6 +42,12 @@ final class MainHomeViewController: MainBaseViewController {
     // MARK: - UI Elements
 
     private let errorView = ErrorView()
+    private lazy var locationBarButtonItem = UIBarButtonItem(
+        image: UIImage(systemName: "location.fill"),
+        primaryAction: UIAction { [weak self] _ in
+            self?.locationRequestSubject.send()
+        }
+    )
     private let loadingIndicator: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .large)
         indicator.hidesWhenStopped = true
@@ -171,11 +178,17 @@ final class MainHomeViewController: MainBaseViewController {
         )
     }
 
+    override func setNavigation() {
+        super.setNavigation()
+        navigationItem.rightBarButtonItem = locationBarButtonItem
+    }
+
     override func bind() {
         let input = MainHomeViewModelInput(
             viewDidLoad: viewDidLoadSubject.eraseToAnyPublisher(),
             viewWillAppear: viewWillAppearSubject.eraseToAnyPublisher(),
             shakeMotion: shakeMotionSubject.eraseToAnyPublisher(),
+            locationRequest: locationRequestSubject.eraseToAnyPublisher(),
             didRequestRetry: didRequestRetrySubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
@@ -183,6 +196,12 @@ final class MainHomeViewController: MainBaseViewController {
         output.state
             .sink { [weak self] state in
                 self?.apply(state)
+            }
+            .store(in: &cancellables)
+
+        output.locationState
+            .sink { [weak self] state in
+                self?.apply(locationState: state)
             }
             .store(in: &cancellables)
 
@@ -276,6 +295,26 @@ final class MainHomeViewController: MainBaseViewController {
             loadingIndicator.stopAnimating()
             errorView.configure(message: failure.message, title: failure.title)
             collectionView.reloadData()
+        }
+    }
+
+    private func apply(locationState: MainHomeLocationState) {
+        switch locationState {
+        case .idle:
+            locationBarButtonItem.image = UIImage(systemName: "location.fill")
+            locationBarButtonItem.isEnabled = true
+
+        case .refreshing:
+            locationBarButtonItem.image = UIImage(
+                systemName: "location.fill.viewfinder"
+            )
+            locationBarButtonItem.isEnabled = false
+
+        case .failed:
+            locationBarButtonItem.image = UIImage(
+                systemName: "location.slash.fill"
+            )
+            locationBarButtonItem.isEnabled = true
         }
     }
 

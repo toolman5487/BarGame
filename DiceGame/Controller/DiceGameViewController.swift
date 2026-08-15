@@ -254,10 +254,14 @@ extension DiceGameViewController {
 
     convenience init(
         configuration: DiceGameConfiguration,
+        location: GameLocationSnapshot?,
         recordStore: any DiceGameRecordStoring
     ) {
         let startedAt = Date()
-        let eventContext = GameEventContext(startedAt: startedAt)
+        let eventContext = GameEventContext(
+            startedAt: startedAt,
+            location: location
+        )
         let sessionContext = GameSessionContext(
             event: eventContext,
             identity: configuration.gameID.identity,

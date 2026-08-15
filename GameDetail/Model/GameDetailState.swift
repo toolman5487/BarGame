@@ -11,6 +11,15 @@ nonisolated struct GameDetailState: Equatable, Sendable {
 
     let sections: [GameDetailSection]
 
+    var isLocationRequestInProgress: Bool {
+        for section in sections {
+            guard case .location(let state) = section else { continue }
+            return state.isRequestInProgress
+        }
+
+        return false
+    }
+
     func updatingRecords(
         recentRecordsState: GameDetailRecentRecordsState,
         statisticsState: GameDetailStatisticsState
@@ -24,7 +33,7 @@ nonisolated struct GameDetailState: Equatable, Sendable {
                 case .recentRecords:
                     return .recentRecords(recentRecordsState)
 
-                case .rules, .settings:
+                case .rules, .settings, .location:
                     return section
                 }
             }
@@ -44,10 +53,38 @@ nonisolated struct GameDetailState: Equatable, Sendable {
                 case .recentRecords:
                     return section
 
+                case .location:
+                    return section
+
                 case .settings(let settings):
                     return .settings(
                         settings.map { $0.applying(change) }
                     )
+                }
+            }
+        )
+    }
+
+    func updatingLocationState(
+        _ locationState: GameDetailLocationState
+    ) -> GameDetailState {
+        GameDetailState(
+            sections: sections.map { section in
+                switch section {
+                case .location:
+                    return .location(locationState)
+
+                case .rules:
+                    return section
+
+                case .settings:
+                    return section
+
+                case .statistics:
+                    return section
+
+                case .recentRecords:
+                    return section
                 }
             }
         )
@@ -61,8 +98,18 @@ nonisolated struct GameDetailState: Equatable, Sendable {
         )
         return .dice(
             gameID: gameID,
-            settings: diceGameSettings ?? presetSettings
+            settings: diceGameSettings ?? presetSettings,
+            location: locationSnapshot
         )
+    }
+
+    private var locationSnapshot: GameLocationSnapshot? {
+        for section in sections {
+            guard case .location(let state) = section else { continue }
+            return state.snapshot
+        }
+
+        return nil
     }
 
     private var diceGameSettings: DiceGameSettings? {

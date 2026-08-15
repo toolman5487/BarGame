@@ -11,6 +11,7 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
 
     case rules([GameDetailRule])
     case settings([GameDetailSetting])
+    case location(GameDetailLocationState)
     case statistics(GameDetailStatisticsState)
     case recentRecords(GameDetailRecentRecordsState)
 
@@ -29,6 +30,7 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
             sections.append(.settings(settings))
         }
 
+        sections.append(.location(.notRequested))
         sections.append(.recentRecords(recentRecordsState))
         sections.append(.rules(GameDetailRuleCatalog.rules(for: gameID)))
 
@@ -42,6 +44,9 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
 
         case .settings:
             return "遊戲設定"
+
+        case .location:
+            return "賽局地點"
 
         case .statistics:
             return nil

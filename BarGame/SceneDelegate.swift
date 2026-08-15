@@ -20,6 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.overrideUserInterfaceStyle = .dark
         window.rootViewController = appComposition.makeMainTabBarController()
         window.makeKeyAndVisible()
+        appComposition.refreshLocationOnLaunch()
         self.appComposition = appComposition
         self.window = window
     }

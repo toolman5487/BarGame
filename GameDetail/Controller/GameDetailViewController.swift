@@ -28,6 +28,7 @@ final class GameDetailViewController: DetailBaseViewController {
         Never
     >()
     private let viewWillAppearSubject = PassthroughSubject<Void, Never>()
+    private let locationRequestSubject = PassthroughSubject<Void, Never>()
     private let startGameSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedState: GameDetailState
@@ -71,6 +72,7 @@ final class GameDetailViewController: DetailBaseViewController {
         collectionView.dataSource = self
         collectionView.register(GameDetailRuleCell.self)
         collectionView.register(GameDetailSettingCell.self)
+        collectionView.register(GameDetailLocationCell.self)
         collectionView.register(GameDetailStatisticsCell.self)
         collectionView.register(GameDetailRecentRecordsCell.self)
         collectionView.register(GameDetailTitleHeader.self)
@@ -109,10 +111,22 @@ final class GameDetailViewController: DetailBaseViewController {
                 height: GameDetailStatisticsCell.Metrics.preferredHeight
             )
 
-        case .recentRecords:
+        case .recentRecords(let state):
             return CGSize(
                 width: collectionView.bounds.width,
-                height: GameDetailRecentRecordsCell.Metrics.preferredHeight
+                height: GameDetailRecentRecordsCell.Metrics.preferredHeight(
+                    for: state
+                )
+            )
+
+        case .location:
+            let standardSize = super.collectionViewItemSize(
+                in: collectionView,
+                at: indexPath
+            )
+            return CGSize(
+                width: standardSize.width,
+                height: GameDetailLocationCell.Metrics.preferredHeight
             )
 
         case .settings:
@@ -137,6 +151,9 @@ final class GameDetailViewController: DetailBaseViewController {
             return collectionViewSectionInset
 
         case .settings:
+            return collectionViewSectionInset
+
+        case .location:
             return collectionViewSectionInset
 
         case .statistics:
@@ -179,6 +196,7 @@ final class GameDetailViewController: DetailBaseViewController {
         let input = GameDetailViewModelInput(
             viewWillAppear: viewWillAppearSubject.eraseToAnyPublisher(),
             settingChange: settingChangeSubject.eraseToAnyPublisher(),
+            locationRequest: locationRequestSubject.eraseToAnyPublisher(),
             startGame: startGameSubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
@@ -200,6 +218,7 @@ final class GameDetailViewController: DetailBaseViewController {
 
     private func apply(_ state: GameDetailState) {
         renderedState = state
+        bottomBar.isEnabled = !state.isLocationRequestInProgress
         collectionView.reloadData()
     }
 
@@ -230,6 +249,9 @@ extension GameDetailViewController: UICollectionViewDataSource {
 
         case .settings(let settings):
             return settings.count
+
+        case .location:
+            return 1
 
         case .statistics:
             return 1
@@ -268,6 +290,17 @@ extension GameDetailViewController: UICollectionViewDataSource {
             cell.configure(setting: settings[indexPath.item])
             cell.valueChanged = { [weak self] value in
                 self?.settingChangeSubject.send(.diceCount(value))
+            }
+            return cell
+
+        case .location(let state):
+            let cell = collectionView.dequeueReusableCell(
+                GameDetailLocationCell.self,
+                for: indexPath
+            )
+            cell.configure(state: state)
+            cell.locationRequest = { [weak self] in
+                self?.locationRequestSubject.send()
             }
             return cell
 

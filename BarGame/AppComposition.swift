@@ -24,14 +24,33 @@ final class AppComposition: AppScreenBuilding {
     // MARK: - Dependencies
 
     private let gameHistoryStore: GameHistoryStore
+    private let gameLocationProvider: any GameLocationProviding
+    private let gameLocationCache: any GameLocationCaching
+    private let gameLocationCoordinator: GameLocationCoordinator
 
     // MARK: - Lifecycle
 
-    init(modelContainer: ModelContainer = AppModelContainer.shared) {
+    init(
+        modelContainer: ModelContainer = AppModelContainer.shared,
+        gameLocationProvider: any GameLocationProviding =
+            CoreLocationGameLocationProvider(),
+        gameLocationCache: any GameLocationCaching =
+            UserDefaultsGameLocationCache()
+    ) {
         gameHistoryStore = GameHistoryStore(modelContainer: modelContainer)
+        self.gameLocationProvider = gameLocationProvider
+        self.gameLocationCache = gameLocationCache
+        gameLocationCoordinator = GameLocationCoordinator(
+            locationProvider: gameLocationProvider,
+            locationCache: gameLocationCache
+        )
     }
 
     // MARK: - Root
+
+    func refreshLocationOnLaunch() {
+        gameLocationCoordinator.refreshLocationOnLaunch()
+    }
 
     func makeMainTabBarController(
         configuration: MainTabBarConfiguration = .standard
@@ -49,8 +68,8 @@ final class AppComposition: AppScreenBuilding {
         case .home:
             return makeMainHomeViewController(title: item.title)
 
-        case .pageA:
-            return ViewController(title: item.title)
+        case .gameHistory:
+            return MainGameHistoryViewController(title: item.title)
 
         case .pageB:
             return ViewController(title: item.title)
@@ -67,7 +86,9 @@ final class AppComposition: AppScreenBuilding {
         let viewModel = GameDetailViewModel(
             gameID: game.id,
             initialState: initialState,
-            recordStore: gameHistoryStore
+            recordStore: gameHistoryStore,
+            locationProvider: gameLocationProvider,
+            locationCache: gameLocationCache
         )
         return GameDetailViewController(
             title: game.title,
@@ -81,7 +102,7 @@ final class AppComposition: AppScreenBuilding {
         for launchConfiguration: GameLaunchConfiguration
     ) -> UIViewController {
         switch launchConfiguration {
-        case .dice(let gameID, let settings):
+        case .dice(let gameID, let settings, let location):
             let standardConfiguration = DiceGameConfiguration.standard
             let configuration = DiceGameConfiguration(
                 gameID: gameID,
@@ -90,7 +111,10 @@ final class AppComposition: AppScreenBuilding {
                 maximumDiceCount: settings.maximumDiceCount,
                 hintText: standardConfiguration.hintText
             )
-            return makeDiceGameViewController(configuration: configuration)
+            return makeDiceGameViewController(
+                configuration: configuration,
+                location: location
+            )
         }
     }
 
@@ -99,7 +123,8 @@ final class AppComposition: AppScreenBuilding {
     private func makeMainHomeViewController(title: String) -> UIViewController {
         let viewModel = MainHomeViewModel(
             configuration: .standard,
-            statisticsReader: gameHistoryStore
+            statisticsReader: gameHistoryStore,
+            locationRefresher: gameLocationCoordinator
         )
         return MainHomeViewController(
             title: title,
@@ -109,10 +134,12 @@ final class AppComposition: AppScreenBuilding {
     }
 
     private func makeDiceGameViewController(
-        configuration: DiceGameConfiguration
+        configuration: DiceGameConfiguration,
+        location: GameLocationSnapshot?
     ) -> UIViewController {
         DiceGameViewController(
             configuration: configuration,
+            location: location,
             recordStore: gameHistoryStore
         )
     }

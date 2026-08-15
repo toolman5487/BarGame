@@ -14,6 +14,7 @@ struct GameDetailViewModelInput {
 
     let viewWillAppear: AnyPublisher<Void, Never>
     let settingChange: AnyPublisher<GameDetailSettingChange, Never>
+    let locationRequest: AnyPublisher<Void, Never>
     let startGame: AnyPublisher<Void, Never>
 }
 
@@ -40,6 +41,8 @@ final class GameDetailViewModel: GameDetailViewModeling {
 
     private let gameID: DiceGameID
     private let recordStore: any DiceGameRecordStoring
+    private let locationProvider: any GameLocationProviding
+    private let locationCache: any GameLocationCaching
     private let stateSubject: CurrentValueSubject<GameDetailState, Never>
     private let launchConfigurationSubject = PassthroughSubject<
         GameLaunchConfiguration,
@@ -47,6 +50,8 @@ final class GameDetailViewModel: GameDetailViewModeling {
     >()
     private var cancellables = Set<AnyCancellable>()
     private var loadRecordsTask: Task<Void, Never>?
+    private var cachedLocationTask: Task<Void, Never>?
+    private var locationTask: Task<Void, Never>?
 
     private var state: GameDetailState {
         stateSubject.value
@@ -55,15 +60,21 @@ final class GameDetailViewModel: GameDetailViewModeling {
     init(
         gameID: DiceGameID,
         initialState: GameDetailState,
-        recordStore: any DiceGameRecordStoring
+        recordStore: any DiceGameRecordStoring,
+        locationProvider: any GameLocationProviding,
+        locationCache: any GameLocationCaching
     ) {
         self.gameID = gameID
         self.recordStore = recordStore
+        self.locationProvider = locationProvider
+        self.locationCache = locationCache
         stateSubject = CurrentValueSubject(initialState)
     }
 
     deinit {
         loadRecordsTask?.cancel()
+        cachedLocationTask?.cancel()
+        locationTask?.cancel()
     }
 
     func transform(input: GameDetailViewModelInput) -> GameDetailViewModelOutput {
@@ -71,6 +82,7 @@ final class GameDetailViewModel: GameDetailViewModeling {
 
         input.viewWillAppear
             .sink { [weak self] in
+                self?.loadCachedLocation()
                 self?.loadRecords()
             }
             .store(in: &cancellables)
@@ -78,6 +90,12 @@ final class GameDetailViewModel: GameDetailViewModeling {
         input.settingChange
             .sink { [weak self] change in
                 self?.updateSetting(with: change)
+            }
+            .store(in: &cancellables)
+
+        input.locationRequest
+            .sink { [weak self] in
+                self?.requestCurrentLocation()
             }
             .store(in: &cancellables)
 
@@ -102,9 +120,117 @@ final class GameDetailViewModel: GameDetailViewModeling {
     }
 
     private func prepareGameLaunch() {
+        guard !state.isLocationRequestInProgress else { return }
         launchConfigurationSubject.send(
             state.launchConfiguration(for: gameID)
         )
+    }
+
+    private func requestCurrentLocation() {
+        locationTask?.cancel()
+
+        switch locationProvider.authorizationState() {
+        case .notDetermined:
+            updateLocationState(.requestingAuthorization)
+
+        case .authorized:
+            updateLocationState(.locating)
+
+        case .denied:
+            updateLocationState(.authorizationDenied)
+            return
+
+        case .restricted:
+            updateLocationState(.authorizationRestricted)
+            return
+
+        case .servicesDisabled:
+            updateLocationState(.servicesDisabled)
+            return
+        }
+
+        locationTask = Task { [
+            weak self,
+            locationProvider,
+            locationCache,
+        ] in
+            do {
+                let snapshot = try await locationProvider.currentLocationSnapshot()
+                try Task.checkCancellation()
+                await locationCache.save(snapshot)
+                self?.updateLocationState(.located(snapshot))
+            } catch is CancellationError {
+                return
+            } catch let error as GameLocationProviderError {
+                self?.handleLocationError(error)
+            } catch {
+                self?.updateLocationState(.locationUnavailable)
+            }
+        }
+    }
+
+    private func handleLocationError(_ error: GameLocationProviderError) {
+        switch error {
+        case .servicesDisabled:
+            updateLocationState(.servicesDisabled)
+
+        case .authorizationDenied:
+            updateLocationState(.authorizationDenied)
+
+        case .authorizationRestricted:
+            updateLocationState(.authorizationRestricted)
+
+        case .locationUnavailable:
+            updateLocationState(.locationUnavailable)
+
+        case .timedOut:
+            updateLocationState(.timedOut)
+
+        case .reverseGeocodingFailed:
+            updateLocationState(.reverseGeocodingFailed)
+        }
+    }
+
+    private func updateLocationState(_ locationState: GameDetailLocationState) {
+        stateSubject.send(state.updatingLocationState(locationState))
+    }
+
+    private func loadCachedLocation() {
+        cachedLocationTask?.cancel()
+        cachedLocationTask = Task { [weak self, locationCache] in
+            let snapshot = await locationCache.snapshot()
+            guard !Task.isCancelled else { return }
+
+            guard let self,
+                  !state.isLocationRequestInProgress
+            else { return }
+
+            guard let snapshot else {
+                updateLocationStateFromAuthorization()
+                return
+            }
+
+            updateLocationState(.located(snapshot))
+        }
+    }
+
+    private func updateLocationStateFromAuthorization() {
+        switch locationProvider.authorizationState() {
+        case .notDetermined:
+            updateLocationState(.notRequested)
+
+        case .authorized:
+            updateLocationState(.notRequested)
+
+        case .denied:
+            updateLocationState(.authorizationDenied)
+
+        case .restricted:
+            updateLocationState(.authorizationRestricted)
+
+        case .servicesDisabled:
+            updateLocationState(.servicesDisabled)
+        }
     }
 
     private func loadRecords() {

@@ -12,7 +12,7 @@ import Foundation
 nonisolated enum MainTab: Int, CaseIterable, Sendable {
 
     case home = 0
-    case pageA = 1
+    case gameHistory = 1
     case pageB = 2
     case pageC = 3
     
@@ -49,10 +49,10 @@ nonisolated struct MainTabBarConfiguration: Sendable {
                 selectedImageSystemName: "dice.fill"
             ),
             MainTabItem(
-                tab: .pageA,
-                title: "頁面A",
-                imageSystemName: "flag.2.crossed",
-                selectedImageSystemName: "flag.pattern.checkered.2.crossed"
+                tab: .gameHistory,
+                title: "戰績",
+                imageSystemName: "chart.bar",
+                selectedImageSystemName: "chart.bar.fill"
             ),
             MainTabItem(
                 tab: .pageB,
