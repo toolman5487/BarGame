@@ -25,6 +25,16 @@ protocol GameDetailRouting: AnyObject {
 @MainActor
 final class GameDetailRouter: BaseRouter, GameDetailRouting {
 
+    private let screenBuilder: any AppScreenBuilding
+
+    init(
+        sourceViewController: UIViewController,
+        screenBuilder: any AppScreenBuilding
+    ) {
+        self.screenBuilder = screenBuilder
+        super.init(sourceViewController: sourceViewController)
+    }
+
     func route(to route: GameDetailRoute) {
         switch route {
         case .startGame(let configuration):
@@ -33,21 +43,12 @@ final class GameDetailRouter: BaseRouter, GameDetailRouting {
     }
 
     private func showGame(using launchConfiguration: GameLaunchConfiguration) {
-        switch launchConfiguration {
-        case .dice(let gameID, let settings):
-            let standardConfiguration = DiceGameConfiguration.standard
-            let configuration = DiceGameConfiguration(
-                gameID: gameID,
-                title: gameID.title,
-                initialDiceCountState: settings.initialDiceCountState,
-                maximumDiceCount: settings.maximumDiceCount,
-                hintText: standardConfiguration.hintText
-            )
-            let destination = DiceGameViewController(configuration: configuration)
-            let navigationController = UINavigationController(
-                rootViewController: destination
-            )
-            show(navigationController, using: .fullScreen)
-        }
+        let destination = screenBuilder.makeGameViewController(
+            for: launchConfiguration
+        )
+        let navigationController = UINavigationController(
+            rootViewController: destination
+        )
+        show(navigationController, using: .fullScreen)
     }
 }

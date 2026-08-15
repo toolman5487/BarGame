@@ -27,6 +27,16 @@ protocol MainHomeRouting: AnyObject {
 @MainActor
 final class MainHomeRouter: BaseRouter, MainHomeRouting {
 
+    private let screenBuilder: any AppScreenBuilding
+
+    init(
+        sourceViewController: UIViewController,
+        screenBuilder: any AppScreenBuilding
+    ) {
+        self.screenBuilder = screenBuilder
+        super.init(sourceViewController: sourceViewController)
+    }
+
     func route(to route: MainHomeRoute) {
         switch route {
         case .game(let game):
@@ -39,6 +49,6 @@ final class MainHomeRouter: BaseRouter, MainHomeRouting {
     // MARK: - Private
 
     private func makeGameViewController(for game: DiceGame) -> UIViewController {
-        GameDetailViewController(game: game)
+        screenBuilder.makeGameDetailViewController(for: game)
     }
 }

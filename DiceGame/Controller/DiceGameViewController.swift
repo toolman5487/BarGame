@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 import SnapKit
 import UIKit
 
@@ -252,14 +253,13 @@ final class DiceGameViewController: StandardBaseViewController {
 extension DiceGameViewController {
 
     convenience init(
-        configuration: DiceGameConfiguration = .standard,
-        eventContext: GameEventContext? = nil,
-        recordStore: any DiceGameRecordStoring = GameHistoryStore.shared
+        configuration: DiceGameConfiguration,
+        recordStore: any DiceGameRecordStoring
     ) {
         let startedAt = Date()
-        let resolvedEventContext = eventContext ?? GameEventContext(startedAt: startedAt)
+        let eventContext = GameEventContext(startedAt: startedAt)
         let sessionContext = GameSessionContext(
-            event: resolvedEventContext,
+            event: eventContext,
             identity: configuration.gameID.identity,
             rulesVersion: configuration.gameID.currentRulesVersion,
             startedAt: startedAt

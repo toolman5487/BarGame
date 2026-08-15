@@ -15,8 +15,10 @@ final class GameDetailViewController: DetailBaseViewController {
     // MARK: - Dependencies
 
     private let viewModel: any GameDetailViewModeling
+    private let screenBuilder: any AppScreenBuilding
     private lazy var router: any GameDetailRouting = GameDetailRouter(
-        sourceViewController: self
+        sourceViewController: self,
+        screenBuilder: screenBuilder
     )
 
     // MARK: - State
@@ -41,20 +43,15 @@ final class GameDetailViewController: DetailBaseViewController {
     // MARK: - Lifecycle
 
     init(
-        game: DiceGame,
-        sections: [GameDetailSection]? = nil,
-        recordStore: any DiceGameRecordStoring = GameHistoryStore.shared
+        title: String,
+        initialState: GameDetailState,
+        viewModel: any GameDetailViewModeling,
+        screenBuilder: any AppScreenBuilding
     ) {
-        let initialState = GameDetailState(
-            sections: sections ?? GameDetailSection.standard(for: game.id)
-        )
-        viewModel = GameDetailViewModel(
-            gameID: game.id,
-            initialState: initialState,
-            recordStore: recordStore
-        )
+        self.viewModel = viewModel
+        self.screenBuilder = screenBuilder
         renderedState = initialState
-        super.init(title: game.title)
+        super.init(title: title)
     }
 
     @available(*, unavailable)

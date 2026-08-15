@@ -14,6 +14,7 @@ final class MainTabBarController: UITabBarController {
     // MARK: - Dependencies
 
     private let viewModel: any MainTabBarViewModeling
+    private let screenBuilder: any AppScreenBuilding
 
     // MARK: - State
 
@@ -24,8 +25,12 @@ final class MainTabBarController: UITabBarController {
 
     // MARK: - Lifecycle
 
-    init(viewModel: any MainTabBarViewModeling) {
+    init(
+        viewModel: any MainTabBarViewModeling,
+        screenBuilder: any AppScreenBuilding
+    ) {
         self.viewModel = viewModel
+        self.screenBuilder = screenBuilder
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -109,19 +114,7 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func makeRootViewController(for item: MainTabItem) -> UIViewController {
-        switch item.tab {
-        case .home:
-            return MainHomeViewController(title: item.title)
-
-        case .pageA:
-            return ViewController(title: item.title)
-
-        case .pageB:
-            return ViewController(title: item.title)
-
-        case .pageC:
-            return ViewController(title: item.title)
-        }
+        screenBuilder.makeRootViewController(for: item)
     }
 }
 
@@ -137,15 +130,5 @@ extension MainTabBarController: UITabBarControllerDelegate {
             return
         }
         didSelectTabSubject.send(tab)
-    }
-}
-
-// MARK: - Composition
-
-extension MainTabBarController {
-
-    convenience init(configuration: MainTabBarConfiguration = .standard) {
-        let viewModel = MainTabBarViewModel(configuration: configuration)
-        self.init(viewModel: viewModel)
     }
 }

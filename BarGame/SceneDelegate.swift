@@ -10,14 +10,17 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    private var appComposition: AppComposition?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
 
+        let appComposition = AppComposition()
         let window = UIWindow(windowScene: windowScene)
         window.overrideUserInterfaceStyle = .dark
-        window.rootViewController = MainTabBarController()
+        window.rootViewController = appComposition.makeMainTabBarController()
         window.makeKeyAndVisible()
+        self.appComposition = appComposition
         self.window = window
     }
 

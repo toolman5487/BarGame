@@ -17,12 +17,7 @@ nonisolated enum GameHistoryStoreError: Error, Equatable, Sendable {
 }
 
 @ModelActor
-actor GameHistoryStore {
-
-    nonisolated static let shared = GameHistoryStore(
-        modelContainer: AppModelContainer.shared
-    )
-}
+actor GameHistoryStore {}
 
 extension GameHistoryStore: GameStatisticsReading {
 

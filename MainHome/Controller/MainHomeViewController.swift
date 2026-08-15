@@ -22,8 +22,10 @@ final class MainHomeViewController: MainBaseViewController {
     // MARK: - Dependencies
 
     private let viewModel: any MainHomeViewModeling
+    private let screenBuilder: any AppScreenBuilding
     private lazy var router: any MainHomeRouting = MainHomeRouter(
-        sourceViewController: self
+        sourceViewController: self,
+        screenBuilder: screenBuilder
     )
 
     // MARK: - State
@@ -53,9 +55,11 @@ final class MainHomeViewController: MainBaseViewController {
 
     init(
         title: String,
-        viewModel: any MainHomeViewModeling
+        viewModel: any MainHomeViewModeling,
+        screenBuilder: any AppScreenBuilding
     ) {
         self.viewModel = viewModel
+        self.screenBuilder = screenBuilder
         super.init(title: title)
     }
 
@@ -348,22 +352,5 @@ extension MainHomeViewController: UICollectionViewDataSource {
             title: renderedSnapshot?.sections[indexPath.section].headerTitle ?? ""
         )
         return header
-    }
-}
-
-// MARK: - Composition
-
-extension MainHomeViewController {
-
-    convenience init(
-        title: String,
-        configuration: MainHomeConfiguration = .standard,
-        statisticsReader: any GameStatisticsReading = GameHistoryStore.shared
-    ) {
-        let viewModel = MainHomeViewModel(
-            configuration: configuration,
-            statisticsReader: statisticsReader
-        )
-        self.init(title: title, viewModel: viewModel)
     }
 }
