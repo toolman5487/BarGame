@@ -109,7 +109,18 @@ extension GameHistoryStore: DiceGameRecordStoring {
     private func storedMatches(
         matching query: DiceGameRecordQuery
     ) throws -> [StoredGameMatch] {
-        let sortBy = [SortDescriptor(\StoredGameMatch.playedAt, order: .reverse)]
+        let sortBy: [SortDescriptor<StoredGameMatch>]
+        switch query.sortOrder {
+        case .newest:
+            sortBy = [
+                SortDescriptor(\StoredGameMatch.playedAt, order: .reverse),
+            ]
+
+        case .oldest:
+            sortBy = [
+                SortDescriptor(\StoredGameMatch.playedAt, order: .forward),
+            ]
+        }
 
         switch (query.outcome, query.dateInterval) {
         case (nil, nil):

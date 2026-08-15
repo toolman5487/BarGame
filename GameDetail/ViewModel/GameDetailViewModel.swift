@@ -149,7 +149,7 @@ final class GameDetailViewModel: GameDetailViewModeling {
             return
         }
 
-        locationTask = Task { [
+        locationTask = Task(priority: .userInitiated) { [
             weak self,
             locationProvider,
             locationCache,
@@ -197,7 +197,10 @@ final class GameDetailViewModel: GameDetailViewModeling {
 
     private func loadCachedLocation() {
         cachedLocationTask?.cancel()
-        cachedLocationTask = Task { [weak self, locationCache] in
+        cachedLocationTask = Task(priority: .userInitiated) { [
+            weak self,
+            locationCache,
+        ] in
             let snapshot = await locationCache.snapshot()
             guard !Task.isCancelled else { return }
 
@@ -241,7 +244,10 @@ final class GameDetailViewModel: GameDetailViewModeling {
         )
 
         let gameID = gameID
-        loadRecordsTask = Task { [weak self, recordStore] in
+        loadRecordsTask = Task(priority: .userInitiated) { [
+            weak self,
+            recordStore,
+        ] in
             do {
                 let records = try await recordStore.records(
                     matching: DiceGameRecordQuery(gameID: gameID)

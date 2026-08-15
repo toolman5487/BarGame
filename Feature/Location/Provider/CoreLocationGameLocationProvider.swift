@@ -16,10 +16,6 @@ nonisolated struct CoreLocationGameLocationProvider: GameLocationProviding {
     }
 
     func authorizationState() -> GameLocationAuthorizationState {
-        guard CLLocationManager.locationServicesEnabled() else {
-            return .servicesDisabled
-        }
-
         switch CLLocationManager().authorizationStatus {
         case .notDetermined:
             return .notDetermined
@@ -61,11 +57,12 @@ nonisolated struct CoreLocationGameLocationProvider: GameLocationProviding {
     }
 
     private func currentLocation() async throws -> CLLocation {
-        try await withThrowingTaskGroup(of: CLLocation.self) { group in
-            group.addTask {
+        let priority = Task<Never, Never>.currentPriority
+        return try await withThrowingTaskGroup(of: CLLocation.self) { group in
+            group.addTask(priority: priority) {
                 try await waitForLocationUpdate()
             }
-            group.addTask {
+            group.addTask(priority: priority) {
                 try await Task.sleep(for: Configuration.timeout)
                 throw GameLocationProviderError.timedOut
             }

@@ -40,22 +40,31 @@ nonisolated struct DiceGameMatchRecord: Equatable, Identifiable, Sendable {
     }
 }
 
+nonisolated enum DiceGameRecordSortOrder: Equatable, Sendable {
+
+    case newest
+    case oldest
+}
+
 nonisolated struct DiceGameRecordQuery: Equatable, Sendable {
 
     let gameID: DiceGameID?
     let outcome: GameOutcome?
     let dateInterval: DateInterval?
     let limit: Int?
+    let sortOrder: DiceGameRecordSortOrder
 
     init(
         gameID: DiceGameID? = nil,
         outcome: GameOutcome? = nil,
         dateInterval: DateInterval? = nil,
-        limit: Int? = nil
+        limit: Int? = nil,
+        sortOrder: DiceGameRecordSortOrder = .newest
     ) {
         self.gameID = gameID
         self.outcome = outcome
         self.dateInterval = dateInterval
         self.limit = limit.map { max($0, 0) }
+        self.sortOrder = sortOrder
     }
 }

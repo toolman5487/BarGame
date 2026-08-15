@@ -27,20 +27,27 @@ final class GameLocationCoordinator: GameLocationRefreshing {
     }
 
     func refreshLocation() async throws {
-        let task = startLocationRefresh(removesCachedSnapshot: false)
+        let task = startLocationRefresh(
+            removesCachedSnapshot: false,
+            priority: .userInitiated
+        )
         try await task.value
     }
 
     func refreshLocationOnLaunch() {
-        startLocationRefresh(removesCachedSnapshot: true)
+        startLocationRefresh(
+            removesCachedSnapshot: true,
+            priority: .utility
+        )
     }
 
     @discardableResult
     private func startLocationRefresh(
-        removesCachedSnapshot: Bool
+        removesCachedSnapshot: Bool,
+        priority: TaskPriority
     ) -> Task<Void, any Error> {
         refreshTask?.cancel()
-        let task = Task { [locationProvider, locationCache] in
+        let task = Task(priority: priority) { [locationProvider, locationCache] in
             if removesCachedSnapshot {
                 await locationCache.removeSnapshot()
             }

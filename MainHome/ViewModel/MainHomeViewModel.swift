@@ -198,7 +198,10 @@ final class MainHomeViewModel: MainHomeViewModeling {
         guard locationStateSubject.value == .idle else { return }
 
         locationStateSubject.send(.refreshing)
-        locationRefreshTask = Task { [weak self, locationRefresher] in
+        locationRefreshTask = Task(priority: .userInitiated) { [
+            weak self,
+            locationRefresher,
+        ] in
             do {
                 try await locationRefresher.refreshLocation()
                 try Task.checkCancellation()
@@ -239,7 +242,10 @@ final class MainHomeViewModel: MainHomeViewModeling {
         }
 
         let games = snapshot.games
-        loadContentTask = Task { [weak self, statisticsReader] in
+        loadContentTask = Task(priority: .userInitiated) { [
+            weak self,
+            statisticsReader,
+        ] in
             do {
                 let statisticsByGameID = try await statisticsReader.statistics(
                     for: games.map(\.id)

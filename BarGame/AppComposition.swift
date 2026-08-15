@@ -69,7 +69,7 @@ final class AppComposition: AppScreenBuilding {
             return makeMainHomeViewController(title: item.title)
 
         case .gameHistory:
-            return MainGameHistoryViewController(title: item.title)
+            return makeMainGameHistoryViewController(title: item.title)
 
         case .pageB:
             return ViewController(title: item.title)
@@ -130,6 +130,18 @@ final class AppComposition: AppScreenBuilding {
             title: title,
             viewModel: viewModel,
             screenBuilder: self
+        )
+    }
+
+    private func makeMainGameHistoryViewController(
+        title: String
+    ) -> UIViewController {
+        let viewModel = MainGameHistoryViewModel(
+            recordStore: gameHistoryStore
+        )
+        return MainGameHistoryViewController(
+            title: title,
+            viewModel: viewModel
         )
     }
 
