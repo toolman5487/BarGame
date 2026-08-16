@@ -20,6 +20,7 @@ nonisolated enum DiceGameRecordStoreError: Error, Equatable, Sendable {
 
     case duplicateRecord(UUID)
     case recordNotFound(UUID)
+    case invalidMatchStructure(UUID)
     case invalidDiceValues
     case invalidStoredRecord(UUID)
     case gameIdentityMismatch(UUID)

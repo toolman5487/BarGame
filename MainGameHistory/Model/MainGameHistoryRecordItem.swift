@@ -19,16 +19,26 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
     init(
         record: DiceGameMatchRecord,
         calendar: Calendar = .current
-    ) {
+    ) throws {
+        guard let diceResult = record.latestConfirmedRoll?.result else {
+            throw DiceGameMatchRecordError.missingConfirmedRoll(record.id)
+        }
+
         id = record.id
         gameTitle = record.gameID.title
         outcome = record.outcome
         outcomeText = record.outcome == .win ? "勝" : "敗"
 
-        let diceText = record.diceResult.values
+        let diceText = diceResult.values
             .map(String.init)
             .joined(separator: "、")
-        resultText = "\(record.diceResult.total) 點 · \(diceText)"
+        switch record.rounds.count {
+        case 1:
+            resultText = "\(diceResult.total) 點 · \(diceText)"
+
+        default:
+            resultText = "\(record.rounds.count) 回合 · 最後 \(diceResult.total) 點"
+        }
 
         let dateText = Self.makeDateText(
             for: record.playedAt,

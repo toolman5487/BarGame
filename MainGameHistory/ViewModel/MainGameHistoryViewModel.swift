@@ -169,8 +169,8 @@ final class MainGameHistoryViewModel: MainGameHistoryViewModeling {
             do {
                 let records = try await recordStore.records(matching: query)
                 try Task.checkCancellation()
-                let items = records.map {
-                    MainGameHistoryRecordItem(
+                let items = try records.map {
+                    try MainGameHistoryRecordItem(
                         record: $0,
                         calendar: calendar
                     )

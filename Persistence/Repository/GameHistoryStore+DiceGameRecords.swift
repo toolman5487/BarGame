@@ -43,19 +43,10 @@ extension GameHistoryStore: DiceGameRecordStoring {
               session.rulesVersion == record.sessionContext.rulesVersion else {
             throw DiceGameRecordStoreError.immutableSessionChanged(record.id)
         }
-        guard let round = match.rounds.min(by: { $0.sequence < $1.sequence }),
-              let roll = round.diceRolls.min(by: { $0.sequence < $1.sequence }) else {
-            throw DiceGameRecordStoreError.invalidStoredRecord(record.id)
-        }
 
-        match.outcomeRawValue = record.outcome.rawValue
-        match.playedAt = record.playedAt
-        round.startedAt = record.playedAt
-        round.endedAt = record.playedAt
-        roll.rolledAt = record.playedAt
-        DiceGameRecordMapper.replaceDiceResults(
-            in: roll,
-            with: record.diceResult.values,
+        DiceGameRecordMapper.updateStoredMatch(
+            match,
+            from: record,
             modelContext: modelContext
         )
         recalculateDateRange(for: session)

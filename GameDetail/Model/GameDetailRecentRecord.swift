@@ -20,10 +20,17 @@ nonisolated struct GameDetailRecentRecord: Equatable, Identifiable, Sendable {
         "\(points) 點"
     }
 
-    init(record: DiceGameMatchRecord, calendar: Calendar = .current) {
+    init(
+        record: DiceGameMatchRecord,
+        calendar: Calendar = .current
+    ) throws {
+        guard let diceResult = record.latestConfirmedRoll?.result else {
+            throw DiceGameMatchRecordError.missingConfirmedRoll(record.id)
+        }
+
         id = record.id
         outcome = record.outcome
-        points = record.diceResult.total
+        points = diceResult.total
         subtitle = Self.makeSubtitle(for: record.playedAt, calendar: calendar)
     }
 

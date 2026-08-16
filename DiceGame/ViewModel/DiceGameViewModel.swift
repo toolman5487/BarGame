@@ -322,15 +322,11 @@ final class DiceGameViewModel: DiceGameViewModeling {
         )
 
         saveRecordTask?.cancel()
-        let record = DiceGameMatchRecord(
-            id: UUID(),
-            sessionContext: sessionContext,
-            gameID: gameID,
-            outcome: outcome,
-            diceResult: result,
-            playedAt: Date()
-        )
-        saveRecordTask = Task { [weak self, recordStore] in
+        let record = makeMatchRecord(outcome: outcome, diceResult: result)
+        saveRecordTask = Task(priority: .userInitiated) { [
+            weak self,
+            recordStore,
+        ] in
             do {
                 try await recordStore.insert(record)
                 try Task.checkCancellation()
@@ -387,6 +383,34 @@ final class DiceGameViewModel: DiceGameViewModeling {
             )
         )
         commandSubject.send(.showError(.recordSaveFailed))
+    }
+
+    private func makeMatchRecord(
+        outcome: GameOutcome,
+        diceResult: DiceRollResult
+    ) -> DiceGameMatchRecord {
+        let playedAt = Date()
+        let roll = DiceRollRecord(
+            sequence: 1,
+            rolledAt: playedAt,
+            status: .confirmed,
+            sidesPerDie: gameID.allowedFaceValues.upperBound,
+            result: diceResult
+        )
+        let round = DiceGameRoundRecord(
+            sequence: 1,
+            startedAt: playedAt,
+            endedAt: playedAt,
+            diceRolls: [roll]
+        )
+        return DiceGameMatchRecord(
+            id: UUID(),
+            sessionContext: sessionContext,
+            gameID: gameID,
+            outcome: outcome,
+            rounds: [round],
+            playedAt: playedAt
+        )
     }
 
     private func makeExpandedResultState(
