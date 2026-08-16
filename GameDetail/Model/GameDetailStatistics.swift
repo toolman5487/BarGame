@@ -7,60 +7,32 @@
 
 import Foundation
 
-// MARK: - Streak
-
-nonisolated enum GameDetailStreak: Equatable, Sendable {
-
-    case win(Int)
-    case loss(Int)
-
-    var displayText: String {
-        switch self {
-        case .win(let count):
-            return "\(count) 連勝"
-
-        case .loss(let count):
-            return "\(count) 連敗"
-        }
-    }
-}
-
 // MARK: - Statistics
 
 nonisolated struct GameDetailStatistics: Equatable, Sendable {
 
     let wins: Int
     let losses: Int
+    let draws: Int
     let totalPoints: Int
-    let currentStreak: GameDetailStreak
+    let currentStreak: MatchOutcomeStreak
 
-    init(records: [GameDetailRecentRecord]) {
-        precondition(!records.isEmpty, "Statistics require at least one record")
-
-        var wins = 0
-        var losses = 0
-        var totalPoints = 0
-
-        records.forEach { record in
-            switch record.outcome {
-            case .win:
-                wins += 1
-
-            case .loss:
-                losses += 1
-            }
-
-            totalPoints += record.points
+    init(statistics: GameStatistics) {
+        guard statistics.completedGames > 0,
+              let currentStreak = statistics.currentStreak
+        else {
+            preconditionFailure("Statistics require completed games and a streak")
         }
 
-        self.wins = wins
-        self.losses = losses
-        self.totalPoints = totalPoints
-        currentStreak = Self.makeCurrentStreak(from: records)
+        wins = statistics.wins
+        losses = statistics.losses
+        draws = statistics.draws
+        totalPoints = statistics.totalPoints
+        self.currentStreak = currentStreak
     }
 
     var completedGames: Int {
-        wins + losses
+        wins + losses + draws
     }
 
     var winRate: Double {
@@ -71,21 +43,6 @@ nonisolated struct GameDetailStatistics: Equatable, Sendable {
     var averagePoints: Double {
         guard completedGames > 0 else { return 0 }
         return Double(totalPoints) / Double(completedGames)
-    }
-
-    private static func makeCurrentStreak(
-        from records: [GameDetailRecentRecord]
-    ) -> GameDetailStreak {
-        let outcome = records[0].outcome
-        let count = records.prefix { $0.outcome == outcome }.count
-
-        switch outcome {
-        case .win:
-            return .win(count)
-
-        case .loss:
-            return .loss(count)
-        }
     }
 }
 
@@ -98,27 +55,13 @@ nonisolated enum GameDetailStatisticsState: Equatable, Sendable {
     case content(GameDetailStatistics)
     case error(message: String)
 
-    init(records: [GameDetailRecentRecord]) {
-        guard !records.isEmpty else {
+    init(statistics: GameStatistics) {
+        guard statistics.completedGames > 0,
+              let _ = statistics.currentStreak
+        else {
             self = .empty
             return
         }
-        self = .content(GameDetailStatistics(records: records))
-    }
-
-    init(recentRecordsState: GameDetailRecentRecordsState) {
-        switch recentRecordsState {
-        case .loading:
-            self = .loading
-
-        case .empty:
-            self = .empty
-
-        case .content(let records):
-            self.init(records: records)
-
-        case .error(let message):
-            self = .error(message: message)
-        }
+        self = .content(GameDetailStatistics(statistics: statistics))
     }
 }

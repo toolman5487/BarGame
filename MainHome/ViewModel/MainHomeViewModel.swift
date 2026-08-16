@@ -311,7 +311,7 @@ final class MainHomeViewModel: MainHomeViewModeling {
         case .located(let snapshot):
             return .located(makeLocationItem(from: snapshot))
 
-        case .failed(let cachedSnapshot):
+        case .failed(let cachedSnapshot, _):
             return .failed(
                 cachedSnapshot.map { makeLocationItem(from: $0) }
             )

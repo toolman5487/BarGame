@@ -352,6 +352,10 @@ final class GameDetailRecentRecordItemCell: DetailBaseCollectionViewCell {
         case .loss:
             outcomeIconView.image = UIImage(systemName: "flag.fill")
             outcomeIconView.tintColor = .label
+
+        case .draw:
+            outcomeIconView.image = UIImage(systemName: "equal.circle.fill")
+            outcomeIconView.tintColor = ThemeColor.secondary
         }
     }
 }

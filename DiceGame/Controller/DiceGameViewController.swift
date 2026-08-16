@@ -36,7 +36,7 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private let primaryActionTappedSubject = PassthroughSubject<Void, Never>()
     private let capturedResultSubject = PassthroughSubject<DiceRollResult, Never>()
-    private let outcomeSelectedSubject = PassthroughSubject<GameOutcome, Never>()
+    private let outcomeSelectedSubject = PassthroughSubject<RoundOutcome, Never>()
     private let outcomeSelectionCancelledSubject = PassthroughSubject<Void, Never>()
     private let resultExpansionToggleSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
@@ -201,8 +201,8 @@ final class DiceGameViewController: StandardBaseViewController {
 
     private func showOutcomeSelection() {
         let alert = UIAlertController(
-            title: "這場比賽結果",
-            message: "請選擇這場比賽的勝負",
+            title: "這局結果",
+            message: "請選擇這一局的勝負",
             preferredStyle: .alert
         )
         alert.addAction(

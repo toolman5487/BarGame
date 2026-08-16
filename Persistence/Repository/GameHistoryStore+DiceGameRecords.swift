@@ -90,7 +90,7 @@ extension GameHistoryStore: DiceGameRecordStoring {
                 sessionContext: sessionContext(from: session)
             )
         }
-        let consolidatedRecords = consolidateMatches(records)
+        let filteredRecords = records
             .filter { record in
                 guard let outcome = query.outcome else { return true }
                 return record.outcome == outcome
@@ -110,8 +110,8 @@ extension GameHistoryStore: DiceGameRecordStoring {
                 }
             }
 
-        guard let limit = query.limit else { return consolidatedRecords }
-        return Array(consolidatedRecords.prefix(limit))
+        guard let limit = query.limit else { return filteredRecords }
+        return Array(filteredRecords.prefix(limit))
     }
 
     // MARK: - Query
@@ -136,45 +136,4 @@ extension GameHistoryStore: DiceGameRecordStoring {
         )
     }
 
-    private func consolidateMatches(
-        _ records: [DiceGameMatchRecord]
-    ) -> [DiceGameMatchRecord] {
-        Dictionary(grouping: records, by: { $0.sessionContext.id })
-            .values
-            .compactMap { makeConsolidatedMatch(from: $0) }
-    }
-
-    private func makeConsolidatedMatch(
-        from records: [DiceGameMatchRecord]
-    ) -> DiceGameMatchRecord? {
-        let orderedRecords = records.sorted { $0.playedAt < $1.playedAt }
-        guard let firstRecord = orderedRecords.first,
-              let latestRecord = orderedRecords.last else {
-            return nil
-        }
-
-        let rounds = orderedRecords
-            .flatMap { record in
-                record.rounds.sorted { $0.sequence < $1.sequence }
-            }
-            .enumerated()
-            .map { index, round in
-                DiceGameRoundRecord(
-                    id: round.id,
-                    sequence: index + 1,
-                    startedAt: round.startedAt,
-                    endedAt: round.endedAt,
-                    diceRolls: round.diceRolls
-                )
-            }
-
-        return DiceGameMatchRecord(
-            id: firstRecord.id,
-            sessionContext: firstRecord.sessionContext,
-            gameID: firstRecord.gameID,
-            outcome: latestRecord.outcome,
-            rounds: rounds,
-            playedAt: firstRecord.playedAt
-        )
-    }
 }

@@ -37,6 +37,10 @@ final class GameLocationCoordinator: GameLocationCoordinating {
         refreshTask?.cancel()
     }
 
+    func authorizationState() -> GameLocationAuthorizationState {
+        locationProvider.authorizationState()
+    }
+
     func refreshLocation() {
         startLocationRefresh(priority: .userInitiated)
     }
@@ -73,9 +77,16 @@ final class GameLocationCoordinator: GameLocationCoordinating {
                 self?.locationStateSubject.send(.located(snapshot))
             } catch is CancellationError {
                 return
+            } catch let error as GameLocationProviderError {
+                self?.locationStateSubject.send(
+                    .failed(cachedSnapshot: cachedSnapshot, error: error)
+                )
             } catch {
                 self?.locationStateSubject.send(
-                    .failed(cachedSnapshot: cachedSnapshot)
+                    .failed(
+                        cachedSnapshot: cachedSnapshot,
+                        error: .locationUnavailable
+                    )
                 )
             }
         }

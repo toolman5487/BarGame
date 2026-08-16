@@ -19,7 +19,7 @@ nonisolated enum AppModelContainer {
     }()
 
     static func make(isStoredInMemoryOnly: Bool = false) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: BarGameSchemaV1.self)
+        let schema = Schema(versionedSchema: BarGameSchema.self)
         let configuration = ModelConfiguration(
             "BarGame",
             schema: schema,
@@ -29,7 +29,6 @@ nonisolated enum AppModelContainer {
 
         return try ModelContainer(
             for: schema,
-            migrationPlan: BarGameMigrationPlan.self,
             configurations: configuration
         )
     }

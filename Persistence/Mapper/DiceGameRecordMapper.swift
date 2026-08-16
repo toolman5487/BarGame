@@ -22,6 +22,13 @@ nonisolated enum DiceGameRecordMapper {
             throw DiceGameRecordStoreError.invalidMatchStructure(record.id)
         }
 
+        let allRolls = record.rounds.flatMap(\.diceRolls)
+        let allDice = allRolls.flatMap(\.dice)
+        guard Set(allRolls.map(\.id)).count == allRolls.count,
+              Set(allDice.map(\.id)).count == allDice.count else {
+            throw DiceGameRecordStoreError.invalidMatchStructure(record.id)
+        }
+
         for round in record.rounds {
             guard !round.diceRolls.isEmpty,
                   Set(round.diceRolls.map(\.id)).count == round.diceRolls.count,
@@ -36,7 +43,9 @@ nonisolated enum DiceGameRecordMapper {
                 let dice = roll.dice
                 guard roll.sidesPerDie
                         == record.gameID.allowedFaceValues.upperBound,
-                      !dice.isEmpty,
+                      record.gameID.dicePreset.allowedDiceCount.contains(
+                          dice.count
+                      ),
                       Set(dice.map(\.id)).count == dice.count,
                       Set(dice.map(\.index)) == Set(dice.indices),
                       dice.allSatisfy({ die in
@@ -77,7 +86,9 @@ nonisolated enum DiceGameRecordMapper {
     ) throws -> DiceGameMatchRecord {
         guard let gameID = DiceGameID(rawValue: sessionContext.identity.variantID),
               gameID.identity == sessionContext.identity,
-              let outcome = GameOutcome(rawValue: match.outcomeRawValue) else {
+              let storedOutcome = MatchOutcome(
+                  rawValue: match.outcomeRawValue
+              ) else {
             throw DiceGameRecordStoreError.invalidStoredRecord(match.id)
         }
 
@@ -85,13 +96,15 @@ nonisolated enum DiceGameRecordMapper {
             id: match.id,
             sessionContext: sessionContext,
             gameID: gameID,
-            outcome: outcome,
             rounds: try match.rounds
                 .sorted { $0.sequence < $1.sequence }
                 .map { try makeRound(from: $0, matchID: match.id) },
             playedAt: match.playedAt
         )
         try validate(record)
+        guard record.outcome == storedOutcome else {
+            throw DiceGameRecordStoreError.invalidStoredRecord(match.id)
+        }
         return record
     }
 
@@ -117,6 +130,7 @@ nonisolated enum DiceGameRecordMapper {
             sequence: record.sequence,
             startedAt: record.startedAt,
             endedAt: record.endedAt,
+            outcomeRawValue: record.outcome.rawValue,
             diceRolls: record.diceRolls
                 .sorted { $0.sequence < $1.sequence }
                 .map(makeStoredRoll)
@@ -154,11 +168,16 @@ nonisolated enum DiceGameRecordMapper {
         from round: StoredGameRound,
         matchID: UUID
     ) throws -> DiceGameRoundRecord {
-        DiceGameRoundRecord(
+        guard let outcome = RoundOutcome(rawValue: round.outcomeRawValue) else {
+            throw DiceGameRecordStoreError.invalidStoredRecord(matchID)
+        }
+
+        return DiceGameRoundRecord(
             id: round.id,
             sequence: round.sequence,
             startedAt: round.startedAt,
             endedAt: round.endedAt,
+            outcome: outcome,
             diceRolls: try round.diceRolls
                 .sorted { $0.sequence < $1.sequence }
                 .map { try makeRoll(from: $0, matchID: matchID) }
@@ -211,6 +230,7 @@ nonisolated enum DiceGameRecordMapper {
                 round.sequence = record.sequence
                 round.startedAt = record.startedAt
                 round.endedAt = record.endedAt
+                round.outcomeRawValue = record.outcome.rawValue
                 synchronizeRolls(
                     in: round,
                     with: record.diceRolls,

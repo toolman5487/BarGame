@@ -26,7 +26,10 @@ nonisolated enum GameCurrentLocationState: Equatable, Sendable {
     case idle
     case refreshing(cachedSnapshot: GameCurrentLocationSnapshot?)
     case located(GameCurrentLocationSnapshot)
-    case failed(cachedSnapshot: GameCurrentLocationSnapshot?)
+    case failed(
+        cachedSnapshot: GameCurrentLocationSnapshot?,
+        error: GameLocationProviderError?
+    )
 
     var snapshot: GameCurrentLocationSnapshot? {
         switch self {
@@ -39,7 +42,7 @@ nonisolated enum GameCurrentLocationState: Equatable, Sendable {
         case .located(let snapshot):
             return snapshot
 
-        case .failed(let cachedSnapshot):
+        case .failed(let cachedSnapshot, _):
             return cachedSnapshot
         }
     }

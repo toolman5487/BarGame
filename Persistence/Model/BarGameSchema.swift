@@ -7,7 +7,7 @@
 
 import SwiftData
 
-nonisolated enum BarGameSchemaV1: VersionedSchema {
+nonisolated enum BarGameSchema: VersionedSchema {
 
     static let versionIdentifier = Schema.Version(1, 0, 0)
 
@@ -19,13 +19,4 @@ nonisolated enum BarGameSchemaV1: VersionedSchema {
         DiceRoll.self,
         DieResult.self,
     ]
-}
-
-nonisolated enum BarGameMigrationPlan: SchemaMigrationPlan {
-
-    static let schemas: [any VersionedSchema.Type] = [
-        BarGameSchemaV1.self,
-    ]
-
-    static let stages: [MigrationStage] = []
 }

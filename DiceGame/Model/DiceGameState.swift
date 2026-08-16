@@ -154,7 +154,7 @@ nonisolated enum DiceGameRoundPhase: Equatable, Sendable {
     case capturingResult
     case showingResult(DiceRollResult)
     case selectingOutcome(DiceRollResult)
-    case savingOutcome(result: DiceRollResult, outcome: GameOutcome)
+    case savingOutcome(result: DiceRollResult, outcome: RoundOutcome)
 
     var isDiceLocked: Bool {
         switch self {

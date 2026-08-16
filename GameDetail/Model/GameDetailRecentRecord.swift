@@ -12,12 +12,14 @@ import Foundation
 nonisolated struct GameDetailRecentRecord: Equatable, Identifiable, Sendable {
 
     let id: UUID
-    let outcome: GameOutcome
+    let outcome: MatchOutcome
     let points: Int
+    let roundWins: Int
+    let roundLosses: Int
     let subtitle: String
 
     var resultText: String {
-        "\(points) 點"
+        "\(roundWins)-\(roundLosses) · 最後 \(points) 點"
     }
 
     init(
@@ -31,6 +33,8 @@ nonisolated struct GameDetailRecentRecord: Equatable, Identifiable, Sendable {
         id = record.id
         outcome = record.outcome
         points = diceResult.total
+        roundWins = record.roundWins
+        roundLosses = record.roundLosses
         subtitle = Self.makeSubtitle(for: record.playedAt, calendar: calendar)
     }
 

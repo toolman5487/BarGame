@@ -75,8 +75,8 @@
 		15E40006302F300100000006 /* BarGameSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E40004302F300100000004 /* BarGameSchema.swift */; };
 		15E40007302F300100000007 /* AppModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E40005302F300100000005 /* AppModelContainer.swift */; };
 		15E50011302F400100000011 /* GameIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50001302F400100000001 /* GameIdentity.swift */; };
-		15E50012302F400100000012 /* BarGameSchemaV1+CoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50002302F400100000002 /* BarGameSchemaV1+CoreModels.swift */; };
-		15E50013302F400100000013 /* BarGameSchemaV1+DiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50003302F400100000003 /* BarGameSchemaV1+DiceModels.swift */; };
+		15EB00023035000100000002 /* BarGameSchema+CoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */; };
+		15EB00043035000100000004 /* BarGameSchema+DiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */; };
 		15E50014302F400100000014 /* GameHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50004302F400100000004 /* GameHistoryStore.swift */; };
 		15E50015302F400100000015 /* DiceGameRecordMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50005302F400100000005 /* DiceGameRecordMapper.swift */; };
 		15E600023030000100000002 /* GameHistoryStore+DiceGameRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */; };
@@ -175,8 +175,8 @@
 		15E40004302F300100000004 /* BarGameSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarGameSchema.swift; sourceTree = "<group>"; };
 		15E40005302F300100000005 /* AppModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelContainer.swift; sourceTree = "<group>"; };
 		15E50001302F400100000001 /* GameIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameIdentity.swift; sourceTree = "<group>"; };
-		15E50002302F400100000002 /* BarGameSchemaV1+CoreModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchemaV1+CoreModels.swift"; sourceTree = "<group>"; };
-		15E50003302F400100000003 /* BarGameSchemaV1+DiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchemaV1+DiceModels.swift"; sourceTree = "<group>"; };
+		15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchema+CoreModels.swift"; sourceTree = "<group>"; };
+		15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchema+DiceModels.swift"; sourceTree = "<group>"; };
 		15E50004302F400100000004 /* GameHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHistoryStore.swift; sourceTree = "<group>"; };
 		15E50005302F400100000005 /* DiceGameRecordMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameRecordMapper.swift; sourceTree = "<group>"; };
 		15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameHistoryStore+DiceGameRecords.swift"; sourceTree = "<group>"; };
@@ -828,8 +828,8 @@
 			isa = PBXGroup;
 			children = (
 				15E40004302F300100000004 /* BarGameSchema.swift */,
-				15E50002302F400100000002 /* BarGameSchemaV1+CoreModels.swift */,
-				15E50003302F400100000003 /* BarGameSchemaV1+DiceModels.swift */,
+				15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */,
+				15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -1122,8 +1122,8 @@
 				15E40006302F300100000006 /* BarGameSchema.swift in Sources */,
 				15E40007302F300100000007 /* AppModelContainer.swift in Sources */,
 				15E50011302F400100000011 /* GameIdentity.swift in Sources */,
-				15E50012302F400100000012 /* BarGameSchemaV1+CoreModels.swift in Sources */,
-				15E50013302F400100000013 /* BarGameSchemaV1+DiceModels.swift in Sources */,
+				15EB00023035000100000002 /* BarGameSchema+CoreModels.swift in Sources */,
+				15EB00043035000100000004 /* BarGameSchema+DiceModels.swift in Sources */,
 				15E50014302F400100000014 /* GameHistoryStore.swift in Sources */,
 				15E50015302F400100000015 /* DiceGameRecordMapper.swift in Sources */,
 				15E600023030000100000002 /* GameHistoryStore+DiceGameRecords.swift in Sources */,

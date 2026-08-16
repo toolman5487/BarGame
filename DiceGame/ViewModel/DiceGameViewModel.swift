@@ -77,7 +77,7 @@ struct DiceGameViewModelInput {
 
     let primaryActionTapped: AnyPublisher<Void, Never>
     let capturedResult: AnyPublisher<DiceRollResult, Never>
-    let outcomeSelected: AnyPublisher<GameOutcome, Never>
+    let outcomeSelected: AnyPublisher<RoundOutcome, Never>
     let outcomeSelectionCancelled: AnyPublisher<Void, Never>
     let resultExpansionToggle: AnyPublisher<Void, Never>
     let shakeMotion: AnyPublisher<Void, Never>
@@ -313,7 +313,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
         )
     }
 
-    private func selectOutcome(_ outcome: GameOutcome) {
+    private func selectOutcome(_ outcome: RoundOutcome) {
         guard case .selectingOutcome(let result) = state.game.roundPhase else {
             return
         }
@@ -397,7 +397,7 @@ final class DiceGameViewModel: DiceGameViewModeling {
 
     private func makeMatchRecord(
         appending diceResult: DiceRollResult,
-        outcome: GameOutcome,
+        outcome: RoundOutcome,
         to record: DiceGameMatchRecord?
     ) -> DiceGameMatchRecord {
         let playedAt = Date()
@@ -413,13 +413,13 @@ final class DiceGameViewModel: DiceGameViewModeling {
             sequence: roundSequence,
             startedAt: playedAt,
             endedAt: playedAt,
+            outcome: outcome,
             diceRolls: [roll]
         )
         return DiceGameMatchRecord(
             id: record?.id ?? UUID(),
             sessionContext: sessionContext,
             gameID: gameID,
-            outcome: outcome,
             rounds: (record?.rounds ?? []) + [round],
             playedAt: record?.playedAt ?? playedAt
         )

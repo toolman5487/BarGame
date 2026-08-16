@@ -195,10 +195,17 @@ final class MainGameHistoryViewController: MainBaseViewController {
         ) { [weak self] _ in
             self?.filterChangeSubject.send(.outcome(.loss))
         }
+        let drawAction = UIAction(
+            title: "平手",
+            image: UIImage(systemName: "equal.circle.fill"),
+            state: filter.outcome == .draw ? .on : .off
+        ) { [weak self] _ in
+            self?.filterChangeSubject.send(.outcome(.draw))
+        }
         let outcomeMenu = UIMenu(
             title: "結果",
             options: .displayInline,
-            children: [allOutcomesAction, winAction, lossAction]
+            children: [allOutcomesAction, winAction, lossAction, drawAction]
         )
 
         return UIMenu(children: [sortMenu, outcomeMenu])

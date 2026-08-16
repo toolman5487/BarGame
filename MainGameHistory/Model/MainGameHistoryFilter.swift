@@ -14,12 +14,12 @@ nonisolated struct MainGameHistoryFilter: Equatable, Sendable {
     static let standard = MainGameHistoryFilter()
 
     let gameID: DiceGameID?
-    let outcome: GameOutcome?
+    let outcome: MatchOutcome?
     let sortOrder: DiceGameRecordSortOrder
 
     init(
         gameID: DiceGameID? = nil,
-        outcome: GameOutcome? = nil,
+        outcome: MatchOutcome? = nil,
         sortOrder: DiceGameRecordSortOrder = .newest
     ) {
         self.gameID = gameID
@@ -74,6 +74,6 @@ nonisolated struct MainGameHistoryFilter: Equatable, Sendable {
 nonisolated enum MainGameHistoryFilterChange: Equatable, Sendable {
 
     case game(DiceGameID?)
-    case outcome(GameOutcome?)
+    case outcome(MatchOutcome?)
     case sortOrder(DiceGameRecordSortOrder)
 }

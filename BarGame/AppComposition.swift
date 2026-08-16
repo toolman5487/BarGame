@@ -87,8 +87,8 @@ final class AppComposition: AppScreenBuilding {
             gameID: game.id,
             initialState: initialState,
             recordStore: gameHistoryStore,
-            locationProvider: gameLocationProvider,
-            locationCache: gameLocationCache
+            statisticsReader: gameHistoryStore,
+            locationCoordinator: gameLocationCoordinator
         )
         return GameDetailViewController(
             title: game.title,

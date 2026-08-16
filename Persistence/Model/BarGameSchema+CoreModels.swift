@@ -1,14 +1,14 @@
 //
-//  BarGameSchemaV1+CoreModels.swift
+//  BarGameSchema+CoreModels.swift
 //  BarGame
 //
-//  Created by Codex on 2026/8/14.
+//  Created by Codex on 2026/8/16.
 //
 
 import Foundation
 import SwiftData
 
-extension BarGameSchemaV1 {
+extension BarGameSchema {
 
     @Model
     nonisolated final class GameEvent {
@@ -22,7 +22,7 @@ extension BarGameSchemaV1 {
         var locationName: String?
         var locality: String?
 
-        @Relationship(deleteRule: .cascade, inverse: \BarGameSchemaV1.GameSession.event)
+        @Relationship(deleteRule: .cascade, inverse: \BarGameSchema.GameSession.event)
         var sessions: [GameSession]
 
         init(
@@ -58,7 +58,7 @@ extension BarGameSchemaV1 {
         var endedAt: Date?
         var event: GameEvent?
 
-        @Relationship(deleteRule: .cascade, inverse: \BarGameSchemaV1.GameMatch.session)
+        @Relationship(deleteRule: .cascade, inverse: \BarGameSchema.GameMatch.session)
         var matches: [GameMatch]
 
         init(
@@ -95,7 +95,7 @@ extension BarGameSchemaV1 {
         var playedAt: Date
         var session: GameSession?
 
-        @Relationship(deleteRule: .cascade, inverse: \BarGameSchemaV1.GameRound.match)
+        @Relationship(deleteRule: .cascade, inverse: \BarGameSchema.GameRound.match)
         var rounds: [GameRound]
 
         init(
@@ -124,9 +124,10 @@ extension BarGameSchemaV1 {
         var sequence: Int
         var startedAt: Date
         var endedAt: Date?
+        var outcomeRawValue: String = RoundOutcome.loss.rawValue
         var match: GameMatch?
 
-        @Relationship(deleteRule: .cascade, inverse: \BarGameSchemaV1.DiceRoll.round)
+        @Relationship(deleteRule: .cascade, inverse: \BarGameSchema.DiceRoll.round)
         var diceRolls: [DiceRoll]
 
         init(
@@ -134,6 +135,7 @@ extension BarGameSchemaV1 {
             sequence: Int,
             startedAt: Date,
             endedAt: Date? = nil,
+            outcomeRawValue: String,
             match: GameMatch? = nil,
             diceRolls: [DiceRoll] = []
         ) {
@@ -141,13 +143,14 @@ extension BarGameSchemaV1 {
             self.sequence = sequence
             self.startedAt = startedAt
             self.endedAt = endedAt
+            self.outcomeRawValue = outcomeRawValue
             self.match = match
             self.diceRolls = diceRolls
         }
     }
 }
 
-typealias StoredGameEvent = BarGameSchemaV1.GameEvent
-typealias StoredGameSession = BarGameSchemaV1.GameSession
-typealias StoredGameMatch = BarGameSchemaV1.GameMatch
-typealias StoredGameRound = BarGameSchemaV1.GameRound
+typealias StoredGameEvent = BarGameSchema.GameEvent
+typealias StoredGameSession = BarGameSchema.GameSession
+typealias StoredGameMatch = BarGameSchema.GameMatch
+typealias StoredGameRound = BarGameSchema.GameRound

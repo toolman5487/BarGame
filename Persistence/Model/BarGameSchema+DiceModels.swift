@@ -1,14 +1,14 @@
 //
-//  BarGameSchemaV1+DiceModels.swift
+//  BarGameSchema+DiceModels.swift
 //  BarGame
 //
-//  Created by Codex on 2026/8/14.
+//  Created by Codex on 2026/8/16.
 //
 
 import Foundation
 import SwiftData
 
-extension BarGameSchemaV1 {
+extension BarGameSchema {
 
     @Model
     nonisolated final class DiceRoll {
@@ -23,7 +23,7 @@ extension BarGameSchemaV1 {
         var sidesPerDie: Int
         var round: GameRound?
 
-        @Relationship(deleteRule: .cascade, inverse: \BarGameSchemaV1.DieResult.roll)
+        @Relationship(deleteRule: .cascade, inverse: \BarGameSchema.DieResult.roll)
         var dice: [DieResult]
 
         init(
@@ -74,5 +74,5 @@ extension BarGameSchemaV1 {
     }
 }
 
-typealias StoredDiceRoll = BarGameSchemaV1.DiceRoll
-typealias StoredDieResult = BarGameSchemaV1.DieResult
+typealias StoredDiceRoll = BarGameSchema.DiceRoll
+typealias StoredDieResult = BarGameSchema.DieResult

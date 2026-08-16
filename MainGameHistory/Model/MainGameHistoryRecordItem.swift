@@ -11,7 +11,7 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
 
     let id: UUID
     let gameTitle: String
-    let outcome: GameOutcome
+    let outcome: MatchOutcome
     let outcomeText: String
     let resultText: String
     let metadataText: String
@@ -27,17 +27,27 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
         id = record.id
         gameTitle = record.gameID.title
         outcome = record.outcome
-        outcomeText = record.outcome == .win ? "勝" : "敗"
+        switch record.outcome {
+        case .win:
+            outcomeText = "勝"
+
+        case .loss:
+            outcomeText = "敗"
+
+        case .draw:
+            outcomeText = "平"
+        }
 
         let diceText = diceResult.values
             .map(String.init)
             .joined(separator: "、")
+        let scoreText = "\(record.roundWins)-\(record.roundLosses)"
         switch record.rounds.count {
         case 1:
-            resultText = "\(diceResult.total) 點 · \(diceText)"
+            resultText = "\(scoreText) · \(diceResult.total) 點 · \(diceText)"
 
         default:
-            resultText = "\(record.rounds.count) 回合 · 最後 \(diceResult.total) 點"
+            resultText = "\(scoreText) · \(record.rounds.count) 局 · 最後 \(diceResult.total) 點"
         }
 
         let dateText = Self.makeDateText(

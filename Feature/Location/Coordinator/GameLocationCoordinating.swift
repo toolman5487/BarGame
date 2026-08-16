@@ -13,6 +13,7 @@ protocol GameLocationCoordinating: AnyObject {
 
     var locationState: AnyPublisher<GameCurrentLocationState, Never> { get }
 
+    func authorizationState() -> GameLocationAuthorizationState
     func refreshLocation()
     func refreshLocationOnLaunch()
 }

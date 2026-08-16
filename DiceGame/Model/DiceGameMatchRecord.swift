@@ -98,6 +98,7 @@ nonisolated struct DiceGameRoundRecord: Equatable, Identifiable, Sendable {
     let sequence: Int
     let startedAt: Date
     let endedAt: Date?
+    let outcome: RoundOutcome
     let diceRolls: [DiceRollRecord]
 
     var latestConfirmedRoll: DiceRollRecord? {
@@ -111,12 +112,14 @@ nonisolated struct DiceGameRoundRecord: Equatable, Identifiable, Sendable {
         sequence: Int,
         startedAt: Date,
         endedAt: Date?,
+        outcome: RoundOutcome,
         diceRolls: [DiceRollRecord]
     ) {
         self.id = id
         self.sequence = sequence
         self.startedAt = startedAt
         self.endedAt = endedAt
+        self.outcome = outcome
         self.diceRolls = diceRolls
     }
 }
@@ -128,9 +131,26 @@ nonisolated struct DiceGameMatchRecord: Equatable, Identifiable, Sendable {
     let id: UUID
     let sessionContext: GameSessionContext
     let gameID: DiceGameID
-    let outcome: GameOutcome
     let rounds: [DiceGameRoundRecord]
     let playedAt: Date
+
+    var roundWins: Int {
+        rounds.count { $0.outcome == .win }
+    }
+
+    var roundLosses: Int {
+        rounds.count { $0.outcome == .loss }
+    }
+
+    var outcome: MatchOutcome {
+        MatchOutcome(roundOutcomes: rounds.lazy.map(\.outcome))
+    }
+
+    var totalPoints: Int {
+        rounds.reduce(into: 0) { total, round in
+            total += round.latestConfirmedRoll?.result.total ?? 0
+        }
+    }
 
     var latestConfirmedRoll: DiceRollRecord? {
         rounds
@@ -144,14 +164,12 @@ nonisolated struct DiceGameMatchRecord: Equatable, Identifiable, Sendable {
         id: UUID,
         sessionContext: GameSessionContext,
         gameID: DiceGameID,
-        outcome: GameOutcome,
         rounds: [DiceGameRoundRecord],
         playedAt: Date
     ) {
         self.id = id
         self.sessionContext = sessionContext
         self.gameID = gameID
-        self.outcome = outcome
         self.rounds = rounds
         self.playedAt = playedAt
     }
@@ -166,14 +184,14 @@ nonisolated enum DiceGameRecordSortOrder: Equatable, Sendable {
 nonisolated struct DiceGameRecordQuery: Equatable, Sendable {
 
     let gameID: DiceGameID?
-    let outcome: GameOutcome?
+    let outcome: MatchOutcome?
     let dateInterval: DateInterval?
     let limit: Int?
     let sortOrder: DiceGameRecordSortOrder
 
     init(
         gameID: DiceGameID? = nil,
-        outcome: GameOutcome? = nil,
+        outcome: MatchOutcome? = nil,
         dateInterval: DateInterval? = nil,
         limit: Int? = nil,
         sortOrder: DiceGameRecordSortOrder = .newest

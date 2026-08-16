@@ -201,6 +201,11 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
             outcomeImageView.image = UIImage(systemName: "flag.fill")
             outcomeImageView.tintColor = .systemRed
             outcomeLabel.textColor = .systemRed
+
+        case .draw:
+            outcomeImageView.image = UIImage(systemName: "equal.circle.fill")
+            outcomeImageView.tintColor = ThemeColor.secondary
+            outcomeLabel.textColor = ThemeColor.secondary
         }
     }
 }

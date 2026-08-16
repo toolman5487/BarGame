@@ -21,9 +21,7 @@ nonisolated enum GameDetailSection: Equatable, Sendable {
         let recentRecordsState = GameDetailRecentRecordsState.loading
 
         sections.append(
-            .statistics(
-                GameDetailStatisticsState(recentRecordsState: recentRecordsState)
-            )
+            .statistics(.loading)
         )
 
         if !settings.isEmpty {
