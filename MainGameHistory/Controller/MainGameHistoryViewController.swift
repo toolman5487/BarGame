@@ -113,7 +113,7 @@ final class MainGameHistoryViewController: MainBaseViewController {
         case .loading, .records:
             return CGSize(
                 width: width,
-                height: MainGameHistoryRecordCell.Layout.preferredHeight
+                height: MainGameHistoryRecordCell.Metrics.preferredHeight
             )
 
         case .idle, .empty, .failed:
@@ -121,7 +121,7 @@ final class MainGameHistoryViewController: MainBaseViewController {
             let availableHeight = collectionView.bounds.height
                 - adjustedInset.top
                 - adjustedInset.bottom
-                - MainGameHistoryFilterHeader.Layout.preferredHeight
+                - MainGameHistoryFilterHeader.Metrics.preferredHeight
             return CGSize(
                 width: width,
                 height: max(
@@ -138,7 +138,7 @@ final class MainGameHistoryViewController: MainBaseViewController {
     ) -> CGSize {
         CGSize(
             width: collectionView.bounds.width,
-            height: MainGameHistoryFilterHeader.Layout.preferredHeight
+            height: MainGameHistoryFilterHeader.Metrics.preferredHeight
         )
     }
 

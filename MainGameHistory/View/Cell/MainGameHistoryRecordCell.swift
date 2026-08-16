@@ -14,7 +14,7 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
 
     // MARK: - Layout
 
-    enum Layout {
+    enum Metrics {
         static let preferredHeight: CGFloat = 112
         static let verticalCardInset: CGFloat = 4
         static let contentInset: CGFloat = 16
@@ -59,7 +59,7 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         ])
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.spacing = Layout.outcomeSpacing
+        stackView.spacing = Metrics.outcomeSpacing
         stackView.setContentHuggingPriority(.required, for: .horizontal)
         stackView.setContentCompressionResistancePriority(.required, for: .horizontal)
         return stackView
@@ -104,7 +104,7 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         ])
         stackView.axis = .vertical
         stackView.alignment = .fill
-        stackView.spacing = Layout.contentSpacing
+        stackView.spacing = Metrics.contentSpacing
         stackView.isUserInteractionEnabled = false
         return stackView
     }()
@@ -119,17 +119,17 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
     override func setLayout() {
         backgroundButton.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
-            make.top.bottom.equalToSuperview().inset(Layout.verticalCardInset)
+            make.top.bottom.equalToSuperview().inset(Metrics.verticalCardInset)
         }
 
         outcomeImageView.snp.makeConstraints { make in
-            make.size.equalTo(Layout.outcomeIconSize)
+            make.size.equalTo(Metrics.outcomeIconSize)
         }
 
         contentStackView.snp.makeConstraints { make in
-            make.left.right.equalTo(backgroundButton).inset(Layout.contentInset)
-            make.top.greaterThanOrEqualTo(backgroundButton).inset(Layout.contentInset)
-            make.bottom.lessThanOrEqualTo(backgroundButton).inset(Layout.contentInset)
+            make.left.right.equalTo(backgroundButton).inset(Metrics.contentInset)
+            make.top.greaterThanOrEqualTo(backgroundButton).inset(Metrics.contentInset)
+            make.bottom.lessThanOrEqualTo(backgroundButton).inset(Metrics.contentInset)
             make.centerY.equalTo(backgroundButton)
         }
     }
