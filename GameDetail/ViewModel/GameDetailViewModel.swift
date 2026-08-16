@@ -158,7 +158,7 @@ final class GameDetailViewModel: GameDetailViewModeling {
                 let snapshot = try await locationProvider.currentLocationSnapshot()
                 try Task.checkCancellation()
                 await locationCache.save(snapshot)
-                self?.updateLocationState(.located(snapshot))
+                self?.updateLocationState(.located(snapshot.place))
             } catch is CancellationError {
                 return
             } catch let error as GameLocationProviderError {
@@ -201,19 +201,19 @@ final class GameDetailViewModel: GameDetailViewModeling {
             weak self,
             locationCache,
         ] in
-            let snapshot = await locationCache.snapshot()
+            let currentLocation = await locationCache.snapshot()
             guard !Task.isCancelled else { return }
 
             guard let self,
                   !state.isLocationRequestInProgress
             else { return }
 
-            guard let snapshot else {
+            guard let currentLocation else {
                 updateLocationStateFromAuthorization()
                 return
             }
 
-            updateLocationState(.located(snapshot))
+            updateLocationState(.located(currentLocation.place))
         }
     }
 

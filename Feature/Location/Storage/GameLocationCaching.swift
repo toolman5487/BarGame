@@ -9,7 +9,7 @@ import Foundation
 
 nonisolated protocol GameLocationCaching: Sendable {
 
-    func snapshot() async -> GameLocationSnapshot?
-    func save(_ snapshot: GameLocationSnapshot) async
+    func snapshot() async -> GameCurrentLocationSnapshot?
+    func save(_ snapshot: GameCurrentLocationSnapshot) async
     func removeSnapshot() async
 }

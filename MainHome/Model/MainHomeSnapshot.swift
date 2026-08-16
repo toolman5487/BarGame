@@ -12,6 +12,7 @@ import Foundation
 nonisolated enum MainHomeSection: Equatable, Sendable {
 
     case dicePreview
+    case currentLocation
     case gameResults([GameOverview])
     case gameList([DiceGame])
 
@@ -19,6 +20,9 @@ nonisolated enum MainHomeSection: Equatable, Sendable {
         switch self {
         case .dicePreview:
             return ""
+
+        case .currentLocation:
+            return "目前位置"
 
         case .gameResults:
             return "遊戲戰績"
@@ -41,7 +45,7 @@ nonisolated struct MainHomeSnapshot: Equatable, Sendable {
             case .gameList(let games):
                 return games
 
-            case .dicePreview, .gameResults:
+            case .dicePreview, .currentLocation, .gameResults:
                 return []
             }
         }
@@ -56,7 +60,7 @@ nonisolated struct MainHomeSnapshot: Equatable, Sendable {
                 case .gameResults:
                     return .gameResults(gameOverviews)
 
-                case .dicePreview, .gameList:
+                case .dicePreview, .currentLocation, .gameList:
                     return section
                 }
             }

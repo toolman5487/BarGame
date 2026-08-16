@@ -5,14 +5,25 @@
 //  Created by Codex on 2026/8/15.
 //
 
+import Combine
 import Foundation
 
 @MainActor
-final class GameLocationCoordinator: GameLocationRefreshing {
+final class GameLocationCoordinator: GameLocationCoordinating {
 
     private let locationProvider: any GameLocationProviding
     private let locationCache: any GameLocationCaching
-    private var refreshTask: Task<Void, any Error>?
+    private let locationStateSubject = CurrentValueSubject<
+        GameCurrentLocationState,
+        Never
+    >(.idle)
+    private var refreshTask: Task<Void, Never>?
+
+    var locationState: AnyPublisher<GameCurrentLocationState, Never> {
+        locationStateSubject
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
 
     init(
         locationProvider: any GameLocationProviding,
@@ -26,37 +37,47 @@ final class GameLocationCoordinator: GameLocationRefreshing {
         refreshTask?.cancel()
     }
 
-    func refreshLocation() async throws {
-        let task = startLocationRefresh(
-            removesCachedSnapshot: false,
-            priority: .userInitiated
-        )
-        try await task.value
+    func refreshLocation() {
+        startLocationRefresh(priority: .userInitiated)
     }
 
     func refreshLocationOnLaunch() {
-        startLocationRefresh(
-            removesCachedSnapshot: true,
-            priority: .utility
-        )
+        startLocationRefresh(priority: .utility)
     }
 
-    @discardableResult
     private func startLocationRefresh(
-        removesCachedSnapshot: Bool,
         priority: TaskPriority
-    ) -> Task<Void, any Error> {
+    ) {
         refreshTask?.cancel()
-        let task = Task(priority: priority) { [locationProvider, locationCache] in
-            if removesCachedSnapshot {
-                await locationCache.removeSnapshot()
+        refreshTask = Task(priority: priority) { [
+            weak self,
+            locationProvider,
+            locationCache,
+        ] in
+            let cachedSnapshot: GameCurrentLocationSnapshot?
+            if let currentSnapshot = self?.locationStateSubject.value.snapshot {
+                cachedSnapshot = currentSnapshot
+            } else {
+                cachedSnapshot = await locationCache.snapshot()
             }
+            guard !Task.isCancelled else { return }
+            self?.locationStateSubject.send(
+                .refreshing(cachedSnapshot: cachedSnapshot)
+            )
 
-            let snapshot = try await locationProvider.currentLocationSnapshot()
-            try Task.checkCancellation()
-            await locationCache.save(snapshot)
+            do {
+                let snapshot = try await locationProvider
+                    .currentLocationSnapshot()
+                try Task.checkCancellation()
+                await locationCache.save(snapshot)
+                self?.locationStateSubject.send(.located(snapshot))
+            } catch is CancellationError {
+                return
+            } catch {
+                self?.locationStateSubject.send(
+                    .failed(cachedSnapshot: cachedSnapshot)
+                )
+            }
         }
-        refreshTask = task
-        return task
     }
 }

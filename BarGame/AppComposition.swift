@@ -124,7 +124,7 @@ final class AppComposition: AppScreenBuilding {
         let viewModel = MainHomeViewModel(
             configuration: .standard,
             statisticsReader: gameHistoryStore,
-            locationRefresher: gameLocationCoordinator
+            locationCoordinator: gameLocationCoordinator
         )
         return MainHomeViewController(
             title: title,

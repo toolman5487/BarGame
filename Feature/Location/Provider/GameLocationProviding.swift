@@ -10,5 +10,5 @@ import Foundation
 nonisolated protocol GameLocationProviding: Sendable {
 
     func authorizationState() -> GameLocationAuthorizationState
-    func currentLocationSnapshot() async throws -> GameLocationSnapshot
+    func currentLocationSnapshot() async throws -> GameCurrentLocationSnapshot
 }

@@ -34,10 +34,19 @@ nonisolated struct CoreLocationGameLocationProvider: GameLocationProviding {
         }
     }
 
-    func currentLocationSnapshot() async throws -> GameLocationSnapshot {
+    func currentLocationSnapshot() async throws -> GameCurrentLocationSnapshot {
         try validateAuthorizationState()
         let location = try await currentLocation()
-        return try await reverseGeocode(location)
+        let place = try await reverseGeocodePlace(for: location)
+        return GameCurrentLocationSnapshot(
+            coordinate: GameCoordinate(
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude
+            ),
+            place: place,
+            horizontalAccuracy: location.horizontalAccuracy,
+            capturedAt: location.timestamp
+        )
     }
 
     private func validateAuthorizationState() throws {
@@ -107,13 +116,12 @@ nonisolated struct CoreLocationGameLocationProvider: GameLocationProviding {
         throw GameLocationProviderError.locationUnavailable
     }
 
-    private func reverseGeocode(
-        _ location: CLLocation
+    private func reverseGeocodePlace(
+        for location: CLLocation
     ) async throws -> GameLocationSnapshot {
         guard let request = MKReverseGeocodingRequest(location: location) else {
             throw GameLocationProviderError.reverseGeocodingFailed
         }
-        request.preferredLocale = .current
 
         let mapItems: [MKMapItem]
         do {

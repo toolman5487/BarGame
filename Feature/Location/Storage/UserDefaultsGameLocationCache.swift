@@ -19,14 +19,17 @@ actor UserDefaultsGameLocationCache: GameLocationCaching {
         self.userDefaults = userDefaults
     }
 
-    func snapshot() -> GameLocationSnapshot? {
+    func snapshot() -> GameCurrentLocationSnapshot? {
         guard let data = userDefaults.data(forKey: Key.snapshot) else {
             return nil
         }
-        return try? JSONDecoder().decode(GameLocationSnapshot.self, from: data)
+        return try? JSONDecoder().decode(
+            GameCurrentLocationSnapshot.self,
+            from: data
+        )
     }
 
-    func save(_ snapshot: GameLocationSnapshot) {
+    func save(_ snapshot: GameCurrentLocationSnapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         userDefaults.set(data, forKey: Key.snapshot)
     }

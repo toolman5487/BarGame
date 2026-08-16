@@ -38,6 +38,7 @@ final class MainHomeViewController: MainBaseViewController {
     private var cancellables = Set<AnyCancellable>()
     private var renderedSnapshot: MainHomeSnapshot?
     private var currentFailure: MainHomeFailure?
+    private var currentLocationState = MainHomeLocationState.idle
 
     // MARK: - UI Elements
 
@@ -111,6 +112,7 @@ final class MainHomeViewController: MainBaseViewController {
         super.setHierarchy()
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(MainHomeDiceCollectionViewCell.self)
+        collectionView.register(MainHomeLocationMapCell.self)
         collectionView.register(MainHomeTitleHeader.self)
         collectionView.register(MainHomeGameResultsCell.self)
         collectionView.register(MainHomeGameListCell.self)
@@ -148,7 +150,17 @@ final class MainHomeViewController: MainBaseViewController {
 
         switch section(at: indexPath.section) {
         case .dicePreview:
-            return CGSize(width: width, height: width * Metrics.dicePreviewAspectRatio)
+            return CGSize(
+                width: width,
+                height: width * Metrics.dicePreviewAspectRatio
+            )
+
+        case .currentLocation:
+            return CGSize(
+                width: width,
+                height: MainHomeLocationMapCell.Metrics.preferredHeight
+            )
+
         case .gameList(let games):
             let height = MainHomeGameListCell.preferredHeight(
                 forWidth: width,
@@ -156,7 +168,10 @@ final class MainHomeViewController: MainBaseViewController {
             )
             return CGSize(width: width, height: height)
         case .gameResults:
-            return CGSize(width: width, height: MainHomeGameResultsCell.Metrics.preferredHeight)
+            return CGSize(
+                width: width,
+                height: MainHomeGameResultsCell.Metrics.preferredHeight
+            )
         }
     }
 
@@ -236,7 +251,9 @@ final class MainHomeViewController: MainBaseViewController {
 
     private func section(at index: Int) -> MainHomeSection {
         guard let renderedSnapshot else {
-            preconditionFailure("MainHome snapshot must be ready before requesting sections")
+            preconditionFailure(
+                "MainHome snapshot must be ready before requesting sections"
+            )
         }
         return renderedSnapshot.sections[index]
     }
@@ -299,6 +316,8 @@ final class MainHomeViewController: MainBaseViewController {
     }
 
     private func apply(locationState: MainHomeLocationState) {
+        currentLocationState = locationState
+
         switch locationState {
         case .idle:
             locationBarButtonItem.image = UIImage(systemName: "location.fill")
@@ -310,12 +329,32 @@ final class MainHomeViewController: MainBaseViewController {
             )
             locationBarButtonItem.isEnabled = false
 
+        case .located:
+            locationBarButtonItem.image = UIImage(systemName: "location.fill")
+            locationBarButtonItem.isEnabled = true
+
         case .failed:
             locationBarButtonItem.image = UIImage(
                 systemName: "location.slash.fill"
             )
             locationBarButtonItem.isEnabled = true
         }
+
+        reloadCurrentLocationCellIfNeeded()
+    }
+
+    private func reloadCurrentLocationCellIfNeeded() {
+        guard let section = renderedSnapshot?.sections.firstIndex(
+            of: .currentLocation
+        ),
+              collectionView.numberOfSections > section,
+              collectionView.numberOfItems(inSection: section) > 0 else {
+            return
+        }
+
+        collectionView.reloadItems(
+            at: [IndexPath(item: 0, section: section)]
+        )
     }
 
     private func execute(_ command: MainHomeViewCommand) {
@@ -351,6 +390,15 @@ extension MainHomeViewController: UICollectionViewDataSource {
                 MainHomeDiceCollectionViewCell.self,
                 for: indexPath
             )
+
+        case .currentLocation:
+            let cell = collectionView.dequeueReusableCell(
+                MainHomeLocationMapCell.self,
+                for: indexPath
+            )
+            cell.configure(state: currentLocationState)
+            return cell
+
         case .gameList(let games):
             let cell = collectionView.dequeueReusableCell(
                 MainHomeGameListCell.self,

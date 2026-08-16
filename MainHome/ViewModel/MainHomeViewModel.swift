@@ -53,7 +53,7 @@ final class MainHomeViewModel: MainHomeViewModeling {
 
     private let configuration: MainHomeConfiguration
     private let statisticsReader: any GameStatisticsReading
-    private let locationRefresher: any GameLocationRefreshing
+    private let locationCoordinator: any GameLocationCoordinating
 
     // MARK: - State
 
@@ -62,7 +62,6 @@ final class MainHomeViewModel: MainHomeViewModeling {
     private let commandSubject = PassthroughSubject<MainHomeViewCommand, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var loadContentTask: Task<Void, Never>?
-    private var locationRefreshTask: Task<Void, Never>?
 
     private var state: MainHomeState {
         stateSubject.value
@@ -73,16 +72,15 @@ final class MainHomeViewModel: MainHomeViewModeling {
     init(
         configuration: MainHomeConfiguration,
         statisticsReader: any GameStatisticsReading,
-        locationRefresher: any GameLocationRefreshing
+        locationCoordinator: any GameLocationCoordinating
     ) {
         self.configuration = configuration
         self.statisticsReader = statisticsReader
-        self.locationRefresher = locationRefresher
+        self.locationCoordinator = locationCoordinator
     }
 
     deinit {
         loadContentTask?.cancel()
-        locationRefreshTask?.cancel()
     }
 
     // MARK: - Public
@@ -117,6 +115,13 @@ final class MainHomeViewModel: MainHomeViewModeling {
         input.didRequestRetry
             .sink { [weak self] in
                 self?.handleRetry()
+            }
+            .store(in: &cancellables)
+
+        locationCoordinator.locationState
+            .map(Self.makeLocationState)
+            .sink { [weak self] state in
+                self?.locationStateSubject.send(state)
             }
             .store(in: &cancellables)
 
@@ -195,23 +200,7 @@ final class MainHomeViewModel: MainHomeViewModeling {
     }
 
     private func handleLocationRequest() {
-        guard locationStateSubject.value == .idle else { return }
-
-        locationStateSubject.send(.refreshing)
-        locationRefreshTask = Task(priority: .userInitiated) { [
-            weak self,
-            locationRefresher,
-        ] in
-            do {
-                try await locationRefresher.refreshLocation()
-                try Task.checkCancellation()
-                self?.locationStateSubject.send(.idle)
-            } catch is CancellationError {
-                self?.locationStateSubject.send(.idle)
-            } catch {
-                self?.locationStateSubject.send(.failed)
-            }
-        }
+        locationCoordinator.refreshLocation()
     }
 
     // MARK: - Load
@@ -305,6 +294,37 @@ final class MainHomeViewModel: MainHomeViewModeling {
         }
 
         return .success(snapshot)
+    }
+
+    private static func makeLocationState(
+        _ state: GameCurrentLocationState
+    ) -> MainHomeLocationState {
+        switch state {
+        case .idle:
+            return .idle
+
+        case .refreshing(let cachedSnapshot):
+            return .refreshing(
+                cachedSnapshot.map { makeLocationItem(from: $0) }
+            )
+
+        case .located(let snapshot):
+            return .located(makeLocationItem(from: snapshot))
+
+        case .failed(let cachedSnapshot):
+            return .failed(
+                cachedSnapshot.map { makeLocationItem(from: $0) }
+            )
+        }
+    }
+
+    private static func makeLocationItem(
+        from snapshot: GameCurrentLocationSnapshot
+    ) -> MainHomeLocationItem {
+        return MainHomeLocationItem(
+            coordinate: snapshot.coordinate,
+            horizontalAccuracy: snapshot.horizontalAccuracy
+        )
     }
 
     // MARK: - State Updates

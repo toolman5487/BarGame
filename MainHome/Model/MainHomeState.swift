@@ -86,9 +86,32 @@ nonisolated enum MainHomeState: Equatable, Sendable {
 
 // MARK: - Location State
 
+nonisolated struct MainHomeLocationItem: Equatable, Sendable {
+
+    let coordinate: GameCoordinate
+    let horizontalAccuracy: Double
+}
+
 nonisolated enum MainHomeLocationState: Equatable, Sendable {
 
     case idle
-    case refreshing
-    case failed
+    case refreshing(MainHomeLocationItem?)
+    case located(MainHomeLocationItem)
+    case failed(MainHomeLocationItem?)
+
+    var item: MainHomeLocationItem? {
+        switch self {
+        case .idle:
+            return nil
+
+        case .refreshing(let item):
+            return item
+
+        case .located(let item):
+            return item
+
+        case .failed(let item):
+            return item
+        }
+    }
 }

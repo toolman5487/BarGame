@@ -12,6 +12,7 @@ nonisolated enum MainHomeSampleData {
     static let standardSnapshot = MainHomeSnapshot(
         sections: [
             .dicePreview,
+            .currentLocation,
             .gameResults([]),
             .gameList(games),
         ]
