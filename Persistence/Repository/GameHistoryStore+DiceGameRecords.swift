@@ -75,7 +75,7 @@ extension GameHistoryStore: DiceGameRecordStoring {
     func records(
         matching query: DiceGameRecordQuery
     ) throws -> [DiceGameMatchRecord] {
-        let matches = try storedMatches(matching: query)
+        let matches = try storedMatches(sortOrder: query.sortOrder)
         let records = try matches.compactMap { match -> DiceGameMatchRecord? in
             guard let session = match.session,
                   session.categoryID == GameCategoryID.dice.rawValue else {
@@ -90,18 +90,37 @@ extension GameHistoryStore: DiceGameRecordStoring {
                 sessionContext: sessionContext(from: session)
             )
         }
+        let consolidatedRecords = consolidateMatches(records)
+            .filter { record in
+                guard let outcome = query.outcome else { return true }
+                return record.outcome == outcome
+            }
+            .filter { record in
+                guard let dateInterval = query.dateInterval else { return true }
+                return record.playedAt >= dateInterval.start
+                    && record.playedAt < dateInterval.end
+            }
+            .sorted { first, second in
+                switch query.sortOrder {
+                case .newest:
+                    return first.playedAt > second.playedAt
 
-        guard let limit = query.limit else { return records }
-        return Array(records.prefix(limit))
+                case .oldest:
+                    return first.playedAt < second.playedAt
+                }
+            }
+
+        guard let limit = query.limit else { return consolidatedRecords }
+        return Array(consolidatedRecords.prefix(limit))
     }
 
     // MARK: - Query
 
     private func storedMatches(
-        matching query: DiceGameRecordQuery
+        sortOrder: DiceGameRecordSortOrder
     ) throws -> [StoredGameMatch] {
         let sortBy: [SortDescriptor<StoredGameMatch>]
-        switch query.sortOrder {
+        switch sortOrder {
         case .newest:
             sortBy = [
                 SortDescriptor(\StoredGameMatch.playedAt, order: .reverse),
@@ -112,48 +131,50 @@ extension GameHistoryStore: DiceGameRecordStoring {
                 SortDescriptor(\StoredGameMatch.playedAt, order: .forward),
             ]
         }
+        return try modelContext.fetch(
+            FetchDescriptor<StoredGameMatch>(sortBy: sortBy)
+        )
+    }
 
-        switch (query.outcome, query.dateInterval) {
-        case (nil, nil):
-            return try modelContext.fetch(
-                FetchDescriptor<StoredGameMatch>(sortBy: sortBy)
-            )
+    private func consolidateMatches(
+        _ records: [DiceGameMatchRecord]
+    ) -> [DiceGameMatchRecord] {
+        Dictionary(grouping: records, by: { $0.sessionContext.id })
+            .values
+            .compactMap { makeConsolidatedMatch(from: $0) }
+    }
 
-        case (.some(let outcome), nil):
-            let outcomeRawValue = outcome.rawValue
-            return try modelContext.fetch(
-                FetchDescriptor<StoredGameMatch>(
-                    predicate: #Predicate { $0.outcomeRawValue == outcomeRawValue },
-                    sortBy: sortBy
-                )
-            )
-
-        case (nil, .some(let dateInterval)):
-            let start = dateInterval.start
-            let end = dateInterval.end
-            return try modelContext.fetch(
-                FetchDescriptor<StoredGameMatch>(
-                    predicate: #Predicate {
-                        $0.playedAt >= start && $0.playedAt < end
-                    },
-                    sortBy: sortBy
-                )
-            )
-
-        case (.some(let outcome), .some(let dateInterval)):
-            let outcomeRawValue = outcome.rawValue
-            let start = dateInterval.start
-            let end = dateInterval.end
-            return try modelContext.fetch(
-                FetchDescriptor<StoredGameMatch>(
-                    predicate: #Predicate {
-                        $0.outcomeRawValue == outcomeRawValue
-                            && $0.playedAt >= start
-                            && $0.playedAt < end
-                    },
-                    sortBy: sortBy
-                )
-            )
+    private func makeConsolidatedMatch(
+        from records: [DiceGameMatchRecord]
+    ) -> DiceGameMatchRecord? {
+        let orderedRecords = records.sorted { $0.playedAt < $1.playedAt }
+        guard let firstRecord = orderedRecords.first,
+              let latestRecord = orderedRecords.last else {
+            return nil
         }
+
+        let rounds = orderedRecords
+            .flatMap { record in
+                record.rounds.sorted { $0.sequence < $1.sequence }
+            }
+            .enumerated()
+            .map { index, round in
+                DiceGameRoundRecord(
+                    id: round.id,
+                    sequence: index + 1,
+                    startedAt: round.startedAt,
+                    endedAt: round.endedAt,
+                    diceRolls: round.diceRolls
+                )
+            }
+
+        return DiceGameMatchRecord(
+            id: firstRecord.id,
+            sessionContext: firstRecord.sessionContext,
+            gameID: firstRecord.gameID,
+            outcome: latestRecord.outcome,
+            rounds: rounds,
+            playedAt: firstRecord.playedAt
+        )
     }
 }

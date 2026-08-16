@@ -40,6 +40,7 @@ final class DiceGameViewController: StandardBaseViewController {
     private let outcomeSelectionCancelledSubject = PassthroughSubject<Void, Never>()
     private let resultExpansionToggleSubject = PassthroughSubject<Void, Never>()
     private let shakeMotionSubject = PassthroughSubject<Void, Never>()
+    private let exitRequestedSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var renderedState: DiceGameViewState
 
@@ -137,7 +138,8 @@ final class DiceGameViewController: StandardBaseViewController {
                 .eraseToAnyPublisher(),
             resultExpansionToggle: resultExpansionToggleSubject
                 .eraseToAnyPublisher(),
-            shakeMotion: shakeMotionSubject.eraseToAnyPublisher()
+            shakeMotion: shakeMotionSubject.eraseToAnyPublisher(),
+            exitRequested: exitRequestedSubject.eraseToAnyPublisher()
         )
         let output = viewModel.transform(input: input)
 
@@ -234,6 +236,9 @@ final class DiceGameViewController: StandardBaseViewController {
 
         case .showError(let error):
             router.showAlert(title: error.title, message: error.message)
+
+        case .dismissGame:
+            dismiss(animated: true)
         }
     }
 
@@ -243,7 +248,7 @@ final class DiceGameViewController: StandardBaseViewController {
             message: "確定要結束目前的賽局並離開嗎？",
             actionTitle: "結束賽局"
         ) { [weak self] in
-            self?.dismiss(animated: true)
+            self?.exitRequestedSubject.send()
         }
     }
 }

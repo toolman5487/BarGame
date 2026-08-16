@@ -71,7 +71,7 @@ final class MainGameHistoryFilterHeader: StandardBaseTitleHeader {
     }
 
     override func setAppearance() {
-        backgroundColor = .systemBackground
+        backgroundColor = .clear
     }
 
     // MARK: - Configuration

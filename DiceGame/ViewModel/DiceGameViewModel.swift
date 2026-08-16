@@ -81,6 +81,7 @@ struct DiceGameViewModelInput {
     let outcomeSelectionCancelled: AnyPublisher<Void, Never>
     let resultExpansionToggle: AnyPublisher<Void, Never>
     let shakeMotion: AnyPublisher<Void, Never>
+    let exitRequested: AnyPublisher<Void, Never>
 }
 
 // MARK: - Output
@@ -105,6 +106,7 @@ enum DiceGameViewCommand {
     case presentOutcomeSelection
     case updateScene(DiceGameSceneCommand)
     case showError(DiceGameViewError)
+    case dismissGame
 }
 
 nonisolated enum DiceGameViewError: Error, Sendable {
@@ -114,14 +116,14 @@ nonisolated enum DiceGameViewError: Error, Sendable {
     var title: String {
         switch self {
         case .recordSaveFailed:
-            return "無法儲存比賽結果"
+            return "無法儲存賽局"
         }
     }
 
     var message: String {
         switch self {
         case .recordSaveFailed:
-            return "請稍後再試，上一局結果仍會保留。"
+            return "請稍後再試，目前賽局仍會保留。"
         }
     }
 }
@@ -149,6 +151,8 @@ final class DiceGameViewModel: DiceGameViewModeling {
     private let commandSubject = PassthroughSubject<DiceGameViewCommand, Never>()
     private var cancellables = Set<AnyCancellable>()
     private var saveRecordTask: Task<Void, Never>?
+    private var activeMatchRecord: DiceGameMatchRecord?
+    private var isSavingMatch = false
 
     private var state: DiceGameViewState {
         stateSubject.value
@@ -212,6 +216,12 @@ final class DiceGameViewModel: DiceGameViewModeling {
         input.shakeMotion
             .sink { [weak self] in
                 self?.handleShakeMotion()
+            }
+            .store(in: &cancellables)
+
+        input.exitRequested
+            .sink { [weak self] in
+                self?.handleExitRequest()
             }
             .store(in: &cancellables)
 
@@ -321,22 +331,12 @@ final class DiceGameViewModel: DiceGameViewModeling {
             )
         )
 
-        saveRecordTask?.cancel()
-        let record = makeMatchRecord(outcome: outcome, diceResult: result)
-        saveRecordTask = Task(priority: .userInitiated) { [
-            weak self,
-            recordStore,
-        ] in
-            do {
-                try await recordStore.insert(record)
-                try Task.checkCancellation()
-                self?.startNextRound()
-            } catch is CancellationError {
-                return
-            } catch {
-                self?.handleRecordSaveFailure(result: result)
-            }
-        }
+        activeMatchRecord = makeMatchRecord(
+            appending: result,
+            outcome: outcome,
+            to: activeMatchRecord
+        )
+        startNextRound()
     }
 
     private func cancelOutcomeSelection() {
@@ -370,26 +370,38 @@ final class DiceGameViewModel: DiceGameViewModeling {
         )
     }
 
-    private func handleRecordSaveFailure(result: DiceRollResult) {
-        guard case .savingOutcome = state.game.roundPhase else { return }
+    private func handleExitRequest() {
+        guard !isSavingMatch else { return }
+        guard let record = activeMatchRecord else {
+            commandSubject.send(.dismissGame)
+            return
+        }
 
-        updateState(
-            DiceGameViewState(
-                game: DiceGameState(
-                    viewMode: .topDown,
-                    roundPhase: .showingResult(result)
-                ),
-                result: state.result
-            )
-        )
-        commandSubject.send(.showError(.recordSaveFailed))
+        isSavingMatch = true
+        saveRecordTask = Task(priority: .userInitiated) { [
+            weak self,
+            recordStore,
+        ] in
+            do {
+                try await recordStore.insert(record)
+                try Task.checkCancellation()
+                self?.commandSubject.send(.dismissGame)
+            } catch is CancellationError {
+                return
+            } catch {
+                self?.isSavingMatch = false
+                self?.commandSubject.send(.showError(.recordSaveFailed))
+            }
+        }
     }
 
     private func makeMatchRecord(
+        appending diceResult: DiceRollResult,
         outcome: GameOutcome,
-        diceResult: DiceRollResult
+        to record: DiceGameMatchRecord?
     ) -> DiceGameMatchRecord {
         let playedAt = Date()
+        let roundSequence = (record?.rounds.map(\.sequence).max() ?? 0) + 1
         let roll = DiceRollRecord(
             sequence: 1,
             rolledAt: playedAt,
@@ -398,18 +410,18 @@ final class DiceGameViewModel: DiceGameViewModeling {
             result: diceResult
         )
         let round = DiceGameRoundRecord(
-            sequence: 1,
+            sequence: roundSequence,
             startedAt: playedAt,
             endedAt: playedAt,
             diceRolls: [roll]
         )
         return DiceGameMatchRecord(
-            id: UUID(),
+            id: record?.id ?? UUID(),
             sessionContext: sessionContext,
             gameID: gameID,
             outcome: outcome,
-            rounds: [round],
-            playedAt: playedAt
+            rounds: (record?.rounds ?? []) + [round],
+            playedAt: record?.playedAt ?? playedAt
         )
     }
 
