@@ -10,22 +10,17 @@ import Foundation
 nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable {
 
     let id: UUID
-    let gameTitle: String
     let outcome: MatchOutcome
     let outcomeText: String
     let resultText: String
-    let metadataText: String
+    let timeText: String
+    let locationText: String
 
     init(
         record: DiceGameMatchRecord,
         calendar: Calendar = .current
-    ) throws {
-        guard let diceResult = record.latestConfirmedRoll?.result else {
-            throw DiceGameMatchRecordError.missingConfirmedRoll(record.id)
-        }
-
+    ) {
         id = record.id
-        gameTitle = record.gameID.title
         outcome = record.outcome
         switch record.outcome {
         case .win:
@@ -38,26 +33,15 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
             outcomeText = "平"
         }
 
-        let diceText = diceResult.values
-            .map(String.init)
-            .joined(separator: "、")
-        let scoreText = "\(record.roundWins)-\(record.roundLosses)"
-        switch record.rounds.count {
-        case 1:
-            resultText = "\(scoreText) · \(diceResult.total) 點 · \(diceText)"
+        resultText = "\(record.roundWins) - \(record.roundLosses)"
 
-        default:
-            resultText = "\(scoreText) · \(record.rounds.count) 局 · 最後 \(diceResult.total) 點"
-        }
-
-        let dateText = Self.makeDateText(
+        timeText = Self.makeDateText(
             for: record.playedAt,
             calendar: calendar
         )
-        let locationText = Self.makeLocationText(
+        locationText = Self.makeLocationText(
             from: record.sessionContext.event.location
         )
-        metadataText = "\(dateText) · \(locationText)"
     }
 
     private static func makeDateText(
@@ -82,14 +66,13 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
         from location: GameLocationSnapshot?
     ) -> String {
         guard let location else {
-            return "未記錄地點"
+            return "未記錄地址"
         }
 
-        guard let locality = location.locality,
-              locality != location.name else {
-            return location.name
+        guard let area = location.area else {
+            return location.detailAddress
         }
 
-        return "\(locality)／\(location.name)"
+        return "\(area) \(location.detailAddress)"
     }
 }

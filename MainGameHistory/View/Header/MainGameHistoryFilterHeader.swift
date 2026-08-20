@@ -29,7 +29,9 @@ final class MainGameHistoryFilterHeader: StandardBaseTitleHeader {
     // MARK: - State
 
     private let gameIDs: [DiceGameID?] = [nil]
-        + DiceGameID.allCases.map(Optional.some)
+        + DiceGameCatalog.firstPhaseVerbalGames
+            .map(\.id)
+            .map(Optional.some)
     private var filter = MainGameHistoryFilter.standard
     private var hasConfiguredFilter = false
 

@@ -13,32 +13,23 @@ nonisolated struct GameDetailRecentRecord: Equatable, Identifiable, Sendable {
 
     let id: UUID
     let outcome: MatchOutcome
-    let points: Int
-    let roundWins: Int
-    let roundLosses: Int
-    let subtitle: String
-
-    var resultText: String {
-        "\(roundWins)-\(roundLosses) · 最後 \(points) 點"
-    }
+    let scoreText: String
+    let timeText: String
 
     init(
         record: DiceGameMatchRecord,
         calendar: Calendar = .current
-    ) throws {
-        guard let diceResult = record.latestConfirmedRoll?.result else {
-            throw DiceGameMatchRecordError.missingConfirmedRoll(record.id)
-        }
-
+    ) {
         id = record.id
         outcome = record.outcome
-        points = diceResult.total
-        roundWins = record.roundWins
-        roundLosses = record.roundLosses
-        subtitle = Self.makeSubtitle(for: record.playedAt, calendar: calendar)
+        scoreText = "\(record.roundWins) - \(record.roundLosses)"
+        timeText = Self.makeTimeText(
+            for: record.playedAt,
+            calendar: calendar
+        )
     }
 
-    private static func makeSubtitle(
+    private static func makeTimeText(
         for date: Date,
         calendar: Calendar
     ) -> String {

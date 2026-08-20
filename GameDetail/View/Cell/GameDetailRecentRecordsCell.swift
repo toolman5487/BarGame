@@ -341,8 +341,8 @@ final class GameDetailRecentRecordItemCell: DetailBaseCollectionViewCell {
     // MARK: - Configuration
 
     func configure(record: GameDetailRecentRecord) {
-        titleLabel.text = record.resultText
-        subtitleLabel.text = record.subtitle
+        titleLabel.text = record.scoreText
+        subtitleLabel.text = record.timeText
 
         switch record.outcome {
         case .win:

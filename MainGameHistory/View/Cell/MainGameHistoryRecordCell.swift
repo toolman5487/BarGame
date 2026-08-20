@@ -27,15 +27,6 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
 
     private let backgroundButton = ViewFactory.makeButton()
 
-    private let gameTitleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .headline)
-        label.textColor = ThemeColor.primary
-        label.numberOfLines = 1
-        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        return label
-    }()
-
     private let outcomeImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -54,33 +45,20 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
 
     private lazy var outcomeStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
-            outcomeImageView,
+            resultLabel,
             outcomeLabel,
+            outcomeImageView,
         ])
         stackView.axis = .horizontal
         stackView.alignment = .center
         stackView.spacing = Metrics.outcomeSpacing
-        stackView.setContentHuggingPriority(.required, for: .horizontal)
-        stackView.setContentCompressionResistancePriority(.required, for: .horizontal)
-        return stackView
-    }()
-
-    private lazy var titleStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [
-            gameTitleLabel,
-            outcomeStackView,
-        ])
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.distribution = .fill
-        stackView.spacing = 8
         return stackView
     }()
 
     private let resultLabel: UILabel = {
         let label = UILabel()
         label.font = .monospacedDigitSystemFont(
-            ofSize: UIFont.preferredFont(forTextStyle: .subheadline).pointSize,
+            ofSize: UIFont.preferredFont(forTextStyle: .title2).pointSize,
             weight: .semibold
         )
         label.textColor = ThemeColor.primary
@@ -88,7 +66,7 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         return label
     }()
 
-    private let metadataLabel: UILabel = {
+    private let timeLabel: UILabel = {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = ThemeColor.secondary
@@ -96,11 +74,20 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         return label
     }()
 
+    private let locationLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .caption1)
+        label.textColor = ThemeColor.secondary
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
+        return label
+    }()
+
     private lazy var contentStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
-            titleStackView,
-            resultLabel,
-            metadataLabel,
+            outcomeStackView,
+            timeLabel,
+            locationLabel,
         ])
         stackView.axis = .vertical
         stackView.alignment = .fill
@@ -139,20 +126,19 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         isSkeletonable = true
         contentView.isSkeletonable = true
         contentStackView.isSkeletonable = true
-        titleStackView.isSkeletonable = true
-        gameTitleLabel.isSkeletonable = true
         outcomeStackView.isSkeletonable = true
         outcomeImageView.isSkeletonable = true
         outcomeLabel.isSkeletonable = true
         resultLabel.isSkeletonable = true
-        metadataLabel.isSkeletonable = true
+        timeLabel.isSkeletonable = true
+        locationLabel.isSkeletonable = true
 
         [
-            gameTitleLabel,
             outcomeImageView,
             outcomeLabel,
             resultLabel,
-            metadataLabel,
+            timeLabel,
+            locationLabel,
         ].forEach { view in
             view.skeletonCornerRadius = 4
         }
@@ -161,22 +147,22 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         hideSkeleton(reloadDataAfter: false, transition: .none)
-        gameTitleLabel.text = nil
         outcomeImageView.image = nil
         outcomeLabel.text = nil
         resultLabel.text = nil
-        metadataLabel.text = nil
+        timeLabel.text = nil
+        locationLabel.text = nil
     }
 
     // MARK: - Configuration
 
     func showLoadingState() {
         hideSkeleton(reloadDataAfter: false, transition: .none)
-        gameTitleLabel.text = "遊戲名稱"
         outcomeImageView.image = UIImage(systemName: "circle.fill")
         outcomeLabel.text = "結果"
-        resultLabel.text = "00 點 · 0、0、0"
-        metadataLabel.text = "今天 00:00 · 地點"
+        resultLabel.text = "0 - 0"
+        timeLabel.text = "今天 00:00"
+        locationLabel.text = "詳細地址"
         layoutIfNeeded()
         showAnimatedGradientSkeleton(transition: .none)
     }
@@ -186,10 +172,10 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
             reloadDataAfter: false,
             transition: .crossDissolve(0.2)
         )
-        gameTitleLabel.text = item.gameTitle
         outcomeLabel.text = item.outcomeText
         resultLabel.text = item.resultText
-        metadataLabel.text = item.metadataText
+        timeLabel.text = item.timeText
+        locationLabel.text = item.locationText
 
         switch item.outcome {
         case .win:

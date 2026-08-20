@@ -119,8 +119,8 @@ nonisolated enum GameDetailLocationState: Equatable, Sendable {
 
         case .located(let snapshot):
             return GameDetailLocationPresentation(
-                title: snapshot.name,
-                subtitle: snapshot.locality ?? "已加入這次賽局",
+                title: snapshot.area ?? "未辨識區域",
+                subtitle: snapshot.detailAddress,
                 actionTitle: "更新",
                 actionSystemName: "location.fill",
                 isActionEnabled: true

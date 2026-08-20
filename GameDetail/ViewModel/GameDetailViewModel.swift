@@ -176,14 +176,8 @@ final class GameDetailViewModel: GameDetailViewModeling {
         records: [DiceGameMatchRecord],
         statistics: GameStatistics
     ) {
-        let displayRecords: [GameDetailRecentRecord]
-        do {
-            displayRecords = try records.map {
-                try GameDetailRecentRecord(record: $0)
-            }
-        } catch {
-            handleRecordLoadFailure()
-            return
+        let displayRecords = records.map {
+            GameDetailRecentRecord(record: $0)
         }
         let recentRecords = Array(
             displayRecords.prefix(GameDetailRecentRecordsState.maximumRecordCount)

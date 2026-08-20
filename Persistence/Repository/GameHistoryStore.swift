@@ -144,7 +144,7 @@ extension GameHistoryStore {
         }
 
         let location = event.locationName.map {
-            GameLocationSnapshot(name: $0, locality: event.locality)
+            GameLocationSnapshot(address: $0, locality: event.locality)
         }
         let eventContext = GameEventContext(
             id: event.id,
@@ -252,8 +252,8 @@ extension GameHistoryStore {
             startedAt: context.startedAt,
             endedAt: context.startedAt,
             timeZoneIdentifier: context.timeZoneIdentifier,
-            locationName: context.location?.name,
-            locality: context.location?.locality
+            locationName: context.location?.detailAddress,
+            locality: context.location?.area
         )
         modelContext.insert(event)
         return event
@@ -264,8 +264,8 @@ extension GameHistoryStore {
         matches context: GameEventContext
     ) throws {
         guard event.timeZoneIdentifier == context.timeZoneIdentifier,
-              event.locationName == context.location?.name,
-              event.locality == context.location?.locality else {
+              event.locationName == context.location?.detailAddress,
+              event.locality == context.location?.area else {
             throw GameHistoryStoreError.eventContextMismatch(context.id)
         }
     }

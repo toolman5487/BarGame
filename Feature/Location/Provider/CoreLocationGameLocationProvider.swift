@@ -131,20 +131,27 @@ nonisolated struct CoreLocationGameLocationProvider: GameLocationProviding {
         }
 
         guard let mapItem = mapItems.first,
-              let name = firstNonemptyString(
-                mapItem.name,
+              let address = firstNonemptyString(
+                mapItem.addressRepresentations?.fullAddress(
+                    includingRegion: false,
+                    singleLine: true
+                ),
+                mapItem.address?.fullAddress,
                 mapItem.address?.shortAddress,
-                mapItem.address?.fullAddress
-              )
+                mapItem.name
+            )
         else {
             throw GameLocationProviderError.reverseGeocodingFailed
         }
 
         let locality = firstNonemptyString(
-            mapItem.addressRepresentations?.cityWithContext,
-            mapItem.addressRepresentations?.cityName
+            mapItem.addressRepresentations?.cityName,
+            mapItem.addressRepresentations?.cityWithContext
         )
-        return GameLocationSnapshot(name: name, locality: locality)
+        return GameLocationSnapshot(
+            address: address,
+            locality: locality
+        )
     }
 
     private func firstNonemptyString(_ values: String?...) -> String? {
