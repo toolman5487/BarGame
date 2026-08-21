@@ -185,11 +185,13 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
 
         case .loss:
             outcomeImageView.image = UIImage(systemName: "flag.fill")
-            outcomeImageView.tintColor = .systemRed
-            outcomeLabel.textColor = .systemRed
+            outcomeImageView.tintColor = .label
+            outcomeLabel.textColor = .label
 
         case .draw:
-            outcomeImageView.image = UIImage(systemName: "equal.circle.fill")
+            outcomeImageView.image = UIImage(
+                systemName: "flag.and.flag.filled.crossed"
+            )
             outcomeImageView.tintColor = ThemeColor.secondary
             outcomeLabel.textColor = ThemeColor.secondary
         }

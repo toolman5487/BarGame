@@ -37,9 +37,22 @@ final class MainGameHistoryViewController: MainBaseViewController {
 
     // MARK: - UI Elements
 
+    private lazy var sortBarButtonItem = UIBarButtonItem(
+        image: UIImage(systemName: "arrow.up.arrow.down"),
+        menu: makeSortMenu(for: state.filter)
+    )
+
     private lazy var filterBarButtonItem = UIBarButtonItem(
         image: UIImage(systemName: "line.3.horizontal.decrease"),
-        menu: makeSecondaryFilterMenu(for: state.filter)
+        menu: makeOutcomeFilterMenu(for: state.filter)
+    )
+
+    private lazy var sortBarButtonItemGroup = UIBarButtonItemGroup.fixedGroup(
+        items: [sortBarButtonItem]
+    )
+
+    private lazy var filterBarButtonItemGroup = UIBarButtonItemGroup.fixedGroup(
+        items: [filterBarButtonItem]
     )
 
     // MARK: - Lifecycle
@@ -81,7 +94,11 @@ final class MainGameHistoryViewController: MainBaseViewController {
 
     override func setNavigation() {
         super.setNavigation()
-        navigationItem.rightBarButtonItem = filterBarButtonItem
+        navigationItem.trailingItemGroups = [
+            sortBarButtonItemGroup,
+            .fixedSpace(),
+            filterBarButtonItemGroup
+        ]
     }
 
     override func bind() {
@@ -146,69 +163,173 @@ final class MainGameHistoryViewController: MainBaseViewController {
 
     private func apply(_ state: MainGameHistoryViewState) {
         self.state = state
-        filterBarButtonItem.menu = makeSecondaryFilterMenu(for: state.filter)
+        sortBarButtonItem.menu = makeSortMenu(for: state.filter)
+        filterBarButtonItem.menu = makeOutcomeFilterMenu(for: state.filter)
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
     }
 
-    private func makeSecondaryFilterMenu(
+    private func makeSortMenu(
         for filter: MainGameHistoryFilter
     ) -> UIMenu {
-        let newestAction = UIAction(
-            title: "最新",
-            image: UIImage(systemName: "arrow.down"),
-            state: filter.sortOrder == .newest ? .on : .off
-        ) { [weak self] _ in
-            self?.filterChangeSubject.send(.sortOrder(.newest))
-        }
-        let oldestAction = UIAction(
-            title: "最舊",
-            image: UIImage(systemName: "arrow.up"),
-            state: filter.sortOrder == .oldest ? .on : .off
-        ) { [weak self] _ in
-            self?.filterChangeSubject.send(.sortOrder(.oldest))
-        }
-        let sortMenu = UIMenu(
-            title: "排序",
-            options: .displayInline,
-            children: [newestAction, oldestAction]
+        UIMenu(
+            children: SortMenuOption.allCases.map { option in
+                makeFilterAction(
+                    title: option.title,
+                    systemImage: option.systemImage,
+                    isSelected: option.isSelected(in: filter),
+                    change: option.change
+                )
+            }
         )
+    }
 
-        let allOutcomesAction = UIAction(
-            title: "全部結果",
-            image: UIImage(systemName: "flag.checkered"),
-            state: filter.outcome == nil ? .on : .off
-        ) { [weak self] _ in
-            self?.filterChangeSubject.send(.outcome(nil))
-        }
-        let winAction = UIAction(
-            title: "勝利",
-            image: UIImage(systemName: "trophy.fill"),
-            state: filter.outcome == .win ? .on : .off
-        ) { [weak self] _ in
-            self?.filterChangeSubject.send(.outcome(.win))
-        }
-        let lossAction = UIAction(
-            title: "敗北",
-            image: UIImage(systemName: "flag.fill"),
-            state: filter.outcome == .loss ? .on : .off
-        ) { [weak self] _ in
-            self?.filterChangeSubject.send(.outcome(.loss))
-        }
-        let drawAction = UIAction(
-            title: "平手",
-            image: UIImage(systemName: "equal.circle.fill"),
-            state: filter.outcome == .draw ? .on : .off
-        ) { [weak self] _ in
-            self?.filterChangeSubject.send(.outcome(.draw))
-        }
-        let outcomeMenu = UIMenu(
-            title: "結果",
-            options: .displayInline,
-            children: [allOutcomesAction, winAction, lossAction, drawAction]
+    private func makeOutcomeFilterMenu(
+        for filter: MainGameHistoryFilter
+    ) -> UIMenu {
+        UIMenu(
+            children: OutcomeMenuOption.allCases.map { option in
+                makeFilterAction(
+                    title: option.title,
+                    systemImage: option.systemImage,
+                    isSelected: option.isSelected(in: filter),
+                    change: option.change
+                )
+            }
         )
+    }
 
-        return UIMenu(children: [sortMenu, outcomeMenu])
+    private func makeFilterAction(
+        title: String,
+        systemImage: String,
+        isSelected: Bool,
+        change: MainGameHistoryFilterChange
+    ) -> UIAction {
+        UIAction(
+            title: title,
+            image: UIImage(systemName: systemImage),
+            state: isSelected ? .on : .off
+        ) { [weak self] _ in
+            self?.filterChangeSubject.send(change)
+        }
+    }
+}
+
+// MARK: - Filter Menu Options
+
+private enum SortMenuOption: CaseIterable {
+    case newest
+    case oldest
+
+    var title: String {
+        switch self {
+        case .newest:
+            return "最新"
+
+        case .oldest:
+            return "最舊"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .newest:
+            return "arrow.down"
+
+        case .oldest:
+            return "arrow.up"
+        }
+    }
+
+    var change: MainGameHistoryFilterChange {
+        switch self {
+        case .newest:
+            return .sortOrder(.newest)
+
+        case .oldest:
+            return .sortOrder(.oldest)
+        }
+    }
+
+    func isSelected(in filter: MainGameHistoryFilter) -> Bool {
+        switch self {
+        case .newest:
+            return filter.sortOrder == .newest
+
+        case .oldest:
+            return filter.sortOrder == .oldest
+        }
+    }
+}
+
+private enum OutcomeMenuOption: CaseIterable {
+    case all
+    case win
+    case loss
+    case draw
+
+    var title: String {
+        switch self {
+        case .all:
+            return "全部結果"
+
+        case .win:
+            return "勝利"
+
+        case .loss:
+            return "敗北"
+
+        case .draw:
+            return "平手"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .all:
+            return "flag.checkered"
+
+        case .win:
+            return "trophy.fill"
+
+        case .loss:
+            return "flag.fill"
+
+        case .draw:
+            return "flag.and.flag.filled.crossed"
+        }
+    }
+
+    var change: MainGameHistoryFilterChange {
+        switch self {
+        case .all:
+            return .outcome(nil)
+
+        case .win:
+            return .outcome(.win)
+
+        case .loss:
+            return .outcome(.loss)
+
+        case .draw:
+            return .outcome(.draw)
+        }
+    }
+
+    func isSelected(in filter: MainGameHistoryFilter) -> Bool {
+        switch self {
+        case .all:
+            return filter.outcome == nil
+
+        case .win:
+            return filter.outcome == .win
+
+        case .loss:
+            return filter.outcome == .loss
+
+        case .draw:
+            return filter.outcome == .draw
+        }
     }
 }
 

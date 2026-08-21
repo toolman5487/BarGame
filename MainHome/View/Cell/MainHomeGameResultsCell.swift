@@ -209,8 +209,8 @@ final class MainHomeGameResultItemCell: MainBaseCollectionViewCell {
     )
 
     private let lossesScoreView = ScoreMetricView(
-        systemName: "xmark",
-        tintColor: .systemRed,
+        systemName: "flag.fill",
+        tintColor: .label,
         imagePlacement: .trailing
     )
 

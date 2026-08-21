@@ -354,7 +354,9 @@ final class GameDetailRecentRecordItemCell: DetailBaseCollectionViewCell {
             outcomeIconView.tintColor = .label
 
         case .draw:
-            outcomeIconView.image = UIImage(systemName: "equal.circle.fill")
+            outcomeIconView.image = UIImage(
+                systemName: "flag.and.flag.filled.crossed"
+            )
             outcomeIconView.tintColor = ThemeColor.secondary
         }
     }
