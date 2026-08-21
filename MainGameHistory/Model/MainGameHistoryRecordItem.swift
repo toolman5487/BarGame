@@ -14,8 +14,8 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
     let outcome: MatchOutcome
     let outcomeText: String
     let resultText: String
+    let gameTitleText: String
     let timeText: String
-    let locationText: String
 
     init(
         record: DiceGameMatchRecord,
@@ -36,13 +36,11 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
         }
 
         resultText = "\(record.roundWins) - \(record.roundLosses)"
+        gameTitleText = record.gameID.title
 
         timeText = Self.makeDateText(
             for: record.playedAt,
             calendar: calendar
-        )
-        locationText = Self.makeLocationText(
-            from: record.sessionContext.event.location
         )
     }
 
@@ -64,17 +62,4 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
         )
     }
 
-    private static func makeLocationText(
-        from location: GameLocationSnapshot?
-    ) -> String {
-        guard let location else {
-            return "未記錄地址"
-        }
-
-        guard let area = location.area else {
-            return location.detailAddress
-        }
-
-        return "\(area) \(location.detailAddress)"
-    }
 }

@@ -9,7 +9,8 @@ import Foundation
 
 nonisolated struct MatchDetailPresentation: Equatable, Sendable {
 
-    let scoreText: String
+    let winScoreText: String
+    let lossScoreText: String
     let metrics: [MatchDetailMetric]
     let progression: [MatchDetailProgressionItem]
     let rounds: [MatchDetailRoundItem]
@@ -28,7 +29,8 @@ nonisolated struct MatchDetailPresentation: Equatable, Sendable {
                 .map(\.faceValue)
         }
 
-        scoreText = "\(record.roundWins)-\(record.roundLosses)"
+        winScoreText = String(record.roundWins)
+        lossScoreText = String(record.roundLosses)
         metrics = [
             MatchDetailMetric(
                 title: "回合",
@@ -50,11 +52,21 @@ nonisolated struct MatchDetailPresentation: Equatable, Sendable {
                 value: String(Self.longestWinStreak(in: orderedRounds))
             ),
         ]
+        var cumulativeDifference = 0
         progression = orderedRounds.map {
-            MatchDetailProgressionItem(
+            switch $0.outcome {
+            case .win:
+                cumulativeDifference += 1
+
+            case .loss:
+                cumulativeDifference -= 1
+            }
+
+            return MatchDetailProgressionItem(
                 id: $0.id,
                 sequence: $0.sequence,
-                outcome: $0.outcome
+                outcome: $0.outcome,
+                cumulativeDifference: cumulativeDifference
             )
         }
         rounds = orderedRounds.compactMap(MatchDetailRoundItem.init)
@@ -118,6 +130,14 @@ nonisolated struct MatchDetailProgressionItem: Equatable, Identifiable, Sendable
     let id: UUID
     let sequence: Int
     let outcome: RoundOutcome
+    let cumulativeDifference: Int
+
+    var cumulativeDifferenceText: String {
+        guard cumulativeDifference > 0 else {
+            return String(cumulativeDifference)
+        }
+        return "+\(cumulativeDifference)"
+    }
 }
 
 nonisolated struct MatchDetailRoundItem: Equatable, Identifiable, Sendable {

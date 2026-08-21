@@ -11,6 +11,11 @@ import UIKit
 @MainActor
 final class MatchDetailViewController: DetailBaseViewController {
 
+    private enum NavigationTitleStyle {
+        case gameOutcome
+        case score
+    }
+
     // MARK: - Dependencies
 
     private let viewModel: any MatchDetailViewModeling
@@ -27,6 +32,18 @@ final class MatchDetailViewController: DetailBaseViewController {
     private var state = MatchDetailViewState.idle
     private var sections: [MatchDetailSection] = []
     private var cancellables = Set<AnyCancellable>()
+    private var navigationTitleStyle = NavigationTitleStyle.gameOutcome
+
+    // MARK: - UI Elements
+
+    private let navigationTitleLabel: UILabel = {
+        let label = UILabel()
+        label.adjustsFontForContentSizeCategory = true
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.8
+        label.numberOfLines = 1
+        return label
+    }()
 
     // MARK: - Lifecycle
 
@@ -74,7 +91,8 @@ final class MatchDetailViewController: DetailBaseViewController {
 
     override func setNavigation() {
         super.setNavigation()
-        navigationItem.titleView = makeNavigationTitleView()
+        navigationItem.titleView = navigationTitleLabel
+        updateNavigationTitle(animated: false)
     }
 
     override func bind() {
@@ -168,6 +186,7 @@ final class MatchDetailViewController: DetailBaseViewController {
 
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
+        updateNavigationTitle(animated: false)
     }
 
     private func makeSections(
@@ -193,17 +212,50 @@ final class MatchDetailViewController: DetailBaseViewController {
 
     // MARK: - Navigation Title
 
-    private func makeNavigationTitleView() -> UIView {
-        let label = UILabel()
-        label.attributedText = makeNavigationTitle()
-        label.adjustsFontForContentSizeCategory = true
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.8
-        label.numberOfLines = 1
-        return label
+    private func setNavigationTitleStyle(
+        _ style: NavigationTitleStyle,
+        animated: Bool
+    ) {
+        guard navigationTitleStyle != style else { return }
+        navigationTitleStyle = style
+        updateNavigationTitle(animated: animated)
     }
 
-    private func makeNavigationTitle() -> NSAttributedString {
+    private func updateNavigationTitle(animated: Bool) {
+        let attributedText: NSAttributedString
+        switch navigationTitleStyle {
+        case .gameOutcome:
+            attributedText = makeGameOutcomeNavigationTitle()
+
+        case .score:
+            guard case .content(let presentation) = state else {
+                navigationTitleStyle = .gameOutcome
+                updateNavigationTitle(animated: animated)
+                return
+            }
+            attributedText = makeScoreNavigationTitle(
+                presentation: presentation
+            )
+        }
+
+        let updates = {
+            self.navigationTitleLabel.attributedText = attributedText
+            self.navigationTitleLabel.invalidateIntrinsicContentSize()
+        }
+
+        guard animated else {
+            updates()
+            return
+        }
+        UIView.transition(
+            with: navigationTitleLabel,
+            duration: 0.2,
+            options: .transitionCrossDissolve,
+            animations: updates
+        )
+    }
+
+    private func makeGameOutcomeNavigationTitle() -> NSAttributedString {
         let font = UIFont.preferredFont(forTextStyle: .headline)
         let outcomeAppearance = makeOutcomeAppearance()
         let title = NSMutableAttributedString(
@@ -213,22 +265,13 @@ final class MatchDetailViewController: DetailBaseViewController {
                 .foregroundColor: ThemeColor.primary,
             ]
         )
-
-        let attachment = NSTextAttachment()
-        attachment.image = UIImage(
-            systemName: outcomeAppearance.systemName,
-            withConfiguration: UIImage.SymbolConfiguration(textStyle: .headline)
-        )?.withTintColor(
-            outcomeAppearance.color,
-            renderingMode: .alwaysOriginal
+        title.append(
+            makeNavigationSymbol(
+                systemName: outcomeAppearance.systemName,
+                color: outcomeAppearance.color,
+                font: font
+            )
         )
-        attachment.bounds = CGRect(
-            x: 0,
-            y: (font.capHeight - font.lineHeight) / 2,
-            width: font.lineHeight,
-            height: font.lineHeight
-        )
-        title.append(NSAttributedString(attachment: attachment))
         title.append(
             NSAttributedString(
                 string: " \(outcomeAppearance.text)",
@@ -239,6 +282,81 @@ final class MatchDetailViewController: DetailBaseViewController {
             )
         )
         return title
+    }
+
+    private func makeScoreNavigationTitle(
+        presentation: MatchDetailPresentation
+    ) -> NSAttributedString {
+        let font = UIFont.preferredFont(forTextStyle: .headline)
+        let scoreFont = UIFont.monospacedDigitSystemFont(
+            ofSize: font.pointSize,
+            weight: .semibold
+        )
+        let title = NSMutableAttributedString()
+        title.append(
+            makeNavigationSymbol(
+                systemName: "trophy.fill",
+                color: .systemYellow,
+                font: font
+            )
+        )
+        title.append(
+            NSAttributedString(
+                string: " \(presentation.winScoreText)",
+                attributes: [
+                    .font: scoreFont,
+                    .foregroundColor: ThemeColor.primary,
+                ]
+            )
+        )
+        title.append(
+            NSAttributedString(
+                string: "-",
+                attributes: [
+                    .font: font,
+                    .foregroundColor: ThemeColor.secondary,
+                ]
+            )
+        )
+        title.append(
+            NSAttributedString(
+                string: "\(presentation.lossScoreText) ",
+                attributes: [
+                    .font: scoreFont,
+                    .foregroundColor: ThemeColor.primary,
+                ]
+            )
+        )
+        title.append(
+            makeNavigationSymbol(
+                systemName: "flag.fill",
+                color: ThemeColor.primary,
+                font: font
+            )
+        )
+        return title
+    }
+
+    private func makeNavigationSymbol(
+        systemName: String,
+        color: UIColor,
+        font: UIFont
+    ) -> NSAttributedString {
+        let attachment = NSTextAttachment()
+        attachment.image = UIImage(
+            systemName: systemName,
+            withConfiguration: UIImage.SymbolConfiguration(textStyle: .headline)
+        )?.withTintColor(
+            color,
+            renderingMode: .alwaysOriginal
+        )
+        attachment.bounds = CGRect(
+            x: 0,
+            y: (font.capHeight - font.lineHeight) / 2,
+            width: font.lineHeight,
+            height: font.lineHeight
+        )
+        return NSAttributedString(attachment: attachment)
     }
 
     private func makeOutcomeAppearance() -> (
@@ -260,6 +378,25 @@ final class MatchDetailViewController: DetailBaseViewController {
                 ThemeColor.secondary
             )
         }
+    }
+
+    // MARK: - UIScrollViewDelegate
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard scrollView === collectionView,
+              case .content = state,
+              let summaryAttributes = collectionView.collectionViewLayout
+                .layoutAttributesForItem(
+                    at: IndexPath(item: 0, section: 0)
+                )
+        else { return }
+
+        let visibleTop = scrollView.contentOffset.y
+            + scrollView.adjustedContentInset.top
+        let style: NavigationTitleStyle = visibleTop >= summaryAttributes.frame.maxY
+            ? .score
+            : .gameOutcome
+        setNavigationTitleStyle(style, animated: true)
     }
 }
 

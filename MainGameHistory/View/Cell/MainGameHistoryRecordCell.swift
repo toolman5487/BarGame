@@ -17,7 +17,8 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
     enum Metrics {
         static let preferredHeight: CGFloat = 112
         static let verticalCardInset: CGFloat = 4
-        static let contentInset: CGFloat = 16
+        static let horizontalContentInset: CGFloat = 16
+        static let verticalContentInset: CGFloat = 16
         static let contentSpacing: CGFloat = 4
         static let outcomeSpacing: CGFloat = 4
         static let outcomeIconSize: CGFloat = 20
@@ -76,12 +77,11 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         return label
     }()
 
-    private let locationLabel: UILabel = {
+    private let gameTitleLabel: UILabel = {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .caption1)
-        label.textColor = ThemeColor.secondary
+        label.textColor = ThemeColor.primary
         label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
         return label
     }()
 
@@ -101,8 +101,8 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
     private lazy var contentStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
             outcomeStackView,
+            gameTitleLabel,
             timeLabel,
-            locationLabel,
         ])
         stackView.axis = .vertical
         stackView.alignment = .fill
@@ -130,17 +130,21 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         }
 
         disclosureImageView.snp.makeConstraints { make in
-            make.right.equalTo(backgroundButton).inset(Metrics.contentInset)
+            make.right.equalTo(backgroundButton)
+                .inset(Metrics.horizontalContentInset)
             make.centerY.equalTo(backgroundButton)
             make.size.equalTo(Metrics.disclosureIconSize)
         }
 
         contentStackView.snp.makeConstraints { make in
-            make.left.equalTo(backgroundButton).inset(Metrics.contentInset)
+            make.left.equalTo(backgroundButton)
+                .inset(Metrics.horizontalContentInset)
             make.right.equalTo(disclosureImageView.snp.left)
                 .offset(-Metrics.disclosureSpacing)
-            make.top.greaterThanOrEqualTo(backgroundButton).inset(Metrics.contentInset)
-            make.bottom.lessThanOrEqualTo(backgroundButton).inset(Metrics.contentInset)
+            make.top.greaterThanOrEqualTo(backgroundButton)
+                .inset(Metrics.verticalContentInset)
+            make.bottom.lessThanOrEqualTo(backgroundButton)
+                .inset(Metrics.verticalContentInset)
             make.centerY.equalTo(backgroundButton)
         }
     }
@@ -154,15 +158,15 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         outcomeImageView.isSkeletonable = true
         outcomeLabel.isSkeletonable = true
         resultLabel.isSkeletonable = true
+        gameTitleLabel.isSkeletonable = true
         timeLabel.isSkeletonable = true
-        locationLabel.isSkeletonable = true
 
         [
             outcomeImageView,
             outcomeLabel,
             resultLabel,
+            gameTitleLabel,
             timeLabel,
-            locationLabel,
         ].forEach { view in
             view.skeletonCornerRadius = 4
         }
@@ -174,8 +178,8 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         outcomeImageView.image = nil
         outcomeLabel.text = nil
         resultLabel.text = nil
+        gameTitleLabel.text = nil
         timeLabel.text = nil
-        locationLabel.text = nil
     }
 
     // MARK: - Configuration
@@ -185,8 +189,8 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         outcomeImageView.image = UIImage(systemName: "circle.fill")
         outcomeLabel.text = "結果"
         resultLabel.text = "0 - 0"
+        gameTitleLabel.text = "遊戲種類"
         timeLabel.text = "今天 00:00"
-        locationLabel.text = "詳細地址"
         layoutIfNeeded()
         showAnimatedGradientSkeleton(transition: .none)
     }
@@ -198,8 +202,8 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         )
         outcomeLabel.text = item.outcomeText
         resultLabel.text = item.resultText
+        gameTitleLabel.text = item.gameTitleText
         timeLabel.text = item.timeText
-        locationLabel.text = item.locationText
 
         switch item.outcome {
         case .win:
