@@ -21,6 +21,8 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         static let contentSpacing: CGFloat = 4
         static let outcomeSpacing: CGFloat = 4
         static let outcomeIconSize: CGFloat = 20
+        static let disclosureIconSize: CGFloat = 16
+        static let disclosureSpacing: CGFloat = 12
     }
 
     // MARK: - UI Elements
@@ -83,6 +85,19 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
         return label
     }()
 
+    private let disclosureImageView: UIImageView = {
+        let imageView = UIImageView(
+            image: UIImage(systemName: "chevron.right")
+        )
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .tertiaryLabel
+        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
+            textStyle: .caption1,
+            scale: .small
+        )
+        return imageView
+    }()
+
     private lazy var contentStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
             outcomeStackView,
@@ -101,6 +116,7 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
     override func setHierarchy() {
         contentView.addSubview(backgroundButton)
         contentView.addSubview(contentStackView)
+        contentView.addSubview(disclosureImageView)
     }
 
     override func setLayout() {
@@ -113,8 +129,16 @@ final class MainGameHistoryRecordCell: MainBaseCollectionViewCell {
             make.size.equalTo(Metrics.outcomeIconSize)
         }
 
+        disclosureImageView.snp.makeConstraints { make in
+            make.right.equalTo(backgroundButton).inset(Metrics.contentInset)
+            make.centerY.equalTo(backgroundButton)
+            make.size.equalTo(Metrics.disclosureIconSize)
+        }
+
         contentStackView.snp.makeConstraints { make in
-            make.left.right.equalTo(backgroundButton).inset(Metrics.contentInset)
+            make.left.equalTo(backgroundButton).inset(Metrics.contentInset)
+            make.right.equalTo(disclosureImageView.snp.left)
+                .offset(-Metrics.disclosureSpacing)
             make.top.greaterThanOrEqualTo(backgroundButton).inset(Metrics.contentInset)
             make.bottom.lessThanOrEqualTo(backgroundButton).inset(Metrics.contentInset)
             make.centerY.equalTo(backgroundButton)

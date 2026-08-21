@@ -20,6 +20,11 @@ final class MainGameHistoryViewController: MainBaseViewController {
     // MARK: - Dependencies
 
     private let viewModel: any MainGameHistoryViewModeling
+    private let screenBuilder: any AppScreenBuilding
+    private lazy var router: any MainGameHistoryRouting = MainGameHistoryRouter(
+        sourceViewController: self,
+        screenBuilder: screenBuilder
+    )
 
     // MARK: - Input
 
@@ -59,9 +64,11 @@ final class MainGameHistoryViewController: MainBaseViewController {
 
     init(
         title: String,
-        viewModel: any MainGameHistoryViewModeling
+        viewModel: any MainGameHistoryViewModeling,
+        screenBuilder: any AppScreenBuilding
     ) {
         self.viewModel = viewModel
+        self.screenBuilder = screenBuilder
         super.init(title: title)
     }
 
@@ -83,7 +90,7 @@ final class MainGameHistoryViewController: MainBaseViewController {
         collectionView.register(MainGameHistoryStateCell.self)
         collectionView.register(MainGameHistoryFilterHeader.self)
         collectionView.dataSource = self
-        collectionView.allowsSelection = false
+        collectionView.allowsSelection = true
 
         guard let layout = collectionView.collectionViewLayout
             as? UICollectionViewFlowLayout else {
@@ -212,6 +219,27 @@ final class MainGameHistoryViewController: MainBaseViewController {
         ) { [weak self] _ in
             self?.filterChangeSubject.send(change)
         }
+    }
+
+    // MARK: - Selection
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        guard case .records(let records) = state.contentState,
+              records.indices.contains(indexPath.item)
+        else { return }
+
+        let record = records[indexPath.item]
+        router.route(
+            to: .matchDetail(
+                recordID: record.id,
+                gameID: record.gameID,
+                outcome: record.outcome
+            )
+        )
     }
 }
 

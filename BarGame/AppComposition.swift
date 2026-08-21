@@ -13,6 +13,11 @@ protocol AppScreenBuilding: AnyObject {
 
     func makeRootViewController(for item: MainTabItem) -> UIViewController
     func makeGameDetailViewController(for game: DiceGame) -> UIViewController
+    func makeMatchDetailViewController(
+        recordID: UUID,
+        gameID: DiceGameID,
+        outcome: MatchOutcome
+    ) -> UIViewController
     func makeGameViewController(
         for launchConfiguration: GameLaunchConfiguration
     ) -> UIViewController
@@ -98,6 +103,23 @@ final class AppComposition: AppScreenBuilding {
         )
     }
 
+    func makeMatchDetailViewController(
+        recordID: UUID,
+        gameID: DiceGameID,
+        outcome: MatchOutcome
+    ) -> UIViewController {
+        let viewModel = MatchDetailViewModel(
+            recordID: recordID,
+            recordStore: gameHistoryStore,
+            locationGeocoder: MapKitMatchDetailLocationGeocoder()
+        )
+        return MatchDetailViewController(
+            gameID: gameID,
+            outcome: outcome,
+            viewModel: viewModel
+        )
+    }
+
     func makeGameViewController(
         for launchConfiguration: GameLaunchConfiguration
     ) -> UIViewController {
@@ -141,7 +163,8 @@ final class AppComposition: AppScreenBuilding {
         )
         return MainGameHistoryViewController(
             title: title,
-            viewModel: viewModel
+            viewModel: viewModel,
+            screenBuilder: self
         )
     }
 

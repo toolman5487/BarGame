@@ -75,8 +75,6 @@
 		15E40006302F300100000006 /* BarGameSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E40004302F300100000004 /* BarGameSchema.swift */; };
 		15E40007302F300100000007 /* AppModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E40005302F300100000005 /* AppModelContainer.swift */; };
 		15E50011302F400100000011 /* GameIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50001302F400100000001 /* GameIdentity.swift */; };
-		15EB00023035000100000002 /* BarGameSchema+CoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */; };
-		15EB00043035000100000004 /* BarGameSchema+DiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */; };
 		15E50014302F400100000014 /* GameHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50004302F400100000004 /* GameHistoryStore.swift */; };
 		15E50015302F400100000015 /* DiceGameRecordMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50005302F400100000005 /* DiceGameRecordMapper.swift */; };
 		15E600023030000100000002 /* GameHistoryStore+DiceGameRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */; };
@@ -101,6 +99,22 @@
 		15E900273033000100000027 /* MainGameHistoryFilterHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E900073033000100000007 /* MainGameHistoryFilterHeader.swift */; };
 		15EA00023034000100000002 /* GameCurrentLocationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EA00013034000100000001 /* GameCurrentLocationSnapshot.swift */; };
 		15EA00043034000100000004 /* MainHomeLocationMapCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EA00033034000100000003 /* MainHomeLocationMapCell.swift */; };
+		15EB00023035000100000002 /* BarGameSchema+CoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */; };
+		15EB00043035000100000004 /* BarGameSchema+DiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */; };
+		15F000013036000100000001 /* MatchDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001013036000100000001 /* MatchDetailViewController.swift */; };
+		15F000023036000100000002 /* MatchDetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001023036000100000002 /* MatchDetailPresentation.swift */; };
+		15F000033036000100000003 /* MatchDetailState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001033036000100000003 /* MatchDetailState.swift */; };
+		15F000043036000100000004 /* MatchDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001043036000100000004 /* MatchDetailViewModel.swift */; };
+		15F000053036000100000005 /* MatchDetailTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001053036000100000005 /* MatchDetailTitleHeader.swift */; };
+		15F000063036000100000006 /* MatchDetailSummaryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001063036000100000006 /* MatchDetailSummaryCell.swift */; };
+		15F000073036000100000007 /* MatchDetailMetricsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001073036000100000007 /* MatchDetailMetricsCell.swift */; };
+		15F000083036000100000008 /* MatchDetailProgressionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001083036000100000008 /* MatchDetailProgressionCell.swift */; };
+		15F000093036000100000009 /* MatchDetailRoundCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F001093036000100000009 /* MatchDetailRoundCell.swift */; };
+		15F0000A303600010000000A /* MatchDetailPointDistributionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010A303600010000000A /* MatchDetailPointDistributionCell.swift */; };
+		15F0000B303600010000000B /* MatchDetailInformationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010B303600010000000B /* MatchDetailInformationCell.swift */; };
+		15F0000C303600010000000C /* MatchDetailStateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010C303600010000000C /* MatchDetailStateCell.swift */; };
+		15F0000D303600010000000D /* MainGameHistoryRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010D303600010000000D /* MainGameHistoryRouter.swift */; };
+		15F0000E303600010000000E /* MatchDetailLocationGeocoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010E303600010000000E /* MatchDetailLocationGeocoder.swift */; };
 		15FA77A6302D6B0A0097077D /* BottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77A5302D6B0A0097077D /* BottomBar.swift */; };
 		15FA77B1302D80010097077D /* GameDetailRecentRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77B0302D80010097077D /* GameDetailRecentRecord.swift */; };
 		15FA77B3302D80010097077D /* GameDetailRecentRecordsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77B2302D80010097077D /* GameDetailRecentRecordsCell.swift */; };
@@ -175,8 +189,6 @@
 		15E40004302F300100000004 /* BarGameSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarGameSchema.swift; sourceTree = "<group>"; };
 		15E40005302F300100000005 /* AppModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelContainer.swift; sourceTree = "<group>"; };
 		15E50001302F400100000001 /* GameIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameIdentity.swift; sourceTree = "<group>"; };
-		15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchema+CoreModels.swift"; sourceTree = "<group>"; };
-		15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchema+DiceModels.swift"; sourceTree = "<group>"; };
 		15E50004302F400100000004 /* GameHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHistoryStore.swift; sourceTree = "<group>"; };
 		15E50005302F400100000005 /* DiceGameRecordMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameRecordMapper.swift; sourceTree = "<group>"; };
 		15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameHistoryStore+DiceGameRecords.swift"; sourceTree = "<group>"; };
@@ -201,6 +213,22 @@
 		15E900073033000100000007 /* MainGameHistoryFilterHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainGameHistoryFilterHeader.swift; sourceTree = "<group>"; };
 		15EA00013034000100000001 /* GameCurrentLocationSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCurrentLocationSnapshot.swift; sourceTree = "<group>"; };
 		15EA00033034000100000003 /* MainHomeLocationMapCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeLocationMapCell.swift; sourceTree = "<group>"; };
+		15EB00013035000100000001 /* BarGameSchema+CoreModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchema+CoreModels.swift"; sourceTree = "<group>"; };
+		15EB00033035000100000003 /* BarGameSchema+DiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BarGameSchema+DiceModels.swift"; sourceTree = "<group>"; };
+		15F001013036000100000001 /* MatchDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailViewController.swift; sourceTree = "<group>"; };
+		15F001023036000100000002 /* MatchDetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailPresentation.swift; sourceTree = "<group>"; };
+		15F001033036000100000003 /* MatchDetailState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailState.swift; sourceTree = "<group>"; };
+		15F001043036000100000004 /* MatchDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailViewModel.swift; sourceTree = "<group>"; };
+		15F001053036000100000005 /* MatchDetailTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailTitleHeader.swift; sourceTree = "<group>"; };
+		15F001063036000100000006 /* MatchDetailSummaryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailSummaryCell.swift; sourceTree = "<group>"; };
+		15F001073036000100000007 /* MatchDetailMetricsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailMetricsCell.swift; sourceTree = "<group>"; };
+		15F001083036000100000008 /* MatchDetailProgressionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailProgressionCell.swift; sourceTree = "<group>"; };
+		15F001093036000100000009 /* MatchDetailRoundCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailRoundCell.swift; sourceTree = "<group>"; };
+		15F0010A303600010000000A /* MatchDetailPointDistributionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailPointDistributionCell.swift; sourceTree = "<group>"; };
+		15F0010B303600010000000B /* MatchDetailInformationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailInformationCell.swift; sourceTree = "<group>"; };
+		15F0010C303600010000000C /* MatchDetailStateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailStateCell.swift; sourceTree = "<group>"; };
+		15F0010D303600010000000D /* MainGameHistoryRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainGameHistoryRouter.swift; sourceTree = "<group>"; };
+		15F0010E303600010000000E /* MatchDetailLocationGeocoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailLocationGeocoder.swift; sourceTree = "<group>"; };
 		15FA77A5302D6B0A0097077D /* BottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBar.swift; sourceTree = "<group>"; };
 		15FA77B0302D80010097077D /* GameDetailRecentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRecentRecord.swift; sourceTree = "<group>"; };
 		15FA77B2302D80010097077D /* GameDetailRecentRecordsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailRecentRecordsCell.swift; sourceTree = "<group>"; };
@@ -258,6 +286,7 @@
 				1596A2693025909F0018E77C /* DiceGame */,
 				1578333A3027820F0087747A /* Feature */,
 				153511FA302C536100F367B8 /* GameDetail */,
+				15F002013036000100000001 /* MatchDetail */,
 				15E700043031000100000004 /* MainGameHistory */,
 				157833413027822D0087747A /* MainHome */,
 				1596A2E93025C9C80018E77C /* MainTabBar */,
@@ -872,6 +901,7 @@
 			children = (
 				15E700023031000100000002 /* Controller */,
 				15E900103033000100000010 /* Model */,
+				15F002083036000100000008 /* Router */,
 				15E900113033000100000011 /* ViewModel */,
 				15E900123033000100000012 /* View */,
 			);
@@ -969,6 +999,90 @@
 				15E900073033000100000007 /* MainGameHistoryFilterHeader.swift */,
 			);
 			path = Header;
+			sourceTree = "<group>";
+		};
+		15F002013036000100000001 /* MatchDetail */ = {
+			isa = PBXGroup;
+			children = (
+				15F002023036000100000002 /* Controller */,
+				15F002033036000100000003 /* Model */,
+				15F002093036000100000009 /* Service */,
+				15F002043036000100000004 /* View */,
+				15F002073036000100000007 /* ViewModel */,
+			);
+			path = MatchDetail;
+			sourceTree = "<group>";
+		};
+		15F002023036000100000002 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				15F001013036000100000001 /* MatchDetailViewController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
+		15F002033036000100000003 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				15F001023036000100000002 /* MatchDetailPresentation.swift */,
+				15F001033036000100000003 /* MatchDetailState.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		15F002043036000100000004 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				15F002053036000100000005 /* Cell */,
+				15F002063036000100000006 /* Header */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		15F002053036000100000005 /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				15F0010B303600010000000B /* MatchDetailInformationCell.swift */,
+				15F001073036000100000007 /* MatchDetailMetricsCell.swift */,
+				15F0010A303600010000000A /* MatchDetailPointDistributionCell.swift */,
+				15F001083036000100000008 /* MatchDetailProgressionCell.swift */,
+				15F001093036000100000009 /* MatchDetailRoundCell.swift */,
+				15F0010C303600010000000C /* MatchDetailStateCell.swift */,
+				15F001063036000100000006 /* MatchDetailSummaryCell.swift */,
+			);
+			path = Cell;
+			sourceTree = "<group>";
+		};
+		15F002063036000100000006 /* Header */ = {
+			isa = PBXGroup;
+			children = (
+				15F001053036000100000005 /* MatchDetailTitleHeader.swift */,
+			);
+			path = Header;
+			sourceTree = "<group>";
+		};
+		15F002073036000100000007 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				15F001043036000100000004 /* MatchDetailViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		15F002083036000100000008 /* Router */ = {
+			isa = PBXGroup;
+			children = (
+				15F0010D303600010000000D /* MainGameHistoryRouter.swift */,
+			);
+			path = Router;
+			sourceTree = "<group>";
+		};
+		15F002093036000100000009 /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				15F0010E303600010000000E /* MatchDetailLocationGeocoder.swift */,
+			);
+			path = Service;
 			sourceTree = "<group>";
 		};
 		15FA77A4302D6AEF0097077D /* SubView */ = {
@@ -1098,6 +1212,20 @@
 				15FA77B3302D80010097077D /* GameDetailRecentRecordsCell.swift in Sources */,
 				15FA77B5302D90010097077D /* GameDetailStatistics.swift in Sources */,
 				15FA77B7302D90010097077D /* GameDetailStatisticsCell.swift in Sources */,
+				15F000013036000100000001 /* MatchDetailViewController.swift in Sources */,
+				15F000023036000100000002 /* MatchDetailPresentation.swift in Sources */,
+				15F000033036000100000003 /* MatchDetailState.swift in Sources */,
+				15F000043036000100000004 /* MatchDetailViewModel.swift in Sources */,
+				15F000053036000100000005 /* MatchDetailTitleHeader.swift in Sources */,
+				15F000063036000100000006 /* MatchDetailSummaryCell.swift in Sources */,
+				15F000073036000100000007 /* MatchDetailMetricsCell.swift in Sources */,
+				15F000083036000100000008 /* MatchDetailProgressionCell.swift in Sources */,
+				15F000093036000100000009 /* MatchDetailRoundCell.swift in Sources */,
+				15F0000A303600010000000A /* MatchDetailPointDistributionCell.swift in Sources */,
+				15F0000B303600010000000B /* MatchDetailInformationCell.swift in Sources */,
+				15F0000C303600010000000C /* MatchDetailStateCell.swift in Sources */,
+				15F0000D303600010000000D /* MainGameHistoryRouter.swift in Sources */,
+				15F0000E303600010000000E /* MatchDetailLocationGeocoder.swift in Sources */,
 				15D20001302C100100000001 /* DiceGame.swift in Sources */,
 				15D20002302C100100000002 /* GameStatistics.swift in Sources */,
 				15D20003302C100100000003 /* MainHomeSnapshot.swift in Sources */,

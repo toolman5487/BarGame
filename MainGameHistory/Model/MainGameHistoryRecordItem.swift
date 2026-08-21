@@ -10,6 +10,7 @@ import Foundation
 nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable {
 
     let id: UUID
+    let gameID: DiceGameID
     let outcome: MatchOutcome
     let outcomeText: String
     let resultText: String
@@ -21,6 +22,7 @@ nonisolated struct MainGameHistoryRecordItem: Equatable, Identifiable, Sendable 
         calendar: Calendar = .current
     ) {
         id = record.id
+        gameID = record.gameID
         outcome = record.outcome
         switch record.outcome {
         case .win:
