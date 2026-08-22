@@ -11,6 +11,13 @@ nonisolated struct GameCoordinate: Codable, Equatable, Sendable {
 
     let latitude: Double
     let longitude: Double
+
+    var isValid: Bool {
+        latitude.isFinite
+            && longitude.isFinite
+            && (-90...90).contains(latitude)
+            && (-180...180).contains(longitude)
+    }
 }
 
 nonisolated struct GameCurrentLocationSnapshot: Codable, Equatable, Sendable {

@@ -11,7 +11,7 @@ import SwiftData
 extension GameHistoryStore: DiceGameRecordStoring {
 
     func insert(_ record: DiceGameMatchRecord) throws {
-        try DiceGameRecordMapper.validate(record)
+        try DiceGameRecordValidator.validate(record)
 
         guard try storedMatch(withID: record.id) == nil else {
             throw DiceGameRecordStoreError.duplicateRecord(record.id)
@@ -29,7 +29,7 @@ extension GameHistoryStore: DiceGameRecordStoring {
     }
 
     func update(_ record: DiceGameMatchRecord) throws {
-        try DiceGameRecordMapper.validate(record)
+        try DiceGameRecordValidator.validate(record)
 
         guard let match = try storedMatch(withID: record.id) else {
             throw DiceGameRecordStoreError.recordNotFound(record.id)
@@ -44,7 +44,7 @@ extension GameHistoryStore: DiceGameRecordStoring {
             throw DiceGameRecordStoreError.immutableSessionChanged(record.id)
         }
 
-        DiceGameRecordMapper.updateStoredMatch(
+        DiceGameRecordSynchronizer.update(
             match,
             from: record,
             modelContext: modelContext

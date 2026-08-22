@@ -11,26 +11,38 @@ nonisolated struct GameLocationSnapshot: Codable, Equatable, Sendable {
 
     let area: String?
     let detailAddress: String
+    let coordinate: GameCoordinate?
 
-    init(address: String, locality: String?) {
+    init(
+        address: String,
+        locality: String?,
+        coordinate: GameCoordinate? = nil
+    ) {
         let components = Self.makeAddressComponents(
             from: address,
             fallbackArea: locality
         )
         self.init(
             area: components.area,
-            detailAddress: components.detailAddress
+            detailAddress: components.detailAddress,
+            coordinate: coordinate
         )
     }
 
-    private init(area: String?, detailAddress: String) {
+    init(
+        area: String?,
+        detailAddress: String,
+        coordinate: GameCoordinate?
+    ) {
         self.area = area
         self.detailAddress = detailAddress
+        self.coordinate = coordinate
     }
 
     private enum CodingKeys: String, CodingKey {
         case area
         case detailAddress
+        case coordinate
         case legacyAddress = "address"
         case legacyName = "name"
         case legacyLocality = "locality"
@@ -47,7 +59,11 @@ nonisolated struct GameLocationSnapshot: Codable, Equatable, Sendable {
                     String.self,
                     forKey: .area
                 ),
-                detailAddress: detailAddress
+                detailAddress: detailAddress,
+                coordinate: try container.decodeIfPresent(
+                    GameCoordinate.self,
+                    forKey: .coordinate
+                )
             )
         } else {
             let address = try container.decodeIfPresent(
@@ -58,7 +74,14 @@ nonisolated struct GameLocationSnapshot: Codable, Equatable, Sendable {
                 String.self,
                 forKey: .legacyLocality
             )
-            self.init(address: address, locality: locality)
+            self.init(
+                address: address,
+                locality: locality,
+                coordinate: try container.decodeIfPresent(
+                    GameCoordinate.self,
+                    forKey: .coordinate
+                )
+            )
         }
     }
 
@@ -66,6 +89,15 @@ nonisolated struct GameLocationSnapshot: Codable, Equatable, Sendable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(area, forKey: .area)
         try container.encode(detailAddress, forKey: .detailAddress)
+        try container.encodeIfPresent(coordinate, forKey: .coordinate)
+    }
+
+    func includingCoordinate(_ coordinate: GameCoordinate) -> Self {
+        Self(
+            area: area,
+            detailAddress: detailAddress,
+            coordinate: coordinate
+        )
     }
 
     private static func makeAddressComponents(

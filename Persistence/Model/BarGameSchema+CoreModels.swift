@@ -21,6 +21,8 @@ extension BarGameSchema {
         var timeZoneIdentifier: String
         var locationName: String?
         var locality: String?
+        var locationLatitude: Double?
+        var locationLongitude: Double?
 
         @Relationship(deleteRule: .cascade, inverse: \BarGameSchema.GameSession.event)
         var sessions: [GameSession]
@@ -32,6 +34,8 @@ extension BarGameSchema {
             timeZoneIdentifier: String,
             locationName: String? = nil,
             locality: String? = nil,
+            locationLatitude: Double? = nil,
+            locationLongitude: Double? = nil,
             sessions: [GameSession] = []
         ) {
             self.id = id
@@ -40,6 +44,8 @@ extension BarGameSchema {
             self.timeZoneIdentifier = timeZoneIdentifier
             self.locationName = locationName
             self.locality = locality
+            self.locationLatitude = locationLatitude
+            self.locationLongitude = locationLongitude
             self.sessions = sessions
         }
     }

@@ -17,10 +17,7 @@ nonisolated struct MatchDetailPresentation: Equatable, Sendable {
     let pointDistribution: [MatchDetailPointDistributionItem]
     let information: MatchDetailInformation
 
-    init(
-        record: DiceGameMatchRecord,
-        mapState: MatchDetailMapState = .loading
-    ) {
+    init(record: DiceGameMatchRecord) {
         let orderedRounds = record.rounds.sorted { $0.sequence < $1.sequence }
         let confirmedRolls = orderedRounds.compactMap(\.latestConfirmedRoll)
         let diceValues = confirmedRolls.flatMap { roll in
@@ -76,10 +73,7 @@ nonisolated struct MatchDetailPresentation: Equatable, Sendable {
                 count: diceValues.count { $0 == faceValue }
             )
         }
-        information = MatchDetailInformation(
-            record: record,
-            mapState: mapState
-        )
+        information = MatchDetailInformation(record: record)
     }
 
     private static func percentageText(
@@ -174,9 +168,8 @@ nonisolated struct MatchDetailPointDistributionItem: Equatable, Identifiable, Se
 
 nonisolated enum MatchDetailMapState: Equatable, Sendable {
 
-    case loading
     case located(GameCoordinate)
-    case unavailable
+    case notRecorded
 }
 
 nonisolated struct MatchDetailInformation: Equatable, Sendable {
@@ -184,31 +177,21 @@ nonisolated struct MatchDetailInformation: Equatable, Sendable {
     let areaText: String
     let detailAddressText: String
     let startedAtText: String
-    let geocodingAddress: String?
     let mapState: MatchDetailMapState
 
-    init(
-        record: DiceGameMatchRecord,
-        mapState: MatchDetailMapState
-    ) {
+    init(record: DiceGameMatchRecord) {
         let location = record.sessionContext.event.location
         areaText = location?.area ?? "未記錄區域"
         detailAddressText = location?.detailAddress ?? "未記錄詳細地址"
         startedAtText = record.sessionContext.startedAt.formatted(
             .dateTime.year().month().day().hour().minute()
         )
-        geocodingAddress = Self.makeGeocodingAddress(from: location)
-        self.mapState = location == nil ? .unavailable : mapState
-    }
-
-    private static func makeGeocodingAddress(
-        from location: GameLocationSnapshot?
-    ) -> String? {
-        guard let location else { return nil }
-        return [location.area, location.detailAddress]
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
+        if let coordinate = location?.coordinate,
+           coordinate.isValid {
+            mapState = .located(coordinate)
+        } else {
+            mapState = .notRecorded
+        }
     }
 }
 

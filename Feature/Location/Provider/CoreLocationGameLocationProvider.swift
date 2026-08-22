@@ -150,7 +150,11 @@ nonisolated struct CoreLocationGameLocationProvider: GameLocationProviding {
         )
         return GameLocationSnapshot(
             address: address,
-            locality: locality
+            locality: locality,
+            coordinate: GameCoordinate(
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude
+            )
         )
     }
 

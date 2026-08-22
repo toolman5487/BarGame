@@ -35,7 +35,6 @@ final class MatchDetailViewModel: MatchDetailViewModeling {
 
     private let recordID: UUID
     private let recordStore: any DiceGameRecordStoring
-    private let locationGeocoder: any MatchDetailLocationGeocoding
 
     // MARK: - State
 
@@ -50,12 +49,10 @@ final class MatchDetailViewModel: MatchDetailViewModeling {
 
     init(
         recordID: UUID,
-        recordStore: any DiceGameRecordStoring,
-        locationGeocoder: any MatchDetailLocationGeocoding
+        recordStore: any DiceGameRecordStoring
     ) {
         self.recordID = recordID
         self.recordStore = recordStore
-        self.locationGeocoder = locationGeocoder
     }
 
     deinit {
@@ -96,7 +93,6 @@ final class MatchDetailViewModel: MatchDetailViewModeling {
 
         loadTask = Task(priority: .userInitiated) { [
             weak self,
-            locationGeocoder,
             recordID,
             recordStore,
         ] in
@@ -109,39 +105,9 @@ final class MatchDetailViewModel: MatchDetailViewModeling {
                     return
                 }
 
-                let loadingPresentation = MatchDetailPresentation(
-                    record: record,
-                    mapState: .loading
-                )
-                self?.stateSubject.send(.content(loadingPresentation))
-
-                guard let address = loadingPresentation
-                    .information
-                    .geocodingAddress
-                else { return }
-
-                let mapState: MatchDetailMapState
-                do {
-                    let coordinate = try await locationGeocoder.coordinate(
-                        for: address
-                    )
-                    try Task.checkCancellation()
-                    mapState = .located(coordinate)
-                } catch is CancellationError {
-                    return
-                } catch {
-                    AppLogger.search.warning(
-                        "Match location geocoding failed: \(String(describing: error), privacy: .public)"
-                    )
-                    mapState = .unavailable
-                }
-
                 self?.stateSubject.send(
                     .content(
-                        MatchDetailPresentation(
-                            record: record,
-                            mapState: mapState
-                        )
+                        MatchDetailPresentation(record: record)
                     )
                 )
             } catch is CancellationError {

@@ -13,6 +13,8 @@ import UIKit
 @MainActor
 final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
 
+    var retryHandler: (() -> Void)?
+
     enum Metrics {
         static let preferredHeight: CGFloat = 280
         static let verticalInset: CGFloat = 4
@@ -125,10 +127,16 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
     // MARK: - Overridable
 
     override func setHierarchy() {
+        mapView.delegate = self
         contentView.addSubview(mapView)
         contentView.addSubview(placeholderView)
         placeholderView.addSubview(placeholderStackView)
         contentView.addSubview(textStackView)
+        let tapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(handleRetryTap)
+        )
+        placeholderView.addGestureRecognizer(tapGesture)
     }
 
     override func setLayout() {
@@ -164,6 +172,7 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
         areaLabel.text = nil
         addressLabel.text = nil
         startedAtLabel.text = nil
+        retryHandler = nil
         showLoadingState()
     }
 
@@ -175,17 +184,14 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
         startedAtLabel.text = "開始時間 \(information.startedAtText)"
 
         switch information.mapState {
-        case .loading:
-            showLoadingState()
-
         case .located(let coordinate):
             showMap(
                 coordinate: coordinate,
                 annotationTitle: information.areaText
             )
 
-        case .unavailable:
-            showUnavailableState()
+        case .notRecorded:
+            showNotRecordedState()
         }
     }
 
@@ -194,6 +200,7 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
     private func showLoadingState() {
         mapView.isHidden = true
         placeholderView.isHidden = false
+        placeholderView.isUserInteractionEnabled = false
         placeholderImageView.isHidden = true
         placeholderLabel.text = "正在載入地圖"
         activityIndicator.startAnimating()
@@ -202,10 +209,21 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
     private func showUnavailableState() {
         mapView.isHidden = true
         placeholderView.isHidden = false
+        placeholderView.isUserInteractionEnabled = true
         activityIndicator.stopAnimating()
         placeholderImageView.isHidden = false
         placeholderImageView.image = UIImage(systemName: "map")
-        placeholderLabel.text = "目前無法顯示這個地點"
+        placeholderLabel.text = "目前無法顯示這個地點\n輕觸重試"
+    }
+
+    private func showNotRecordedState() {
+        mapView.isHidden = true
+        placeholderView.isHidden = false
+        placeholderView.isUserInteractionEnabled = false
+        activityIndicator.stopAnimating()
+        placeholderImageView.isHidden = false
+        placeholderImageView.image = UIImage(systemName: "mappin.slash")
+        placeholderLabel.text = "這場賽局未記錄地點"
     }
 
     private func showMap(
@@ -223,6 +241,7 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
 
         activityIndicator.stopAnimating()
         placeholderView.isHidden = true
+        placeholderView.isUserInteractionEnabled = false
         mapView.isHidden = false
         mapView.removeAnnotations(mapView.annotations)
 
@@ -237,5 +256,22 @@ final class MatchDetailInformationCell: DetailBaseCollectionViewCell {
             longitudinalMeters: Metrics.regionDistance
         )
         mapView.setRegion(mapView.regionThatFits(region), animated: false)
+    }
+
+    @objc
+    private func handleRetryTap() {
+        retryHandler?()
+    }
+}
+
+// MARK: - MKMapViewDelegate
+
+extension MatchDetailInformationCell: MKMapViewDelegate {
+
+    func mapViewDidFailLoadingMap(
+        _ mapView: MKMapView,
+        withError error: any Error
+    ) {
+        showUnavailableState()
     }
 }

@@ -57,7 +57,6 @@ final class RoundDetailViewController: DetailBaseViewController {
         collectionView.register(RoundDetailSummaryCell.self)
         collectionView.register(RoundDetailDiceResultCell.self)
         collectionView.register(RoundDetailDistributionCell.self)
-        collectionView.register(RoundDetailInformationCell.self)
         collectionView.register(RoundDetailStateCell.self)
         collectionView.register(RoundDetailTitleHeader.self)
     }
@@ -113,11 +112,6 @@ final class RoundDetailViewController: DetailBaseViewController {
 
         case .distribution:
             height = RoundDetailDistributionCell.Metrics.preferredHeight
-
-        case .information:
-            height = RoundDetailInformationCell.preferredHeight(
-                itemCount: presentation.information.count
-            )
         }
 
         return CGSize(width: width, height: height)
@@ -152,7 +146,6 @@ final class RoundDetailViewController: DetailBaseViewController {
                 .summary,
                 .diceResult,
                 .distribution,
-                .information,
             ]
             title = presentation.navigationTitle
         }
@@ -228,14 +221,6 @@ extension RoundDetailViewController: UICollectionViewDataSource {
                 for: indexPath
             )
             cell.configure(items: presentation.distribution)
-            return cell
-
-        case .information:
-            let cell = collectionView.dequeueReusableCell(
-                RoundDetailInformationCell.self,
-                for: indexPath
-            )
-            cell.configure(items: presentation.information)
             return cell
         }
     }

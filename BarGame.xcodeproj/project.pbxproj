@@ -78,6 +78,10 @@
 		15E50014302F400100000014 /* GameHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50004302F400100000004 /* GameHistoryStore.swift */; };
 		15E50015302F400100000015 /* DiceGameRecordMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E50005302F400100000005 /* DiceGameRecordMapper.swift */; };
 		15E600023030000100000002 /* GameHistoryStore+DiceGameRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */; };
+		15FC0011303A000100000011 /* GameHistoryStore+Statistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FC0001303A000100000001 /* GameHistoryStore+Statistics.swift */; };
+		15FC0012303A000100000012 /* GameHistoryStore+Sessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FC0002303A000100000002 /* GameHistoryStore+Sessions.swift */; };
+		15FC0013303A000100000013 /* DiceGameRecordValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FC0003303A000100000003 /* DiceGameRecordValidator.swift */; };
+		15FC0014303A000100000014 /* DiceGameRecordSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FC0004303A000100000004 /* DiceGameRecordSynchronizer.swift */; };
 		15E700033031000100000003 /* MainGameHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E700013031000100000001 /* MainGameHistoryViewController.swift */; };
 		15E800113032000100000011 /* GameSettingLocationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E800013032000100000001 /* GameSettingLocationState.swift */; };
 		15E800123032000100000012 /* GameSettingLocationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E800023032000100000002 /* GameSettingLocationCell.swift */; };
@@ -114,7 +118,6 @@
 		15F0000B303600010000000B /* MatchDetailInformationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010B303600010000000B /* MatchDetailInformationCell.swift */; };
 		15F0000C303600010000000C /* MatchDetailStateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010C303600010000000C /* MatchDetailStateCell.swift */; };
 		15F0000D303600010000000D /* MainGameHistoryRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010D303600010000000D /* MainGameHistoryRouter.swift */; };
-		15F0000E303600010000000E /* MatchDetailLocationGeocoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F0010E303600010000000E /* MatchDetailLocationGeocoder.swift */; };
 		15F3EB10303970FC0031A02C /* RoundDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EB0F303970FC0031A02C /* RoundDetailViewController.swift */; };
 		15F3EB12303980010031A02C /* MatchDetailRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EB11303980010031A02C /* MatchDetailRouter.swift */; };
 		15F3ED01303990010031A02C /* RoundDetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC01303990010031A02C /* RoundDetailPresentation.swift */; };
@@ -123,7 +126,6 @@
 		15F3ED04303990010031A02C /* RoundDetailSummaryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC04303990010031A02C /* RoundDetailSummaryCell.swift */; };
 		15F3ED05303990010031A02C /* RoundDetailDiceResultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC05303990010031A02C /* RoundDetailDiceResultCell.swift */; };
 		15F3ED06303990010031A02C /* RoundDetailDistributionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC06303990010031A02C /* RoundDetailDistributionCell.swift */; };
-		15F3ED07303990010031A02C /* RoundDetailInformationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC07303990010031A02C /* RoundDetailInformationCell.swift */; };
 		15F3ED08303990010031A02C /* RoundDetailStateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC08303990010031A02C /* RoundDetailStateCell.swift */; };
 		15F3ED09303990010031A02C /* RoundDetailTitleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F3EC09303990010031A02C /* RoundDetailTitleHeader.swift */; };
 		15FA77A6302D6B0A0097077D /* GameSettingBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA77A5302D6B0A0097077D /* GameSettingBottomBar.swift */; };
@@ -203,6 +205,10 @@
 		15E50004302F400100000004 /* GameHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHistoryStore.swift; sourceTree = "<group>"; };
 		15E50005302F400100000005 /* DiceGameRecordMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameRecordMapper.swift; sourceTree = "<group>"; };
 		15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameHistoryStore+DiceGameRecords.swift"; sourceTree = "<group>"; };
+		15FC0001303A000100000001 /* GameHistoryStore+Statistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameHistoryStore+Statistics.swift"; sourceTree = "<group>"; };
+		15FC0002303A000100000002 /* GameHistoryStore+Sessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameHistoryStore+Sessions.swift"; sourceTree = "<group>"; };
+		15FC0003303A000100000003 /* DiceGameRecordValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameRecordValidator.swift; sourceTree = "<group>"; };
+		15FC0004303A000100000004 /* DiceGameRecordSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiceGameRecordSynchronizer.swift; sourceTree = "<group>"; };
 		15E700013031000100000001 /* MainGameHistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainGameHistoryViewController.swift; sourceTree = "<group>"; };
 		15E800013032000100000001 /* GameSettingLocationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSettingLocationState.swift; sourceTree = "<group>"; };
 		15E800023032000100000002 /* GameSettingLocationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSettingLocationCell.swift; sourceTree = "<group>"; };
@@ -239,7 +245,6 @@
 		15F0010B303600010000000B /* MatchDetailInformationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailInformationCell.swift; sourceTree = "<group>"; };
 		15F0010C303600010000000C /* MatchDetailStateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailStateCell.swift; sourceTree = "<group>"; };
 		15F0010D303600010000000D /* MainGameHistoryRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainGameHistoryRouter.swift; sourceTree = "<group>"; };
-		15F0010E303600010000000E /* MatchDetailLocationGeocoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailLocationGeocoder.swift; sourceTree = "<group>"; };
 		15F3EB0F303970FC0031A02C /* RoundDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailViewController.swift; sourceTree = "<group>"; };
 		15F3EB11303980010031A02C /* MatchDetailRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailRouter.swift; sourceTree = "<group>"; };
 		15F3EC01303990010031A02C /* RoundDetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailPresentation.swift; sourceTree = "<group>"; };
@@ -248,7 +253,6 @@
 		15F3EC04303990010031A02C /* RoundDetailSummaryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailSummaryCell.swift; sourceTree = "<group>"; };
 		15F3EC05303990010031A02C /* RoundDetailDiceResultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailDiceResultCell.swift; sourceTree = "<group>"; };
 		15F3EC06303990010031A02C /* RoundDetailDistributionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailDistributionCell.swift; sourceTree = "<group>"; };
-		15F3EC07303990010031A02C /* RoundDetailInformationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailInformationCell.swift; sourceTree = "<group>"; };
 		15F3EC08303990010031A02C /* RoundDetailStateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailStateCell.swift; sourceTree = "<group>"; };
 		15F3EC09303990010031A02C /* RoundDetailTitleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundDetailTitleHeader.swift; sourceTree = "<group>"; };
 		15FA77A5302D6B0A0097077D /* GameSettingBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSettingBottomBar.swift; sourceTree = "<group>"; };
@@ -899,6 +903,8 @@
 			children = (
 				15E50004302F400100000004 /* GameHistoryStore.swift */,
 				15E600013030000100000001 /* GameHistoryStore+DiceGameRecords.swift */,
+				15FC0002303A000100000002 /* GameHistoryStore+Sessions.swift */,
+				15FC0001303A000100000001 /* GameHistoryStore+Statistics.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -907,6 +913,8 @@
 			isa = PBXGroup;
 			children = (
 				15E50005302F400100000005 /* DiceGameRecordMapper.swift */,
+				15FC0004303A000100000004 /* DiceGameRecordSynchronizer.swift */,
+				15FC0003303A000100000003 /* DiceGameRecordValidator.swift */,
 			);
 			path = Mapper;
 			sourceTree = "<group>";
@@ -1030,7 +1038,6 @@
 				15F002023036000100000002 /* Controller */,
 				15F002033036000100000003 /* Model */,
 				15F3EB13303980010031A02C /* Router */,
-				15F002093036000100000009 /* Service */,
 				15F002043036000100000004 /* View */,
 				15F002073036000100000007 /* ViewModel */,
 			);
@@ -1101,14 +1108,6 @@
 			path = Router;
 			sourceTree = "<group>";
 		};
-		15F002093036000100000009 /* Service */ = {
-			isa = PBXGroup;
-			children = (
-				15F0010E303600010000000E /* MatchDetailLocationGeocoder.swift */,
-			);
-			path = Service;
-			sourceTree = "<group>";
-		};
 		15F3EB0D303970C30031A02C /* RoundDetail */ = {
 			isa = PBXGroup;
 			children = (
@@ -1167,7 +1166,6 @@
 			children = (
 				15F3EC05303990010031A02C /* RoundDetailDiceResultCell.swift */,
 				15F3EC06303990010031A02C /* RoundDetailDistributionCell.swift */,
-				15F3EC07303990010031A02C /* RoundDetailInformationCell.swift */,
 				15F3EC08303990010031A02C /* RoundDetailStateCell.swift */,
 				15F3EC04303990010031A02C /* RoundDetailSummaryCell.swift */,
 			);
@@ -1316,7 +1314,6 @@
 				15F3ED04303990010031A02C /* RoundDetailSummaryCell.swift in Sources */,
 				15F3ED05303990010031A02C /* RoundDetailDiceResultCell.swift in Sources */,
 				15F3ED06303990010031A02C /* RoundDetailDistributionCell.swift in Sources */,
-				15F3ED07303990010031A02C /* RoundDetailInformationCell.swift in Sources */,
 				15F3ED08303990010031A02C /* RoundDetailStateCell.swift in Sources */,
 				15F3ED09303990010031A02C /* RoundDetailTitleHeader.swift in Sources */,
 				15F000013036000100000001 /* MatchDetailViewController.swift in Sources */,
@@ -1332,7 +1329,6 @@
 				15F0000B303600010000000B /* MatchDetailInformationCell.swift in Sources */,
 				15F0000C303600010000000C /* MatchDetailStateCell.swift in Sources */,
 				15F0000D303600010000000D /* MainGameHistoryRouter.swift in Sources */,
-				15F0000E303600010000000E /* MatchDetailLocationGeocoder.swift in Sources */,
 				15F3EB12303980010031A02C /* MatchDetailRouter.swift in Sources */,
 				15D20001302C100100000001 /* DiceGame.swift in Sources */,
 				15D20002302C100100000002 /* GameStatistics.swift in Sources */,
@@ -1363,6 +1359,10 @@
 				15E50014302F400100000014 /* GameHistoryStore.swift in Sources */,
 				15E50015302F400100000015 /* DiceGameRecordMapper.swift in Sources */,
 				15E600023030000100000002 /* GameHistoryStore+DiceGameRecords.swift in Sources */,
+				15FC0011303A000100000011 /* GameHistoryStore+Statistics.swift in Sources */,
+				15FC0012303A000100000012 /* GameHistoryStore+Sessions.swift in Sources */,
+				15FC0013303A000100000013 /* DiceGameRecordValidator.swift in Sources */,
+				15FC0014303A000100000014 /* DiceGameRecordSynchronizer.swift in Sources */,
 				15E700033031000100000003 /* MainGameHistoryViewController.swift in Sources */,
 				15E900213033000100000021 /* MainGameHistoryFilter.swift in Sources */,
 				15E900223033000100000022 /* MainGameHistoryRecordItem.swift in Sources */,

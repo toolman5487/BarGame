@@ -5,116 +5,142 @@
 //  Created by Codex on 2026/8/22.
 //
 
+import Charts
 import SnapKit
+import SwiftUI
 import UIKit
 
 @MainActor
 final class RoundDetailDistributionCell: DetailBaseCollectionViewCell {
 
     enum Metrics {
-        static let preferredHeight: CGFloat = 104
-        static let verticalInset: CGFloat = 4
-        static let contentInset: CGFloat = 16
-        static let itemSpacing: CGFloat = 8
+        static let preferredHeight: CGFloat = 208
+        static let verticalCardInset: CGFloat = 4
     }
 
     private let backgroundButton = ViewFactory.makeButton()
-    private let metricViews = (1...6).map {
-        RoundDetailDistributionMetricView(faceValue: $0)
-    }
-
-    private lazy var contentStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: metricViews)
-        stackView.axis = .horizontal
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        stackView.spacing = Metrics.itemSpacing
-        stackView.isUserInteractionEnabled = false
-        return stackView
-    }()
 
     override func setHierarchy() {
         contentView.addSubview(backgroundButton)
-        contentView.addSubview(contentStackView)
     }
 
     override func setLayout() {
         backgroundButton.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
-            make.top.bottom.equalToSuperview().inset(Metrics.verticalInset)
+            make.top.bottom.equalToSuperview().inset(Metrics.verticalCardInset)
         }
-        contentStackView.snp.makeConstraints { make in
-            make.edges.equalTo(backgroundButton).inset(Metrics.contentInset)
-        }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        contentConfiguration = nil
     }
 
     func configure(items: [RoundDetailDistributionItem]) {
-        let itemsByFaceValue = Dictionary(
-            uniqueKeysWithValues: items.map { ($0.faceValue, $0) }
-        )
-        for metricView in metricViews {
-            metricView.configure(
-                count: itemsByFaceValue[metricView.faceValue]?.count ?? 0
-            )
+        contentConfiguration = UIHostingConfiguration {
+            RoundDetailDistributionChart(items: items)
         }
+        .margins(.all, 0)
+        .background(.clear)
     }
 }
 
-@MainActor
-private final class RoundDetailDistributionMetricView: UIView {
+private struct RoundDetailDistributionChart: View {
 
-    let faceValue: Int
+    private enum Metrics {
+        static let horizontalInset: CGFloat = 16
+        static let verticalInset: CGFloat = 12
+        static let contentSpacing: CGFloat = 8
+    }
 
-    private let faceLabel: UILabel = {
-        let label = UILabel()
-        label.font = .monospacedDigitSystemFont(
-            ofSize: UIFont.preferredFont(forTextStyle: .headline).pointSize,
-            weight: .semibold
-        )
-        label.textColor = ThemeColor.primary
-        label.textAlignment = .center
-        return label
-    }()
+    let items: [RoundDetailDistributionItem]
 
-    private let countLabel: UILabel = {
-        let label = UILabel()
-        label.font = .monospacedDigitSystemFont(
-            ofSize: UIFont.preferredFont(forTextStyle: .caption1).pointSize,
-            weight: .regular
-        )
-        label.textColor = ThemeColor.secondary
-        label.textAlignment = .center
-        return label
-    }()
-
-    private lazy var contentStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [faceLabel, countLabel])
-        stackView.axis = .vertical
-        stackView.alignment = .fill
-        stackView.spacing = 4
-        return stackView
-    }()
-
-    init(faceValue: Int) {
-        self.faceValue = faceValue
-        super.init(frame: .zero)
-        faceLabel.text = String(faceValue)
-        addSubview(contentStackView)
-        contentStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.left.right.equalToSuperview()
+    private var totalDiceCount: Int {
+        items.reduce(into: 0) { total, item in
+            total += item.count
         }
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    private var maximumCount: Int {
+        max(items.map(\.count).max() ?? 0, 1)
     }
 
-    func configure(count: Int) {
-        countLabel.text = "× \(count)"
-        faceLabel.textColor = count > 0
-            ? ThemeColor.primary
-            : ThemeColor.secondary
+    private var yAxisValues: [Int] {
+        Array(Set([0, maximumCount / 2, maximumCount])).sorted()
+    }
+
+    private var yDomain: ClosedRange<Double> {
+        0...Double(maximumCount + 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Metrics.contentSpacing) {
+            summary
+            chart
+        }
+        .padding(.horizontal, Metrics.horizontalInset)
+        .padding(.vertical, Metrics.verticalInset)
+    }
+
+    private var summary: some View {
+        HStack(spacing: 4) {
+            Text("骰子數量")
+                .foregroundStyle(Color(uiColor: ThemeColor.secondary))
+            Spacer(minLength: 8)
+            Text("\(totalDiceCount) 顆")
+                .fontWeight(.semibold)
+                .foregroundStyle(Color(uiColor: ThemeColor.primary))
+        }
+        .font(.caption)
+        .monospacedDigit()
+    }
+
+    private var chart: some View {
+        Chart(items) { item in
+            BarMark(
+                x: .value("點數", item.faceValue),
+                y: .value("顆數", item.count),
+                width: .ratio(0.55)
+            )
+            .foregroundStyle(
+                item.count > 0
+                    ? Color.yellow
+                    : Color(uiColor: ThemeColor.secondary).opacity(0.15)
+            )
+            .annotation(position: .top) {
+                if item.count > 0 {
+                    Text(String(item.count))
+                        .font(.caption2)
+                        .monospacedDigit()
+                        .foregroundStyle(Color(uiColor: ThemeColor.primary))
+                }
+            }
+        }
+        .chartXScale(domain: 0.5...6.5)
+        .chartYScale(domain: yDomain)
+        .chartXAxis {
+            AxisMarks(values: items.map(\.faceValue)) { value in
+                AxisValueLabel {
+                    if let faceValue = value.as(Int.self) {
+                        Image(systemName: "die.face.\(faceValue).fill")
+                    }
+                }
+                .foregroundStyle(Color(uiColor: ThemeColor.secondary))
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading, values: yAxisValues) { value in
+                AxisGridLine()
+                    .foregroundStyle(
+                        Color(uiColor: ThemeColor.secondary).opacity(0.15)
+                    )
+                AxisValueLabel {
+                    if let count = value.as(Int.self) {
+                        Text(String(count))
+                    }
+                }
+                .foregroundStyle(Color(uiColor: ThemeColor.secondary))
+            }
+        }
     }
 }

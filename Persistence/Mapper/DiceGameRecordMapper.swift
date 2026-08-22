@@ -10,59 +10,6 @@ import SwiftData
 
 nonisolated enum DiceGameRecordMapper {
 
-    static func validate(_ record: DiceGameMatchRecord) throws {
-        guard record.sessionContext.identity == record.gameID.identity else {
-            throw DiceGameRecordStoreError.gameIdentityMismatch(record.id)
-        }
-
-        guard !record.rounds.isEmpty,
-              Set(record.rounds.map(\.id)).count == record.rounds.count,
-              Set(record.rounds.map(\.sequence)).count == record.rounds.count,
-              record.rounds.allSatisfy({ $0.sequence > 0 }) else {
-            throw DiceGameRecordStoreError.invalidMatchStructure(record.id)
-        }
-
-        let allRolls = record.rounds.flatMap(\.diceRolls)
-        let allDice = allRolls.flatMap(\.dice)
-        guard Set(allRolls.map(\.id)).count == allRolls.count,
-              Set(allDice.map(\.id)).count == allDice.count else {
-            throw DiceGameRecordStoreError.invalidMatchStructure(record.id)
-        }
-
-        for round in record.rounds {
-            guard !round.diceRolls.isEmpty,
-                  Set(round.diceRolls.map(\.id)).count == round.diceRolls.count,
-                  Set(round.diceRolls.map(\.sequence)).count
-                    == round.diceRolls.count,
-                  round.diceRolls.allSatisfy({ $0.sequence > 0 }),
-                  round.latestConfirmedRoll != nil else {
-                throw DiceGameRecordStoreError.invalidMatchStructure(record.id)
-            }
-
-            for roll in round.diceRolls {
-                let dice = roll.dice
-                guard roll.sidesPerDie
-                        == record.gameID.allowedFaceValues.upperBound,
-                      record.gameID.dicePreset.allowedDiceCount.contains(
-                          dice.count
-                      ),
-                      Set(dice.map(\.id)).count == dice.count,
-                      Set(dice.map(\.index)) == Set(dice.indices),
-                      dice.allSatisfy({ die in
-                          record.gameID.allowedFaceValues.contains(
-                              die.faceValue
-                          )
-                      }) else {
-                    throw DiceGameRecordStoreError.invalidDiceValues
-                }
-            }
-        }
-
-        guard record.latestConfirmedRoll != nil else {
-            throw DiceGameRecordStoreError.invalidMatchStructure(record.id)
-        }
-    }
-
     static func makeStoredMatch(
         from record: DiceGameMatchRecord,
         sequence: Int,
@@ -101,28 +48,14 @@ nonisolated enum DiceGameRecordMapper {
                 .map { try makeRound(from: $0, matchID: match.id) },
             playedAt: match.playedAt
         )
-        try validate(record)
+        try DiceGameRecordValidator.validate(record)
         guard record.outcome == storedOutcome else {
             throw DiceGameRecordStoreError.invalidStoredRecord(match.id)
         }
         return record
     }
 
-    static func updateStoredMatch(
-        _ match: StoredGameMatch,
-        from record: DiceGameMatchRecord,
-        modelContext: ModelContext
-    ) {
-        match.outcomeRawValue = record.outcome.rawValue
-        match.playedAt = record.playedAt
-        synchronizeRounds(
-            in: match,
-            with: record.rounds,
-            modelContext: modelContext
-        )
-    }
-
-    private static func makeStoredRound(
+    static func makeStoredRound(
         from record: DiceGameRoundRecord
     ) -> StoredGameRound {
         StoredGameRound(
@@ -137,7 +70,7 @@ nonisolated enum DiceGameRecordMapper {
         )
     }
 
-    private static func makeStoredRoll(
+    static func makeStoredRoll(
         from record: DiceRollRecord
     ) -> StoredDiceRoll {
         StoredDiceRoll(
@@ -153,7 +86,7 @@ nonisolated enum DiceGameRecordMapper {
         )
     }
 
-    private static func makeStoredDie(
+    static func makeStoredDie(
         from record: DiceRollDieRecord
     ) -> StoredDieResult {
         StoredDieResult(
@@ -212,88 +145,4 @@ nonisolated enum DiceGameRecordMapper {
         )
     }
 
-    private static func synchronizeRounds(
-        in match: StoredGameMatch,
-        with records: [DiceGameRoundRecord],
-        modelContext: ModelContext
-    ) {
-        let recordIDs = Set(records.map(\.id))
-        let removedRounds = match.rounds.filter { !recordIDs.contains($0.id) }
-        match.rounds.removeAll { !recordIDs.contains($0.id) }
-        removedRounds.forEach(modelContext.delete)
-
-        let roundsByID = Dictionary(
-            uniqueKeysWithValues: match.rounds.map { ($0.id, $0) }
-        )
-        for record in records.sorted(by: { $0.sequence < $1.sequence }) {
-            if let round = roundsByID[record.id] {
-                round.sequence = record.sequence
-                round.startedAt = record.startedAt
-                round.endedAt = record.endedAt
-                round.outcomeRawValue = record.outcome.rawValue
-                synchronizeRolls(
-                    in: round,
-                    with: record.diceRolls,
-                    modelContext: modelContext
-                )
-            } else {
-                match.rounds.append(makeStoredRound(from: record))
-            }
-        }
-    }
-
-    private static func synchronizeRolls(
-        in round: StoredGameRound,
-        with records: [DiceRollRecord],
-        modelContext: ModelContext
-    ) {
-        let recordIDs = Set(records.map(\.id))
-        let removedRolls = round.diceRolls.filter { !recordIDs.contains($0.id) }
-        round.diceRolls.removeAll { !recordIDs.contains($0.id) }
-        removedRolls.forEach(modelContext.delete)
-
-        let rollsByID = Dictionary(
-            uniqueKeysWithValues: round.diceRolls.map { ($0.id, $0) }
-        )
-        for record in records.sorted(by: { $0.sequence < $1.sequence }) {
-            if let roll = rollsByID[record.id] {
-                roll.sequence = record.sequence
-                roll.rolledAt = record.rolledAt
-                roll.statusRawValue = record.status.rawValue
-                roll.diceCount = record.dice.count
-                roll.sidesPerDie = record.sidesPerDie
-                synchronizeDice(
-                    in: roll,
-                    with: record.dice,
-                    modelContext: modelContext
-                )
-            } else {
-                round.diceRolls.append(makeStoredRoll(from: record))
-            }
-        }
-    }
-
-    private static func synchronizeDice(
-        in roll: StoredDiceRoll,
-        with records: [DiceRollDieRecord],
-        modelContext: ModelContext
-    ) {
-        let recordIDs = Set(records.map(\.id))
-        let removedDice = roll.dice.filter { !recordIDs.contains($0.id) }
-        roll.dice.removeAll { !recordIDs.contains($0.id) }
-        removedDice.forEach(modelContext.delete)
-
-        let diceByID = Dictionary(
-            uniqueKeysWithValues: roll.dice.map { ($0.id, $0) }
-        )
-        for record in records.sorted(by: { $0.index < $1.index }) {
-            if let die = diceByID[record.id] {
-                die.index = record.index
-                die.faceValue = record.faceValue
-                die.wasHeld = record.wasHeld
-            } else {
-                roll.dice.append(makeStoredDie(from: record))
-            }
-        }
-    }
 }

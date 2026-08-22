@@ -14,7 +14,6 @@ nonisolated struct RoundDetailPresentation: Equatable, Sendable {
     let totalPointsText: String
     let dice: [RoundDetailDieItem]
     let distribution: [RoundDetailDistributionItem]
-    let information: [RoundDetailInformationItem]
 
     init?(
         record: DiceGameMatchRecord,
@@ -41,22 +40,6 @@ nonisolated struct RoundDetailPresentation: Equatable, Sendable {
                 count: values.count { $0 == faceValue }
             )
         }
-        information = [
-            RoundDetailInformationItem(
-                title: "遊戲",
-                value: record.gameID.title
-            ),
-            RoundDetailInformationItem(
-                title: "骰子數量",
-                value: "\(orderedDice.count) 顆"
-            ),
-            RoundDetailInformationItem(
-                title: "記錄時間",
-                value: roll.rolledAt.formatted(
-                    .dateTime.year().month().day().hour().minute()
-                )
-            ),
-        ]
     }
 }
 
@@ -75,18 +58,11 @@ nonisolated struct RoundDetailDistributionItem: Equatable, Identifiable, Sendabl
     let count: Int
 }
 
-nonisolated struct RoundDetailInformationItem: Equatable, Sendable {
-
-    let title: String
-    let value: String
-}
-
 nonisolated enum RoundDetailSection: Equatable, Sendable {
 
     case summary
     case diceResult
     case distribution
-    case information
 
     var title: String? {
         switch self {
@@ -98,9 +74,6 @@ nonisolated enum RoundDetailSection: Equatable, Sendable {
 
         case .distribution:
             return "點數分布"
-
-        case .information:
-            return "回合資訊"
         }
     }
 }

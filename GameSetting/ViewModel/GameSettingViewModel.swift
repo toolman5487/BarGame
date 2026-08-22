@@ -239,14 +239,20 @@ final class GameSettingViewModel: GameSettingViewModeling {
             }
 
         case .located(let snapshot):
-            return .located(snapshot.place)
+            return .located(
+                snapshot.place.includingCoordinate(snapshot.coordinate)
+            )
 
         case .failed(let cachedSnapshot, let error):
             if let error {
                 return makeFailedLocationState(error)
             }
             if let cachedSnapshot {
-                return .located(cachedSnapshot.place)
+                return .located(
+                    cachedSnapshot.place.includingCoordinate(
+                        cachedSnapshot.coordinate
+                    )
+                )
             }
             return makeIdleLocationState(authorization: authorization)
         }

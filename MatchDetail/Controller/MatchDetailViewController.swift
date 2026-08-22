@@ -510,6 +510,9 @@ extension MatchDetailViewController: UICollectionViewDataSource {
                 for: indexPath
             )
             cell.configure(information: presentation.information)
+            cell.retryHandler = { [weak self] in
+                self?.retryRequestSubject.send()
+            }
             return cell
         }
     }

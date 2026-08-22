@@ -114,8 +114,7 @@ final class AppComposition: AppScreenBuilding {
     ) -> UIViewController {
         let viewModel = MatchDetailViewModel(
             recordID: recordID,
-            recordStore: gameHistoryStore,
-            locationGeocoder: MapKitMatchDetailLocationGeocoder()
+            recordStore: gameHistoryStore
         )
         return MatchDetailViewController(
             matchID: recordID,
