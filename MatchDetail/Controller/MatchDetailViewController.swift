@@ -19,8 +19,14 @@ final class MatchDetailViewController: DetailBaseViewController {
     // MARK: - Dependencies
 
     private let viewModel: any MatchDetailViewModeling
+    private let matchID: UUID
     private let gameID: DiceGameID
     private let outcome: MatchOutcome
+    private lazy var router: any MatchDetailRouting = MatchDetailRouter(
+        sourceViewController: self,
+        screenBuilder: screenBuilder
+    )
+    private let screenBuilder: any AppScreenBuilding
 
     // MARK: - Input
 
@@ -48,13 +54,17 @@ final class MatchDetailViewController: DetailBaseViewController {
     // MARK: - Lifecycle
 
     init(
+        matchID: UUID,
         gameID: DiceGameID,
         outcome: MatchOutcome,
-        viewModel: any MatchDetailViewModeling
+        viewModel: any MatchDetailViewModeling,
+        screenBuilder: any AppScreenBuilding
     ) {
+        self.matchID = matchID
         self.gameID = gameID
         self.outcome = outcome
         self.viewModel = viewModel
+        self.screenBuilder = screenBuilder
         super.init(title: gameID.title)
     }
 
@@ -78,7 +88,7 @@ final class MatchDetailViewController: DetailBaseViewController {
     override func setHierarchy() {
         super.setHierarchy()
         collectionView.dataSource = self
-        collectionView.allowsSelection = false
+        collectionView.allowsSelection = true
         collectionView.register(MatchDetailSummaryCell.self)
         collectionView.register(MatchDetailMetricsCell.self)
         collectionView.register(MatchDetailProgressionCell.self)
@@ -520,5 +530,41 @@ extension MatchDetailViewController: UICollectionViewDataSource {
         )
         header.configure(title: title)
         return header
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+
+extension MatchDetailViewController {
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        shouldSelectItemAt indexPath: IndexPath
+    ) -> Bool {
+        guard case .content(let presentation) = state,
+              sections.indices.contains(indexPath.section),
+              sections[indexPath.section] == .rounds
+        else { return false }
+
+        return presentation.rounds.indices.contains(indexPath.item)
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        guard case .content(let presentation) = state,
+              sections.indices.contains(indexPath.section),
+              sections[indexPath.section] == .rounds,
+              presentation.rounds.indices.contains(indexPath.item)
+        else { return }
+
+        router.route(
+            to: .roundDetail(
+                matchID: matchID,
+                roundID: presentation.rounds[indexPath.item].id
+            )
+        )
     }
 }

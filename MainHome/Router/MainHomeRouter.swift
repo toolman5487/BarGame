@@ -49,6 +49,6 @@ final class MainHomeRouter: BaseRouter, MainHomeRouting {
     // MARK: - Private
 
     private func makeGameViewController(for game: DiceGame) -> UIViewController {
-        screenBuilder.makeGameDetailViewController(for: game)
+        screenBuilder.makeGameSettingViewController(for: game)
     }
 }

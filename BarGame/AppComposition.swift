@@ -12,11 +12,15 @@ import UIKit
 protocol AppScreenBuilding: AnyObject {
 
     func makeRootViewController(for item: MainTabItem) -> UIViewController
-    func makeGameDetailViewController(for game: DiceGame) -> UIViewController
+    func makeGameSettingViewController(for game: DiceGame) -> UIViewController
     func makeMatchDetailViewController(
         recordID: UUID,
         gameID: DiceGameID,
         outcome: MatchOutcome
+    ) -> UIViewController
+    func makeRoundDetailViewController(
+        matchID: UUID,
+        roundID: UUID
     ) -> UIViewController
     func makeGameViewController(
         for launchConfiguration: GameLaunchConfiguration
@@ -84,18 +88,18 @@ final class AppComposition: AppScreenBuilding {
         }
     }
 
-    func makeGameDetailViewController(for game: DiceGame) -> UIViewController {
-        let initialState = GameDetailState(
-            sections: GameDetailSection.standard(for: game.id)
+    func makeGameSettingViewController(for game: DiceGame) -> UIViewController {
+        let initialState = GameSettingState(
+            sections: GameSettingSection.standard(for: game.id)
         )
-        let viewModel = GameDetailViewModel(
+        let viewModel = GameSettingViewModel(
             gameID: game.id,
             initialState: initialState,
             recordStore: gameHistoryStore,
             statisticsReader: gameHistoryStore,
             locationCoordinator: gameLocationCoordinator
         )
-        return GameDetailViewController(
+        return GameSettingViewController(
             title: game.title,
             initialState: initialState,
             viewModel: viewModel,
@@ -114,10 +118,24 @@ final class AppComposition: AppScreenBuilding {
             locationGeocoder: MapKitMatchDetailLocationGeocoder()
         )
         return MatchDetailViewController(
+            matchID: recordID,
             gameID: gameID,
             outcome: outcome,
-            viewModel: viewModel
+            viewModel: viewModel,
+            screenBuilder: self
         )
+    }
+
+    func makeRoundDetailViewController(
+        matchID: UUID,
+        roundID: UUID
+    ) -> UIViewController {
+        let viewModel = RoundDetailViewModel(
+            matchID: matchID,
+            roundID: roundID,
+            recordStore: gameHistoryStore
+        )
+        return RoundDetailViewController(viewModel: viewModel)
     }
 
     func makeGameViewController(

@@ -18,6 +18,7 @@ final class MatchDetailRoundCell: DetailBaseCollectionViewCell {
         static let horizontalSpacing: CGFloat = 12
         static let textSpacing: CGFloat = 4
         static let outcomeIconSize: CGFloat = 24
+        static let disclosureIconSize: CGFloat = 16
     }
 
     private let backgroundButton = ViewFactory.makeButton()
@@ -72,6 +73,17 @@ final class MatchDetailRoundCell: DetailBaseCollectionViewCell {
         return label
     }()
 
+    private let disclosureImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "chevron.right"))
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = ThemeColor.secondary
+        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
+            textStyle: .caption1,
+            scale: .small
+        )
+        return imageView
+    }()
+
     private lazy var leadingStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [sequenceLabel, diceLabel])
         stackView.axis = .vertical
@@ -93,6 +105,7 @@ final class MatchDetailRoundCell: DetailBaseCollectionViewCell {
             outcomeImageView,
             leadingStackView,
             trailingStackView,
+            disclosureImageView,
         ])
         stackView.axis = .horizontal
         stackView.alignment = .center
@@ -114,6 +127,10 @@ final class MatchDetailRoundCell: DetailBaseCollectionViewCell {
 
         outcomeImageView.snp.makeConstraints { make in
             make.size.equalTo(Metrics.outcomeIconSize)
+        }
+
+        disclosureImageView.snp.makeConstraints { make in
+            make.size.equalTo(Metrics.disclosureIconSize)
         }
 
         contentStackView.snp.makeConstraints { make in
