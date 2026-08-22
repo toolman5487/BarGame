@@ -167,11 +167,11 @@ final class MatchDetailRoundCell: DetailBaseCollectionViewCell {
 
         switch item.outcome {
         case .win:
-            outcomeImageView.image = UIImage(systemName: "checkmark.circle.fill")
+            outcomeImageView.image = UIImage(systemName: "trophy.fill")
             outcomeImageView.tintColor = .systemYellow
 
         case .loss:
-            outcomeImageView.image = UIImage(systemName: "xmark.circle.fill")
+            outcomeImageView.image = UIImage(systemName: "flag.fill")
             outcomeImageView.tintColor = ThemeColor.primary
         }
     }
